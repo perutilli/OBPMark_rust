@@ -11,7 +11,8 @@ type Number = f32;
 type Number = f64;
 #[cfg(feature = "int")]
 type Number = i32;
-// TODO: maybe find a way to have a default type if none is specified?
+#[cfg(not(any(feature = "float", feature = "double", feature = "int")))]
+type Number = f32; // default to float
 
 /// Matrix multiplication benchmark
 #[derive(Parser, Debug)]
@@ -82,10 +83,12 @@ pub fn generate_random_matrix(size: usize) -> Vec<Vec<Number>> {
     let mut matrix = vec![vec![Number::default(); size]; size];
     for i in 0..size {
         for j in 0..size {
-            if cfg!(feature = "int") {
+            #[cfg(feature = "int")]
+            {
                 // this is here to avoid overflow when multiplying
                 matrix[i][j] = rng.gen_range(0..100);
-            } else {
+            }
+            if !cfg!(feature = "int") {
                 matrix[i][j] = rng.gen::<Number>();
             }
         }
