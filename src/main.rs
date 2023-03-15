@@ -4,6 +4,15 @@ use core::panic;
 use rand::Rng;
 use std::time::Instant;
 
+// if not specified, defaults to float
+#[cfg(feature = "float")]
+type Number = f32;
+#[cfg(feature = "double")]
+type Number = f64;
+#[cfg(feature = "int")]
+type Number = i32;
+// TODO: maybe find a way to have a default type if none is specified?
+
 /// Matrix multiplication benchmark
 #[derive(Parser, Debug)]
 #[command(author, version, about, long_about = None)]
@@ -28,7 +37,7 @@ fn main() {
             panic!("Input files not supported yet");
         }
         None => {
-            println!("No input files, generating random matrices");
+            println!("No input files specified, generating random matrices");
             A = generate_random_matrix(size);
             B = generate_random_matrix(size);
         }
@@ -37,15 +46,13 @@ fn main() {
     let now = Instant::now();
 
     // Code block to measure.
-    let _C = matrix_multiplication(&A, &B);
+    let C = matrix_multiplication(&A, &B);
 
     let elapsed = now.elapsed();
     println!("Elapsed: {:.2?}", elapsed);
 
-    //println!("{:?}", C);
+    println!("{:?}", C);
 }
-
-type Number = f32; // this can be setup so that it works both with f32 and f64 (and ints as well)
 
 // matrices implemented as 2d vectors or as slices? (probably the former??)
 // are we ok with the non snake case names given the mathy nature of the code?
@@ -58,7 +65,7 @@ pub fn matrix_multiplication(A: &Vec<Vec<Number>>, B: &Vec<Vec<Number>>) -> Vec<
         B.len(),
         "Matrix dimensions do not match, impossible to multiply"
     );
-    let mut C = vec![vec![0.0; w]; n];
+    let mut C = vec![vec![Number::default(); w]; n];
     for i in 0..n {
         for j in 0..w {
             for k in 0..m {
@@ -69,12 +76,18 @@ pub fn matrix_multiplication(A: &Vec<Vec<Number>>, B: &Vec<Vec<Number>>) -> Vec<
     C
 }
 
+/// Generates a random square matrix with side length `size`
 pub fn generate_random_matrix(size: usize) -> Vec<Vec<Number>> {
     let mut rng = rand::thread_rng();
-    let mut matrix = vec![vec![0.0; size]; size];
+    let mut matrix = vec![vec![Number::default(); size]; size];
     for i in 0..size {
         for j in 0..size {
-            matrix[i][j] = rng.gen::<Number>();
+            if cfg!(feature = "int") {
+                // this is here to avoid overflow when multiplying
+                matrix[i][j] = rng.gen_range(0..100);
+            } else {
+                matrix[i][j] = rng.gen::<Number>();
+            }
         }
     }
     matrix
