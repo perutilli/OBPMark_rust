@@ -55,23 +55,13 @@ pub mod matrix {
         }
     }
 
-    /*  Here for testing the overhead of Vec
-        The time for 100x100 matrices is about 15-20 ms
-        compared to 1 ms for the C sequential implementation
-    pub fn matrix_multiplication_array(
-        A: &[Number; 100 * 100],
-        B: &[Number; 100 * 100],
-        C: &mut [Number; 100 * 100],
+    pub fn matrix_multiplication_ndarray(
+        A: &ndarray::Array2<Number>,
+        B: &ndarray::Array2<Number>,
+        C: &mut ndarray::Array2<Number>,
     ) -> () {
-        for i in 0..100 {
-            for j in 0..100 {
-                for k in 0..100 {
-                    C[i * 100 + j] += A[i * 100 + k] * B[k * 100 + j];
-                }
-            }
-        }
+        *C = A.dot(B);
     }
-    */
 
     /// Generates a random square matrix with side length `size`
     pub fn generate_random_matrix(size: usize) -> Vec<Vec<Number>> {

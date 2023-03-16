@@ -3,25 +3,6 @@
 * Is it intended that we can only use square matrices? Or should I allow for different shapes?
 * Why the hexadecimal representation in the input files? Should this remain the same or can I use some standard serialization format? Also not having any example file for this case makes it hard to verify that my implementation is correct. This function also exists `get_values_file(input_file, A, B)` which might be closer to what I was thinking of doing.
 * Before thinking about any kind of serialization I would like to finalize the data structure that will hold the matrices. Can I use an "arbitrary" format or should I keep the hexadecimal representation that is used in the C version?
-### Slowness
-Why is it so slow compared to the c sequential version?  
-Results for 100x100 matrices, rust sequential, float:
-```
-Elapsed 2d: 94.48ms
-Elapsed 1d: 52.30ms
-Elapsed static: 16.66ms
-```
-Results for 100x100 matrices, c sequential, float:
-```
-Elapsed time Host->Device: 0.0000000000 milliseconds
-Elapsed time kernel: 1.0000000000 milliseconds
-Elapsed time Device->Host: 0.0000000000 milliseconds
-```
-Even if we use arrays with static size, the rust version is still much slower than the c version.  
-Possible reasons:
-* Something to do with WSL maybe being better at C than Rust? Is this even possible? Couldn't find anything about this.
-* Rust just being slower than C at this. It really doesn't seem likely, this is a basic operation where C would be more than 10 times faster than Rust even when we use arrays in rust vs dynamic allocation in C.
-* Look into ndarray, should not be necessary.
 ## Arguments
 ### Required
 * `-s` (we should allow `--size` as well) - side size of the matrices supposing that they are square

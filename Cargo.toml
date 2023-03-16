@@ -8,6 +8,7 @@ edition = "2021"
 [dependencies]
 clap = { version = "4.1.8", features = ["derive"] }
 rand = "0.8.5"
+ndarray = "0.15.6"
 
 [features]
 default = []

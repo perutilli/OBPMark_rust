@@ -1,6 +1,7 @@
 #![allow(non_snake_case)] // TODO: decide if we want to keep this or not
 use clap::Parser;
 use core::panic;
+use ndarray::Array2;
 use obpmark_rust::matrix::*;
 use std::time::Instant;
 
@@ -28,6 +29,8 @@ fn main() {
     let B;
     let A_1d: Vec<Number>;
     let B_1d: Vec<Number>;
+    let A_nd: Array2<Number>;
+    let B_nd: Array2<Number>;
 
     match args.input {
         Some(_) => {
@@ -39,11 +42,14 @@ fn main() {
             B = generate_random_matrix(size);
             A_1d = A.iter().flatten().cloned().collect();
             B_1d = B.iter().flatten().cloned().collect();
+            A_nd = Array2::from_shape_vec((size, size), A_1d.clone()).unwrap();
+            B_nd = Array2::from_shape_vec((size, size), B_1d.clone()).unwrap();
         }
     }
 
     let mut C = vec![vec![Number::default(); size]; size];
     let mut C_1d = vec![Number::default(); size * size];
+    let mut C_nd = Array2::from_elem((size, size), Number::default());
 
     let now = Instant::now();
 
@@ -56,6 +62,12 @@ fn main() {
     matrix_multiplication_1d(&A_1d, &B_1d, &mut C_1d, size, size, size);
 
     println!("Elapsed 1d: {:.2?}", now.elapsed());
+
+    let now = Instant::now();
+
+    matrix_multiplication_ndarray(&A_nd, &B_nd, &mut C_nd);
+
+    println!("Elapsed ndarray: {:.2?}", now.elapsed());
 
     if args.output {
         println!("{}", matrix_to_str(C));
