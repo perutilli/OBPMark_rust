@@ -11,8 +11,8 @@
 - Should we allow wrapping in the offset function? This does not seem right, but the random generator for the offset would lead to this behaviour I'm quite sure
 - How does the device running work? It does not seem like it is running on another device, but then why all the memcpys etc?
 # Action plan
-- [ ] Port the frame structures
-- [ ] Port the processing functions for the 1.1-image benchmark
+- [x] Port the frame structures
+- [x] Port the processing functions for the 1.1-image benchmark
   
 # General notes
 
