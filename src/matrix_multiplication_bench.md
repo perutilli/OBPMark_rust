@@ -1,4 +1,7 @@
 # MATRIX MULTIPLICATION BENCHMARK
+## Problems
+* We absolutely need verification because the timings of the 1000x1000 float and double matrices do not seem realistic (they are more than 10x faster than the 1000x1000 int matrices). Maybe it is actually to be expected? (I don't think so, it is way too much)
+
 ## Questions
 * Is it intended that we can only use square matrices? Or should I allow for different shapes?
 * Why the hexadecimal representation in the input files? Should this remain the same or can I use some standard serialization format? Also not having any example file for this case makes it hard to verify that my implementation is correct. This function also exists `get_values_file(input_file, A, B)` which might be closer to what I was thinking of doing.

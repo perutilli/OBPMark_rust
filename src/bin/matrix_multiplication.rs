@@ -1,9 +1,17 @@
 #![allow(non_snake_case)] // TODO: decide if we want to keep this or not
 use clap::Parser;
 use core::panic;
-use ndarray::Array2;
-use obpmark_rust::matrix::*;
+use obpmark_rust::{FromRandomSeed, MatMul};
 use std::time::Instant;
+
+#[cfg(feature = "1d")]
+use obpmark_rust::matrix_1d::Matrix;
+#[cfg(feature = "2d")]
+use obpmark_rust::matrix_2d::Matrix;
+#[cfg(not(any(feature = "1d", feature = "2d", feature = "ndarray")))]
+use obpmark_rust::matrix_2d::Matrix;
+#[cfg(feature = "ndarray")]
+use obpmark_rust::matrix_ndarray::Matrix; // once again for linting reasons
 
 /// Matrix multiplication benchmark
 #[derive(Parser, Debug)]
@@ -25,12 +33,12 @@ struct Args {
 fn main() {
     let args = Args::parse();
     let size = args.size;
+
     let A;
     let B;
-    let A_1d: Vec<Number>;
-    let B_1d: Vec<Number>;
-    let A_nd: Array2<Number>;
-    let B_nd: Array2<Number>;
+    let mut C;
+
+    let seed: u64 = 9453458;
 
     match args.input {
         Some(_) => {
@@ -38,38 +46,20 @@ fn main() {
         }
         None => {
             println!("No input files specified, generating random matrices");
-            A = generate_random_matrix(size);
-            B = generate_random_matrix(size);
-            A_1d = A.iter().flatten().cloned().collect();
-            B_1d = B.iter().flatten().cloned().collect();
-            A_nd = Array2::from_shape_vec((size, size), A_1d.clone()).unwrap();
-            B_nd = Array2::from_shape_vec((size, size), B_1d.clone()).unwrap();
+            A = Matrix::from_random_seed(seed, size, size);
+            B = Matrix::from_random_seed(seed, size, size);
+            // TODO: while not strictly necessary, we would want C to be initialized to 0
+            C = Matrix::from_random_seed(seed, size, size);
         }
     }
 
-    let mut C = vec![vec![Number::default(); size]; size];
-    let mut C_1d = vec![Number::default(); size * size];
-    let mut C_nd = Array2::from_elem((size, size), Number::default());
-
     let now = Instant::now();
 
-    matrix_multiplication(&A, &B, &mut C);
+    A.multiply(&B, &mut C).unwrap();
 
-    println!("Elapsed 2d: {:.2?}", now.elapsed());
-
-    let now = Instant::now();
-
-    matrix_multiplication_1d(&A_1d, &B_1d, &mut C_1d, size, size, size);
-
-    println!("Elapsed 1d: {:.2?}", now.elapsed());
-
-    let now = Instant::now();
-
-    matrix_multiplication_ndarray(&A_nd, &B_nd, &mut C_nd);
-
-    println!("Elapsed ndarray: {:.2?}", now.elapsed());
+    println!("Elapsed: {:.2?}", now.elapsed());
 
     if args.output {
-        println!("{}", matrix_to_str(C));
+        println!("{}", C);
     }
 }

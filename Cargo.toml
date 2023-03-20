@@ -16,3 +16,7 @@ default = []
 int = []
 float = []
 double = []
+
+1d = []
+2d = []
+ndarray = []
