@@ -82,7 +82,7 @@ fn main() {
             let C_ref_data = C_ref.get_data();
             for i in 0..size {
                 for j in 0..size {
-                    if (C_data[i][j] - C_ref_data[i][j]) > 1e-4 {
+                    if (C_data[i][j] - C_ref_data[i][j]) as f64 > 1e-4 {
                         println!("Verification failed");
                         println!("C: \n{:?}", C_data[i][j]);
                         println!("C_ref: \n{:?}", C_ref_data[i][j]);
