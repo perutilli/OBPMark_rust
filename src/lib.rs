@@ -43,3 +43,5 @@ pub trait FromRandomSeed {
 pub mod matrix_1d;
 pub mod matrix_2d;
 pub mod matrix_ndarray;
+
+pub mod benchmark_utils;

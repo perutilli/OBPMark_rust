@@ -4,6 +4,8 @@ use core::panic;
 use obpmark_rust::{FromRandomSeed, MatMul};
 use std::time::Instant;
 
+use obpmark_rust::benchmark_utils::CommonArgs;
+
 #[cfg(feature = "1d")]
 use obpmark_rust::matrix_1d::Matrix;
 #[cfg(feature = "2d")]
@@ -13,29 +15,8 @@ use obpmark_rust::matrix_2d::Matrix;
 #[cfg(feature = "ndarray")]
 use obpmark_rust::matrix_ndarray::Matrix; // once again for linting reasons
 
-/// Matrix multiplication benchmark
-#[derive(Parser, Debug)]
-#[command(author, version, about, long_about = None)]
-struct Args {
-    /// Size of the matrix
-    #[arg(short, long)]
-    size: usize,
-
-    /// Input files names
-    #[arg(short, long)]
-    input: Option<Vec<String>>,
-
-    /// Prints the output to stdout
-    #[arg(short, long, default_value_t = false)]
-    output: bool,
-
-    /// Verifies the result against 2d reference implementation
-    #[arg(short, long, default_value_t = false)]
-    verification: bool,
-}
-
 fn main() {
-    let args = Args::parse();
+    let args = CommonArgs::parse();
     let size = args.size;
 
     let A;

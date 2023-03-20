@@ -1,5 +1,5 @@
 ## Problems
-* [ ] Fix correctness ndarray (especially float and double), for now against 2d matrix (it is the safest)
+* [ ] fp relu might not be working (no zeroes in output, actually no negatives in mat mul either)
 * [x] Do the same for 1d to sanity check the indexing
 * [ ] Fix formatting problems for integers
 * [ ] Why are integers not overflowing even without the modulo?
@@ -9,8 +9,175 @@
 
 ### Correctness checking
 As (maybe) expected, the ndarray fails verification for float and double. However sometimes it does pass using epsilon of 1e-4 (same used in the original benchmark). Why does this happen?  
-Also how come it is so fast -> Quite sure it uses BLAS or something similar, we need to be sure of this. 
-<mark> I think we might want to abandon ndarray at least for the moment, it might not be mantained anymore. I do want to come back to it however </mark>
+Also how come it is so fast -> Quite sure it uses BLAS or something similar, we need to be sure of this.   
+<mark> I think we might want to abandon ndarray at least for the moment</mark>, it might not be mantained anymore. I do want to come back to it, but it seems a bit too opaque of a package. 
+
+## Standardizing arguments
+
+### Common arguments
+List of all common arguments for all benchmarks, and ones that could be common if not already present:
+* size (-s, --size): size of matrix or matrices (this can be common for the current implementations since they are all square matrices and if there are 2 they are the same size)
+* export (-e, --export): export the results of the output in hexadecimal format (right now it says also verification, for the moment I would leave that out) (this would be -g at the moment)
+* verify (-v, --verify): verify the output against the reference cpu implementation (for now it will be against the Rust's 2d vector implementation, later we might want this to be against the original C implementation)
+* NOT CONSIDERED -g: not considered at the moment
+* output (-o, --output): print the results to stdout in a human readable format that is not suitable for verification (hence it is probably fine to keep it for stdout)
+* timing (-t, --timing): print the timing of the execution: in the gpu version there are 3 times (copy to gpu, kernel execution, copy back to cpu), for now we only have one
+* NOT CONSIDERED -c, -C: having only one time, this does not seem useful
+* input (-i, --input): pass input data and the result and compares (using the hex format)
+* NOT RELEVANT -d: not relevant for cpu benchmarks
+* help (-h, --help): print help information, taken care of by clap
+We can put this in a clap struct in a module "benchmark_utils" or something like that, and then we can import it in all the benchmarks.  
+Then we should think about a macro or something that will take care of the common arguments (this might be a bit tricky, leaving it for later)
+### Arguments specific to the benchmarks
+TODO:
+
+
+```C
+void print_usage(const char * appName)
+{
+	printf("Usage: %s -s Size [-v] [-e] [-o] [-t] [-d] [-i input_file_A_MATRIX input_file_B_MATRIX] \n", appName);
+	printf(" -s Size : set size of x and y of matrices A and B with Size \n");
+	printf(" -e: exports the results of the output and the verification in hexadecimal format (this enables the verification of the results) \n");
+	printf(" -v: verify the output of the gpu program with the cpu output \n");
+	printf(" -g: exports the results of the output \n");
+	printf(" -o: prints the results\n");
+	printf(" -t: prints the timing\n");
+	printf(" -c: prints the timing in csv format\n");
+	printf(" -i: pass input data and the result and compares\n");
+	printf(" -d: selects GPU\n");
+	printf(" -h: print help information\n");
+}
+
+void print_usage(const char * appName)
+{
+	printf("Usage: %s -s Size [-v] [-e] [-o] [-t] [-d] [-i input_file_A_MATRIX input_file_B_MATRIX] \n", appName);
+	printf(" -s Size : set size of x and y of matrices A and B with Size \n");
+	printf(" -e: exports the results of the output and the verification in hexadecimal format (this enables the verification of the results) \n");
+	printf(" -v: verify the output of the gpu program with the cpu output \n");
+	printf(" -g: exports the results of the output \n");
+	printf(" -o: prints the results\n");
+	printf(" -t: prints the timing\n");
+	printf(" -c: prints the timing in csv format\n");
+	printf(" -C: prints the timing in csv format with timestamp\n");
+	printf(" -i: pass input data and the result and compares\n");
+	printf(" -d: selects GPU\n");
+	printf(" -f: mutes all print\n");
+	printf(" -h: print help information\n");
+}
+
+void print_usage(const char * appName)
+{
+	printf("Usage: %s -s Size -k [-v] [-e] [-o] [-t] [-d] [-i input_file_A_MATRIX input_file_B_MATRIX] \n", appName);
+	printf(" -s Size : set size of x and y of matrices A and B with Size \n");
+	printf(" -k: size of the kernel\n");
+	printf(" -e: exports the results of the output and the verification in hexadecimal format (this enables the verification of the results) \n");
+	printf(" -v: verify the output of the gpu program with the cpu output \n");
+	printf(" -g: exports the results of the output \n");
+	printf(" -o: prints the results\n");
+	printf(" -t: prints the timing\n");
+	printf(" -c: prints the timing in csv format\n");
+	printf(" -C: prints the timing in csv format with timestamp\n");
+	printf(" -q: prints input values\n");
+	printf(" -i: pass input data and the result and compares\n");
+	printf(" -d: selects GPU\n");
+	printf(" -f: mutes all print\n");
+	printf(" -h: print help information\n");
+}
+void print_usage(const char * appName)
+{
+	printf("Usage: %s -s Size [-w] [-v] [-e] [-o] [-t] [-c] [-d] [-i input_file_A_MATRIX ] \n", appName);
+	printf(" -s Size : set size of furier transform power of 2 \n");
+	printf(" -w: window size power of 2 and smaller than size\n");
+	printf(" -e: exports the results of the output and the verification in hexadecimal format (this enables the verification of the results) \n");
+	printf(" -v: verify the output of the gpu program with the cpu output \n");
+	printf(" -g: exports the results of the output \n");
+	printf(" -o: prints the results\n");
+	printf(" -t: prints the timing\n");
+	printf(" -c: prints the timing in csv format\n");
+	printf(" -C: prints the timing in csv format with timestamp\n");
+	printf(" -i: pass input data and the result and compares\n");
+	printf(" -q: prints input\n");
+	printf(" -d: selects GPU\n");
+	printf(" -h: print help information\n");
+}
+
+void print_usage(const char * appName)
+{
+	printf("Usage: %s -s Size [-v] [-e] [-o] [-t] [-d] [-i input_file_A_MATRIX input_file_B_MATRIX] \n", appName);
+	printf(" -s Size : set size of x and y of matrices A and B with Size \n");
+	printf(" -e: exports the results of the output and the verification in hexadecimal format (this enables the verification of the results) \n");
+	printf(" -v: verify the output of the gpu program with the cpu output \n");
+	printf(" -g: exports the results of the output \n");
+	printf(" -o: prints the results\n");
+	printf(" -t: prints the timing\n");
+	printf(" -c: prints the timing in csv format\n");
+	printf(" -C: prints the timing in csv format with timestamp\n");
+	printf(" -i: pass input data and the result and compares\n");
+	printf(" -d: selects GPU\n");
+	printf(" -f: mutes all print\n");
+	printf(" -h: print help information\n");
+}
+
+void print_usage(const char * appName)
+{
+	printf("Usage: %s -s Size [-w] [-v] [-e] [-o] [-t] [-c] [-d] [-i input_file_A_MATRIX ] \n", appName);
+	printf(" -s Size : set size of furier transform power of 2 \n");
+	printf(" -e: exports the results of the output and the verification in hexadecimal format (this enables the verification of the results) \n");
+	printf(" -v: verify the output of the gpu program with the cpu output \n");
+	printf(" -g: exports the results of the output \n");
+	printf(" -o: prints the results\n");
+	printf(" -t: prints the timing\n");
+	printf(" -c: prints the timing in csv format\n");
+	printf(" -C: prints the timing in csv format with timestamp\n");
+	printf(" -i: pass input data and the result and compares\n");
+	printf(" -q: prints input\n");
+	printf(" -d: selects GPU\n");
+	printf(" -h: print help information\n");
+}
+
+void print_usage(const char * appName)
+{
+	printf("Usage: %s -s Size -k [-v] [-e] [-o] [-t] [-d] [-i input_file_A_MATRIX input_file_B_MATRIX] \n", appName);
+	printf(" -s Size : set size of x and y of matrix A and matrix B\n");
+	printf(" -e: exports the results of the output and the verification in hexadecimal format (this enables the verification of the results) \n");
+	printf(" -v: verify the output of the gpu program with the cpu output \n");
+	printf(" -g: exports the results of the output \n");
+	printf(" -o: prints the results\n");
+	printf(" -t: prints the timing\n");
+	printf(" -c: prints the timing in csv format\n");
+	printf(" -C: prints the timing in csv format with timestamp\n");
+	printf(" -q: prints input values\n");
+	printf(" -i: pass input data and the result and compares\n");
+	printf(" -d: selects GPU\n");
+	printf(" -f: mutes all print\n");
+	printf(" -h: print help information\n");
+}
+
+void print_usage(const char * appName)
+{
+	printf("Usage: %s -s Size -k [-v] [-e] [-o] [-t] [-d] [-i input_file_A_MATRIX input_file_B_MATRIX] \n", appName);
+	printf(" -s Size : set size of x and y of matrices A and B with Size \n");
+	printf(" -k: size of the kernel\n");
+	printf(" -e: exports the results of the output and the verification in hexadecimal format (this enables the verification of the results) \n");
+	printf(" -v: verify the output of the gpu program with the cpu output \n");
+	printf(" -g: exports the results of the output \n");
+	printf(" -o: prints the results\n");
+	printf(" -t: prints the timing\n");
+	printf(" -c: prints the timing in csv format\n");
+	printf(" -C: prints the timing in csv format with timestamp\n");
+	printf(" -q: prints input values\n");
+	printf(" -i: pass input data and the result and compares\n");
+	printf(" -d: selects GPU\n");
+	printf(" -f: mutes all print\n");
+	printf(" -h: print help information\n");
+}
+```
+
+
+
+
+
+
 
 ## General notes
 <mark>Remember to use the `--release` flag when compiling the benchmarks if testing the performance!!!</mark>
