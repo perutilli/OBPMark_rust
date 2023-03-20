@@ -18,6 +18,10 @@ impl Matrix {
             cols,
         }
     }
+
+    pub fn get_data(&self) -> Vec<Vec<Number>> {
+        self.data.outer_iter().map(|x| x.to_vec()).collect()
+    }
 }
 
 impl Display for Matrix {

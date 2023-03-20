@@ -28,6 +28,10 @@ struct Args {
     /// Prints the output to stdout
     #[arg(short, long, default_value_t = false)]
     output: bool,
+
+    /// Verifies the result against 2d reference implementation
+    #[arg(short, long, default_value_t = false)]
+    verification: bool,
 }
 
 fn main() {
@@ -61,5 +65,32 @@ fn main() {
 
     if args.output {
         println!("{}", C);
+    }
+
+    if args.verification {
+        let A_ref = obpmark_rust::matrix_2d::Matrix::new(A.get_data(), size, size);
+        let B_ref = obpmark_rust::matrix_2d::Matrix::new(B.get_data(), size, size);
+
+        let mut C_ref = obpmark_rust::matrix_2d::Matrix::from_random_seed(seed, size, size);
+
+        A_ref.multiply(&B_ref, &mut C_ref).unwrap();
+
+        if C.get_data() == C_ref.get_data() {
+            println!("Verification passed");
+        } else {
+            let C_data = C.get_data();
+            let C_ref_data = C_ref.get_data();
+            for i in 0..size {
+                for j in 0..size {
+                    if (C_data[i][j] - C_ref_data[i][j]) > 1e-4 {
+                        println!("Verification failed");
+                        println!("C: \n{:?}", C_data[i][j]);
+                        println!("C_ref: \n{:?}", C_ref_data[i][j]);
+                        return;
+                    }
+                }
+            }
+            println!("Verification passed using epsilon of 1e-4");
+        }
     }
 }

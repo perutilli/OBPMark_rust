@@ -1,9 +1,13 @@
 ## Problems
-* [ ] Check correctness ndarray (especially float and double), for now against 2d matrix (it is the safest)
+* [ ] Fix correctness ndarray (especially float and double), for now against 2d matrix (it is the safest)
 * [ ] Do the same for 1d to sanity check the indexing
 * [ ] Fix formatting problems for integers
 * [ ] Why are integers not overflowing even without the modulo?
 * [ ] Note that the random_seed gives the same result ONLY on the same machine
+
+### Correctness checking
+As (maybe) expected, the ndarray fails verification for float and double. However sometimes it does pass using epsilon of 1e-4 (same used in the original benchmark). Why does this happen? Also how come it is so fast?  
+<mark> I think we might want to abandon ndarray at least for the moment, it might not be mantained anymore. </mark>
 
 ## General notes
 <mark>Remember to use the `--release` flag when compiling the benchmarks if testing the performance!!!</mark>

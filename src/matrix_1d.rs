@@ -22,6 +22,14 @@ impl Matrix {
         }
     }
     */
+
+    pub fn get_data(&self) -> Vec<Vec<Number>> {
+        self.data
+            .clone()
+            .chunks(self.cols)
+            .map(|x| x.to_vec())
+            .collect::<Vec<Vec<Number>>>()
+    }
 }
 
 impl Display for Matrix {

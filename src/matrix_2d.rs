@@ -12,6 +12,10 @@ impl Matrix {
     pub fn new(data: Vec<Vec<Number>>, rows: usize, cols: usize) -> Matrix {
         Matrix { data, rows, cols }
     }
+
+    pub fn get_data(&self) -> Vec<Vec<Number>> {
+        self.data.clone()
+    }
 }
 
 impl Display for Matrix {
@@ -19,7 +23,7 @@ impl Display for Matrix {
         for row in &self.data {
             for col in row {
                 // NOTE: this way we have a space before the newline, might not be what we want
-                write!(f, "{} ", col)?;
+                write!(f, "{:.6} ", col)?;
             }
             writeln!(f)?;
         }
