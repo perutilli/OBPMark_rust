@@ -1,5 +1,12 @@
+## Problems
+* [ ] Check correctness ndarray (especially float and double), for now against 2d matrix (it is the safest)
+* [ ] Do the same for 1d to sanity check the indexing
+* [ ] Fix formatting problems for integers
+* [ ] Why are integers not overflowing even without the modulo?
+* [ ] Note that the random_seed gives the same result ONLY on the same machine
+
 ## General notes
-Remember to use the `--release` flag when compiling the benchmarks if testing the performance!!!
+<mark>Remember to use the `--release` flag when compiling the benchmarks if testing the performance!!!</mark>
 
 Cargo features are not supposed to be used the way we are using them, however there does not seem to be a straight forward way to achieve the same functionality. The question is whether we care enough about the size of the binary to keep using conditional compilation (in this "wrong" way, we would enforce proper features values like so https://internals.rust-lang.org/t/mutually-exclusive-feature-flags/8601) or if we can just deal with this stuff with clap.  
 I believe that we do care about the size of the binary, given that the code will run on embedded devices.

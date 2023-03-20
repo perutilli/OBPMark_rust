@@ -1,6 +1,6 @@
 use std::fmt::Display;
 
-use crate::{random_matrix, Error, FromRandomSeed, MatMul, Number};
+use crate::{random_matrix, Error, FromRandomSeed, MatMul, Number, Relu};
 
 pub struct Matrix {
     data: Vec<Vec<Number>>,
@@ -41,6 +41,20 @@ impl MatMul for Matrix {
                     sum += self.data[i][k] * other.data[k][j];
                 }
                 result.data[i][j] = sum;
+            }
+        }
+        Ok(())
+    }
+}
+
+impl Relu for Matrix {
+    fn relu(&self, result: &mut Matrix) -> Result<(), Error> {
+        if self.rows != result.rows || self.cols != result.cols {
+            return Err(Error::InvalidDimensions);
+        }
+        for i in 0..self.rows {
+            for j in 0..self.cols {
+                result.data[i][j] = self.data[i][j].max(Number::default());
             }
         }
         Ok(())
