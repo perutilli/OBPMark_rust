@@ -1,3 +1,8 @@
+/***
+ * Matrix multiplication benchmark
+ * It multiplies two square matrices with side length `size`
+ */
+
 #![allow(non_snake_case)] // TODO: decide if we want to keep this or not
 use clap::Parser;
 use core::panic;

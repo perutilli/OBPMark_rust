@@ -24,10 +24,13 @@ pub trait Relu {
 }
 
 pub fn random_matrix(seed: u64, rows: usize, cols: usize) -> Vec<Vec<Number>> {
+    // NOTE: the seeding works only on the same machine/configuration
     let mut rng = StdRng::seed_from_u64(seed);
     let mut data = vec![vec![Number::default(); cols]; rows];
     for row in &mut data {
         for col in row {
+            // TODO: for floating points this will be between 0 and 1,
+            // which is definetly not the best for relu, change this (?)
             *col = rng.gen();
         }
     }
