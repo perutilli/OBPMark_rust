@@ -1,20 +1,17 @@
 ## Problems
-* [ ] The RNG for floats generates numbers between 0 and 1 
-* [x] Do the same for 1d to sanity check the indexing
-* [ ] Fix formatting problems for integers
-* [ ] Why are integers not overflowing even without the modulo?
-* [x] Note that the random_seed gives the same result ONLY on the same machine
+* [ ] Fix formatting problems for the matrix display
 * [ ] Think of potential verification function where it takes the closures to execute to get the expected result, so that verification could be one line.
 * [ ] Probably we want a trait for Matrix, so that we are sure that some functions have a certain signature, this is not strictly necessary since at compilation time we know which matrix type we are using (which is also good for performance), however it would be nice to have.
+
+### RNGs
+Each benchmark could potentially want a different rng, however I don't know that this is worth the effort.  
+For now the rng will generate random numbers between -100 and 100, regardless of the type of the matrix.  
+Using an offset to the seed to generate different matrices in the mat mul benchmark.
 
 ### Ndarray correcteness
 As (maybe) expected, the ndarray fails verification for float and double. However sometimes it does pass using epsilon of 1e-4 (same used in the original benchmark). Why does this happen?  
 Also how come it is so fast -> Quite sure it uses BLAS or something similar, we need to be sure of this.   
 <mark> I think we might want to abandon ndarray at least for the moment</mark>, it might not be mantained anymore. I do want to come back to it, but it seems a bit too opaque of a package. 
-
-## Input (and output) files format
-The input files are in hexadecimal format. Each line contains an hexadecimal number. The output files are in the same format.
-To read the matrix from the file, use function `get_double_hexadecimal_values`, that gets two bytes (characters 0-9,A-F) at a time into a temp vector and converts them to an integer value, which will be a byte in the number we are reading. This should be easy to do in rust, thanks to  `f32::from_bytes` and `f64::from_bytes`. However a consideration about endianess and type (i32, f32 or f64) should be made.
 
 ## Standardizing arguments
 

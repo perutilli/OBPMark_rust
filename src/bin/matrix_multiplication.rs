@@ -28,7 +28,7 @@ fn main() {
     let B;
     let mut C;
 
-    let seed: u64 = 9453458;
+    let seed: u64 = 34523459;
 
     match args.input {
         Some(_) => {
@@ -37,10 +37,16 @@ fn main() {
         None => {
             println!("No input files specified, generating random matrices");
             A = Matrix::from_random_seed(seed, size, size);
-            B = Matrix::from_random_seed(seed, size, size);
+            // TODO: decide if this offset to the seed is ok
+            B = Matrix::from_random_seed(seed + 10, size, size);
             // TODO: while not strictly necessary, we would want C to be initialized to 0
             C = Matrix::from_random_seed(seed, size, size);
         }
+    }
+
+    if size <= 10 {
+        println!("{}", A);
+        println!("{}", B);
     }
 
     let now = Instant::now();
