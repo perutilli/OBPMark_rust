@@ -15,7 +15,7 @@ Also how come it is so fast -> Quite sure it uses BLAS or something similar, we 
 ## Standardizing arguments
 
 ### Common arguments
-List of all common arguments for all benchmarks, and ones that could be common if not already present:
+List of all common arguments for all benchmarks, and ones that could be common if not already present, not necessarily with the same exact behaviour as the original benchmark:
 * size (-s, --size): size of matrix or matrices (this can be common for the current implementations since they are all square matrices and if there are 2 they are the same size)
 * export (-e, --export): export the results of the output in hexadecimal format (right now it says also verification, for the moment I would leave that out) (this would be -g at the moment)
 * verify (-v, --verify): verify the output against the reference cpu implementation (for now it will be against the Rust's 2d vector implementation, later we might want this to be against the original C implementation)
@@ -31,6 +31,72 @@ Then we should think about a macro or something that will take care of the commo
 ### Arguments specific to the benchmarks
 TODO:
 
+## Benchmark organization
+Is any combination of the arguments valid? 
+Only problematic one I can think of is verify and input, it would make more sense to have input have only the input matrix and verify in two flavours:
+* with empty value -> verify against the cpu implementation
+* with value -> verify against the file with name provided  
+TODO: modify the arguments description to reflect this
+  
+This way all arguments are valid in any combination  
+Should we check valid values for different arguments before running the benchmark?
+* size and input are fine because they happen before the benchmark (TODO: note the interaction of size and input!)
+* timing, output and export are fine because they are flags -> cannot have invalid values
+* verify could have an invalid filename -> what do we do if we fail to open the verification file? two options:
+    - skip verification, signal the error to the user
+    - verify against the cpu implementation, signal the error to the user
+
+```Rust
+...
+fn main() {
+    let args = CommonArgs::parse();
+
+    match args.input {
+        Some(Some(v)) => {
+            // read input from file
+            if v.len() != EXPECTED {
+                panic!("Expected EXP input files, got {}", v.len());
+            }
+            // read the matrix/matrices
+        },
+        None => {
+            // generate input
+        }
+    }
+
+    // run the benchmark
+    // timing regardless of -t
+
+    if args.timing {
+        // print timing
+    }
+
+    if args.output {
+        // print output
+    }
+
+    match args.export {
+        Some(filename) => {
+            // export output
+        }
+        None => (),
+    }
+
+    match args.verify {
+        Some(Some(filename)) => {
+            // verify against file
+        },
+        Some(None) => {
+            // verify against cpu implementation
+        },
+        None => (),
+    }
+}
+
+```
+
+
+## Original arguments
 
 ```C
 void print_usage(const char * appName)

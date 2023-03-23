@@ -22,67 +22,94 @@ use obpmark_rust::matrix_ndarray::Matrix; // once again for linting reasons
 
 fn main() {
     let args = CommonArgs::parse();
-    let size = args.size;
+
+    let seed: u64 = 34523459;
 
     let A;
     let B;
     let mut C;
 
-    let seed: u64 = 34523459;
-
     match args.input {
-        Some(_) => {
-            panic!("Input files not supported yet");
+        Some(v) => {
+            if v.len() != 2 {
+                panic!("Expected 2 input files, got {}", v.len());
+            }
+            A = Matrix::from_random_seed(seed, args.size, args.size);
+            B = Matrix::from_random_seed(seed + 10, args.size, args.size);
+            // TODO: placeholder for the compiler, not yet implemented
         }
         None => {
-            println!("No input files specified, generating random matrices");
-            A = Matrix::from_random_seed(seed, size, size);
+            A = Matrix::from_random_seed(seed, args.size, args.size);
             // TODO: decide if this offset to the seed is ok
-            B = Matrix::from_random_seed(seed + 10, size, size);
-            // TODO: while not strictly necessary, we would want C to be initialized to 0
-            C = Matrix::from_random_seed(seed, size, size);
+            B = Matrix::from_random_seed(seed + 10, args.size, args.size);
         }
     }
 
-    if size <= 10 {
-        println!("{}", A);
-        println!("{}", B);
-    }
+    // TODO: implement a zero method that returns a matrix of zeros
+    C = Matrix::from_random_seed(seed, args.size, args.size);
 
-    let now = Instant::now();
+    let t0 = Instant::now();
 
     A.multiply(&B, &mut C).unwrap();
 
-    println!("Elapsed: {:.2?}", now.elapsed());
+    let t1 = Instant::now();
+
+    if args.timing {
+        println!("Elapsed: {:.2?}", t1 - t0);
+    }
 
     if args.output {
+        println!("Output:");
         println!("{}", C);
     }
 
-    if args.verification {
-        let A_ref = obpmark_rust::matrix_2d::Matrix::new(A.get_data(), size, size);
-        let B_ref = obpmark_rust::matrix_2d::Matrix::new(B.get_data(), size, size);
+    match args.export {
+        Some(filename) => {
+            // export output
+            unimplemented!("Export not yet implemented, filename: {}", filename);
+        }
+        None => (),
+    }
 
-        let mut C_ref = obpmark_rust::matrix_2d::Matrix::from_random_seed(seed, size, size);
+    match args.verify {
+        Some(Some(filename)) => {
+            // verify against file
+            unimplemented!(
+                "Verification with file not yet implemented, filename: {}",
+                filename
+            );
+        }
+        Some(None) => {
+            // verify against cpu implementation
+            verify(&A, &B, &C, args.size);
+        }
+        None => (),
+    }
+}
 
-        A_ref.multiply(&B_ref, &mut C_ref).unwrap();
+fn verify(A: &Matrix, B: &Matrix, C: &Matrix, size: usize) {
+    let A_ref = obpmark_rust::matrix_2d::Matrix::new(A.get_data(), size, size);
+    let B_ref = obpmark_rust::matrix_2d::Matrix::new(B.get_data(), size, size);
 
-        if C.get_data() == C_ref.get_data() {
-            println!("Verification passed");
-        } else {
-            let C_data = C.get_data();
-            let C_ref_data = C_ref.get_data();
-            for i in 0..size {
-                for j in 0..size {
-                    if (C_data[i][j] - C_ref_data[i][j]) as f64 > 1e-4 {
-                        println!("Verification failed");
-                        println!("C: \n{:?}", C_data[i][j]);
-                        println!("C_ref: \n{:?}", C_ref_data[i][j]);
-                        return;
-                    }
+    let mut C_ref = obpmark_rust::matrix_2d::Matrix::from_random_seed(0, size, size);
+
+    A_ref.multiply(&B_ref, &mut C_ref).unwrap();
+
+    if C.get_data() == C_ref.get_data() {
+        println!("Verification passed");
+    } else {
+        let C_data = C.get_data();
+        let C_ref_data = C_ref.get_data();
+        for i in 0..size {
+            for j in 0..size {
+                if (C_data[i][j] - C_ref_data[i][j]) as f64 > 1e-4 {
+                    println!("Verification failed");
+                    println!("C: \n{:?}", C_data[i][j]);
+                    println!("C_ref: \n{:?}", C_ref_data[i][j]);
+                    return;
                 }
             }
-            println!("Verification passed using epsilon of 1e-4");
         }
+        println!("Verification passed using epsilon of 1e-4");
     }
 }
