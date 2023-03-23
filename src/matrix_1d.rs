@@ -53,7 +53,6 @@ impl Display for Matrix {
 
 impl MatMul for Matrix {
     fn multiply(&self, other: &Matrix, result: &mut Matrix) -> Result<(), Error> {
-        // TODO: check the correctness of the indices
         if self.cols != other.rows {
             return Err(Error::InvalidDimensions);
         }

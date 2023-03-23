@@ -1,7 +1,7 @@
 #![allow(non_snake_case)] // TODO: decide if we want to keep this or not
 use clap::Parser;
 use core::panic;
-use obpmark_rust::{FromRandomSeed, Relu};
+use obpmark_rust::{BaseMatrix, FromRandomSeed, Relu};
 use std::time::Instant;
 
 use obpmark_rust::benchmark_utils::CommonArgs;
@@ -31,8 +31,7 @@ fn main() {
         None => {
             println!("No input files specified, generating random matrices");
             A = Matrix::from_random_seed(seed, size, size);
-            // TODO: while not strictly necessary, we would want C to be initialized to 0
-            B = Matrix::from_random_seed(seed, size, size);
+            B = Matrix::zeroes(size, size);
         }
     }
 

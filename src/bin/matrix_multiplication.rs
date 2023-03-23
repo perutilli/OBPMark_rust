@@ -45,7 +45,6 @@ fn main() {
         }
     }
 
-    // TODO: implement a zero method that returns a matrix of zeros
     C = Matrix::zeroes(args.size, args.size);
 
     let t0 = Instant::now();
