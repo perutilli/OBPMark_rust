@@ -1,5 +1,8 @@
 use rand::rngs::StdRng;
 use rand::{Rng, SeedableRng};
+use std::fs::File;
+use std::io::{self, BufRead};
+use std::path::Path;
 
 #[cfg(feature = "float")]
 pub type Number = f32;
@@ -33,6 +36,32 @@ pub trait BaseMatrix {
     {
         let data = random_matrix_data(seed, rows, cols);
         Self::new(data, rows, cols)
+    }
+
+    fn from_file(path: &Path, rows: usize, cols: usize) -> Result<Self, std::io::Error>
+    where
+        Self: Sized,
+    {
+        let file = File::open(path)?;
+        let mut lines = io::BufReader::new(file).lines();
+        let mut data = Vec::new();
+        for _ in 0..rows {
+            let mut row = Vec::new();
+            for _ in 0..cols {
+                let line = lines.next().unwrap()?;
+                // TODO: this error should not be a io::Error, but an invalid size error
+                assert_eq!(line.len(), std::mem::size_of::<Number>() * 2); // TODO: this could return Err
+                let values: Vec<_> = line
+                    .chars()
+                    .map(|c| c.to_digit(16).unwrap() as u8)
+                    .collect();
+                let bytes: Vec<_> = values.chunks(2).map(|c| c[0] << 4 | c[1]).collect();
+                // supposing that the input is in big endian (which I believe is what was used in the original implementation)
+                row.push(Number::from_be_bytes(bytes.try_into().unwrap()));
+            }
+            data.push(row);
+        }
+        Ok(Self::new(data, rows, cols))
     }
 }
 

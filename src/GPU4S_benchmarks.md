@@ -15,16 +15,36 @@
     - [ ] max_pooling_bench
     - [ ] memory_bandwidth_bench
     - [x] relu_bench
-    - [ ] softmax_bench
+    - [ ] softmax_bench TODO: implement it for int, need to wait for Leonidas
     - [ ] wavelet_transform
 * Implement from_file and to_file for Matrix types
 * Create unit tests for unit testable functions
 
+## Questions for Leonidas
+* Softmax does not seem to work for int in the C cpu implementation, here is the output I get:
+    ```bash
+    ./bin/softmax_cpu_int_16 -s 10 -o
+    Using device: Generic device
+    0 -2 -2 -2 -2 -2 -2 0 -2 0 
+    -2 -2 -2 -2 -2 -2 -2 0 0 -2 
+    -2 -2 0 -2 -2 -2 -2 0 -2 -2 
+    0 -2 -2 0 -2 -2 -2 0 0 -2 
+    0 -2 -2 -2 -2 -2 0 0 -2 -2 
+    0 -2 -2 -2 -2 -2 -2 0 -2 0 
+    -2 0 -2 -2 0 -2 0 -2 -2 -2 
+    0 -2 -2 -2 -2 0 0 -2 0 0 
+    -2 -2 -2 -2 -2 0 -2 -2 -2 -2 
+    -2 -2 0 0 -2 -2 -2 -2 -2 -2 
+    ```
+    What would be the correct output? If the output has to be int then wouldn't this just be argmax?
+
+
 ## Future improvements
 * Improve verification so that the benchmark contains only the code that is unique to it
-* Improve ouput formatting, for example have a specific format funtion for each number type
+* Improve ouput formatting to take config like number of digits after the decimal point etc (https://doc.rust-lang.org/std/fmt/)
 * Many things that are pub now might be better as pub(crate) probably
 * Make a macro or something so that the 1d indexing can be written as the 2d one
+* Sadly I think we will need the matrices to be generic (OBPMark repo benchmarks would be easier if we do it this way)
 
 ### RNGs
 Each benchmark could potentially want a different rng, however I don't know that this is worth the effort.  
