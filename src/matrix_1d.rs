@@ -1,6 +1,6 @@
 use std::fmt::Display;
 
-use crate::{random_matrix, Error, FromRandomSeed, MatMul, Number, Relu};
+use crate::{format_number, random_matrix, Error, FromRandomSeed, MatMul, Number, Relu};
 
 pub struct Matrix {
     data: Vec<Number>,
@@ -43,10 +43,10 @@ impl Display for Matrix {
                 .map(|(i, x)| {
                     if i % self.cols != self.cols - 1 {
                         // if we are not at the end of the row
-                        format!("{:.6} ", x)
+                        format!("{} ", format_number(x))
                     } else {
                         // if we are at the end of the row
-                        format!("{:.6}\n", x)
+                        format!("{}\n", format_number(x))
                     }
                 })
                 .collect::<Vec<String>>()

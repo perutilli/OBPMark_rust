@@ -38,8 +38,12 @@ pub fn random_matrix(seed: u64, rows: usize, cols: usize) -> Vec<Vec<Number>> {
     data
 }
 
+pub fn format_number(number: &Number) -> String {
+    // Ok for now, could make it a little more pretty
+    format!("{:<10}", number)
+}
+
 // TODO: we might want to change this, ok for now
-// TODO: right now we will overflow for ints, need to fix that
 pub trait FromRandomSeed {
     fn from_random_seed(seed: u64, rows: usize, cols: usize) -> Self;
 }

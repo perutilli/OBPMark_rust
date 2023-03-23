@@ -1,7 +1,6 @@
-## Problems
-* [ ] Fix formatting problems for the matrix display
-* [ ] Think of potential verification function where it takes the closures to execute to get the expected result, so that verification could be one line.
-* [ ] Probably we want a trait for Matrix, so that we are sure that some functions have a certain signature, this is not strictly necessary since at compilation time we know which matrix type we are using (which is also good for performance), however it would be nice to have.
+## Future improvements
+* Think of potential verification function where it takes the closures to execute to get the expected result, so that verification could be one line.
+* Probably we want a trait for Matrix, so that we are sure that some functions have a certain signature, this is not strictly necessary since at compilation time we know which matrix type we are using (which is also good for performance), however it would be nice to have.
 
 ### RNGs
 Each benchmark could potentially want a different rng, however I don't know that this is worth the effort.  

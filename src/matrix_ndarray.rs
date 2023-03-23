@@ -2,7 +2,7 @@ use std::fmt::Display;
 
 use ndarray::Array2;
 
-use crate::{random_matrix, Error, FromRandomSeed, MatMul, Number};
+use crate::{format_number, random_matrix, Error, FromRandomSeed, MatMul, Number};
 
 pub struct Matrix {
     data: Array2<Number>,
@@ -29,7 +29,7 @@ impl Display for Matrix {
         for row in self.data.outer_iter() {
             for el in row {
                 // NOTE: this way we have a space before the newline, might not be what we want
-                write!(f, "{:.6} ", el)?;
+                write!(f, "{} ", format_number(el))?;
             }
             writeln!(f)?;
         }

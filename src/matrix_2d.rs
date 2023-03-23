@@ -1,6 +1,6 @@
 use std::fmt::Display;
 
-use crate::{random_matrix, Error, FromRandomSeed, MatMul, Number, Relu};
+use crate::{format_number, random_matrix, Error, FromRandomSeed, MatMul, Number, Relu};
 
 pub struct Matrix {
     data: Vec<Vec<Number>>,
@@ -21,9 +21,9 @@ impl Matrix {
 impl Display for Matrix {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         for row in &self.data {
-            for col in row {
+            for el in row {
                 // NOTE: this way we have a space before the newline, might not be what we want
-                write!(f, "{:.6} ", col)?;
+                write!(f, "{} ", format_number(el))?;
             }
             writeln!(f)?;
         }
