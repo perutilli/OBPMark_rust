@@ -6,7 +6,7 @@
 #![allow(non_snake_case)] // TODO: decide if we want to keep this or not
 use clap::Parser;
 use core::panic;
-use obpmark_rust::{BaseMatrix, FromRandomSeed, MatMul};
+use obpmark_rust::{BaseMatrix, MatMul};
 use std::time::Instant;
 
 use obpmark_rust::benchmark_utils::CommonArgs;

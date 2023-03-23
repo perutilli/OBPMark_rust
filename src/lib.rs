@@ -26,6 +26,14 @@ pub trait BaseMatrix {
     {
         Self::new(vec![vec![Number::default(); cols]; rows], rows, cols)
     }
+
+    fn from_random_seed(seed: u64, rows: usize, cols: usize) -> Self
+    where
+        Self: Sized,
+    {
+        let data = random_matrix_data(seed, rows, cols);
+        Self::new(data, rows, cols)
+    }
 }
 
 pub trait MatMul {
@@ -36,7 +44,7 @@ pub trait Relu {
     fn relu(&self, result: &mut Self) -> Result<(), Error>;
 }
 
-pub fn random_matrix(seed: u64, rows: usize, cols: usize) -> Vec<Vec<Number>> {
+pub fn random_matrix_data(seed: u64, rows: usize, cols: usize) -> Vec<Vec<Number>> {
     // NOTE: the seeding works only on the same machine/configuration
     let mut rng = StdRng::seed_from_u64(seed);
     let mut data = vec![vec![Number::default(); cols]; rows];
@@ -54,11 +62,6 @@ pub fn random_matrix(seed: u64, rows: usize, cols: usize) -> Vec<Vec<Number>> {
 pub fn format_number(number: &Number) -> String {
     // Ok for now, could make it a little more pretty
     format!("{:<10}", number)
-}
-
-// TODO: we might want to change this, ok for now
-pub trait FromRandomSeed {
-    fn from_random_seed(seed: u64, rows: usize, cols: usize) -> Self;
 }
 
 pub mod matrix_1d;

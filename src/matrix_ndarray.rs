@@ -2,7 +2,7 @@ use std::fmt::Display;
 
 use ndarray::Array2;
 
-use crate::{format_number, random_matrix, BaseMatrix, Error, FromRandomSeed, MatMul, Number};
+use crate::{format_number, BaseMatrix, Error, MatMul, Number};
 
 pub struct Matrix {
     data: Array2<Number>,
@@ -46,12 +46,5 @@ impl MatMul for Matrix {
 
         result.data = self.data.dot(&other.data);
         Ok(())
-    }
-}
-
-impl FromRandomSeed for Matrix {
-    fn from_random_seed(seed: u64, rows: usize, cols: usize) -> Matrix {
-        let data = random_matrix(seed, rows, cols);
-        Matrix::new(data, rows, cols)
     }
 }

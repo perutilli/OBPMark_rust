@@ -1,8 +1,6 @@
 use std::fmt::Display;
 
-use crate::{
-    format_number, random_matrix, BaseMatrix, Error, FromRandomSeed, MatMul, Number, Relu,
-};
+use crate::{format_number, BaseMatrix, Error, MatMul, Number, Relu};
 
 pub struct Matrix {
     data: Vec<Vec<Number>>,
@@ -64,12 +62,5 @@ impl Relu for Matrix {
             }
         }
         Ok(())
-    }
-}
-
-impl FromRandomSeed for Matrix {
-    fn from_random_seed(seed: u64, rows: usize, cols: usize) -> Matrix {
-        let data = random_matrix(seed, rows, cols);
-        Matrix::new(data, rows, cols)
     }
 }
