@@ -44,6 +44,10 @@ pub trait Relu {
     fn relu(&self, result: &mut Self) -> Result<(), Error>;
 }
 
+pub trait Softmax {
+    fn softmax(&self, result: &mut Self) -> Result<(), Error>;
+}
+
 pub fn random_matrix_data(seed: u64, rows: usize, cols: usize) -> Vec<Vec<Number>> {
     // NOTE: the seeding works only on the same machine/configuration
     let mut rng = StdRng::seed_from_u64(seed);
@@ -51,17 +55,25 @@ pub fn random_matrix_data(seed: u64, rows: usize, cols: usize) -> Vec<Vec<Number
     for row in &mut data {
         for col in row {
             // TODO: this should be constants/parameters
-            let low: Number = "-100".parse().unwrap();
-            let high: Number = "100".parse().unwrap();
+            let low: Number = "-10".parse().unwrap();
+            let high: Number = "10".parse().unwrap();
             *col = rng.gen_range(low..high);
         }
     }
     data
 }
 
+#[cfg(feature = "int")]
 pub fn format_number(number: &Number) -> String {
     // Ok for now, could make it a little more pretty
-    format!("{:<10}", number)
+    // println!("{:10}: {}, {:?}", number, number, number.to_be_bytes());
+    format!("{:5}", number)
+}
+#[cfg(not(feature = "int"))]
+pub fn format_number(number: &Number) -> String {
+    // Ok for now, could make it a little more pretty
+    // println!("{:10}: {}, {:?}", number, number, number.to_be_bytes());
+    format!("{:10.5}", number)
 }
 
 pub mod matrix_1d;

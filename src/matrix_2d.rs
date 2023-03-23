@@ -1,6 +1,6 @@
 use std::fmt::Display;
 
-use crate::{format_number, BaseMatrix, Error, MatMul, Number, Relu};
+use crate::{format_number, BaseMatrix, Error, MatMul, Number, Relu, Softmax};
 
 pub struct Matrix {
     data: Vec<Vec<Number>>,
@@ -59,6 +59,27 @@ impl Relu for Matrix {
         for i in 0..self.rows {
             for j in 0..self.cols {
                 result.data[i][j] = self.data[i][j].max(Number::default());
+            }
+        }
+        Ok(())
+    }
+}
+
+#[cfg(not(feature = "int"))]
+impl Softmax for Matrix {
+    fn softmax(&self, result: &mut Matrix) -> Result<(), Error> {
+        if self.rows != result.rows || self.cols != result.cols {
+            return Err(Error::InvalidDimensions);
+        }
+        for i in 0..self.rows {
+            let mut sum = Number::default();
+            for j in 0..self.cols {
+                let val = self.data[i][j].exp();
+                sum += val;
+                result.data[i][j] = val;
+            }
+            for j in 0..self.cols {
+                result.data[i][j] /= sum;
             }
         }
         Ok(())

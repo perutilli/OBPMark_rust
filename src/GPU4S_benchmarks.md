@@ -1,7 +1,30 @@
+## Current tasks
+* Implement all benchmarks in their naive (1d and 2d vector) form (original names):
+    - [ ] cifar_10
+    - [ ] cifar_10_multiple
+    - [ ] convolution_2D_bench
+    - [ ] correlation_2D
+    - [ ] fast_fourier_transform_2D_bench
+    - [ ] fast_fourier_transform_bench
+    - [ ] fast_fourier_transform_window_bench
+    - [ ] finite_impulse_response_bench
+    - [ ] LNR_bench
+    - [x] matrix_multiplication_bench
+    - [ ] matrix_multiplication_bench_fp16
+    - [ ] matrix_multiplication_tensor_bench
+    - [ ] max_pooling_bench
+    - [ ] memory_bandwidth_bench
+    - [x] relu_bench
+    - [ ] softmax_bench
+    - [ ] wavelet_transform
+* Implement from_file and to_file for Matrix types
+* Create unit tests for unit testable functions
+
 ## Future improvements
-* Think of potential verification function where it takes the closures to execute to get the expected result, so that verification could be one line.
-* Probably we want a trait for Matrix, so that we are sure that some functions have a certain signature, this is not strictly necessary since at compilation time we know which matrix type we are using (which is also good for performance), however it would be nice to have.
+* Improve verification so that the benchmark contains only the code that is unique to it
+* Improve ouput formatting, for example have a specific format funtion for each number type
 * Many things that are pub now might be better as pub(crate) probably
+* Make a macro or something so that the 1d indexing can be written as the 2d one
 
 ### RNGs
 Each benchmark could potentially want a different rng, however I don't know that this is worth the effort.  
@@ -29,6 +52,10 @@ List of all common arguments for all benchmarks, and ones that could be common i
 * help (-h, --help): print help information, taken care of by clap
 We can put this in a clap struct in a module "benchmark_utils" or something like that, and then we can import it in all the benchmarks.  
 Then we should think about a macro or something that will take care of the common arguments (this might be a bit tricky, leaving it for later)
+
+#### Potential additions
+* print inputs
+
 ### Arguments specific to the benchmarks
 TODO:
 
