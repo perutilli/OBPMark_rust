@@ -34,9 +34,7 @@ fn main() {
             if v.len() != 2 {
                 panic!("Expected 2 input files, got {}", v.len());
             }
-            A = Matrix::from_random_seed(seed, args.size, args.size);
-            B = Matrix::from_random_seed(seed + 10, args.size, args.size);
-            // TODO: placeholder for the compiler, not yet implemented
+            unimplemented!("Reading input from file not yet implemented");
         }
         None => {
             A = Matrix::from_random_seed(seed, args.size, args.size);

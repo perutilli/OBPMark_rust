@@ -17,31 +17,80 @@ use obpmark_rust::matrix_ndarray::Matrix; // once again for linting reasons
 
 fn main() {
     let args = CommonArgs::parse();
-    let size = args.size;
+
+    let seed = 38945;
 
     let A;
-    let mut B;
-
-    let seed: u64 = 9453458;
 
     match args.input {
-        Some(_) => {
-            panic!("Input files not supported yet");
+        Some(v) => {
+            // read input from file
+            if v.len() != 1 {
+                panic!("Expected 1 input file, got {}", v.len());
+            }
+            // read the matrix/matrices
+            unimplemented!("Reading input from file not yet implemented");
         }
         None => {
-            println!("No input files specified, generating random matrices");
-            A = Matrix::from_random_seed(seed, size, size);
-            B = Matrix::zeroes(size, size);
+            // generate input
+            A = Matrix::from_random_seed(seed, args.size, args.size);
         }
     }
 
-    let now = Instant::now();
+    let mut B = Matrix::zeroes(args.size, args.size);
+
+    let t0 = Instant::now();
 
     A.relu(&mut B).unwrap();
 
-    println!("Elapsed: {:.2?}", now.elapsed());
+    let t1 = Instant::now();
+
+    if args.timing {
+        println!("Elapsed: {:.2?}", t1 - t0);
+    }
 
     if args.output {
+        // print output
+        println!("Output:");
         println!("{}", B);
     }
+
+    match args.export {
+        Some(filename) => {
+            // export output
+            unimplemented!(
+                "Exporting output not yet implemented, filename: {}",
+                filename
+            );
+        }
+        None => (),
+    }
+
+    match args.verify {
+        Some(Some(filename)) => {
+            // verify against file
+            unimplemented!(
+                "Verifying against file not yet implemented, filename: {}",
+                filename
+            );
+        }
+        Some(None) => {
+            // verify against cpu implementation
+            if verify(&A, &B, args.size) {
+                println!("Verification passed");
+            } else {
+                println!("Verification failed");
+            }
+        }
+        None => (),
+    }
+}
+
+fn verify(A: &Matrix, B: &Matrix, size: usize) -> bool {
+    let A_ref = obpmark_rust::matrix_2d::Matrix::new(A.get_data(), size, size);
+    let mut B_ref = obpmark_rust::matrix_2d::Matrix::zeroes(size, size);
+
+    A_ref.relu(&mut B_ref).unwrap();
+
+    return B_ref.get_data() == B.get_data();
 }

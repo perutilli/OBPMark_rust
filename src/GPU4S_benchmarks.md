@@ -52,7 +52,7 @@ fn main() {
     let args = CommonArgs::parse();
 
     match args.input {
-        Some(Some(v)) => {
+        Some(v) => {
             // read input from file
             if v.len() != EXPECTED {
                 panic!("Expected EXP input files, got {}", v.len());
