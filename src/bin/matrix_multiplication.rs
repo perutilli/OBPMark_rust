@@ -6,7 +6,7 @@
 #![allow(non_snake_case)] // TODO: decide if we want to keep this or not
 use clap::Parser;
 use core::panic;
-use obpmark_rust::{FromRandomSeed, MatMul};
+use obpmark_rust::{BaseMatrix, FromRandomSeed, MatMul};
 use std::time::Instant;
 
 use obpmark_rust::benchmark_utils::CommonArgs;
@@ -46,7 +46,7 @@ fn main() {
     }
 
     // TODO: implement a zero method that returns a matrix of zeros
-    C = Matrix::from_random_seed(seed, args.size, args.size);
+    C = Matrix::zeroes(args.size, args.size);
 
     let t0 = Instant::now();
 
@@ -91,7 +91,7 @@ fn verify(A: &Matrix, B: &Matrix, C: &Matrix, size: usize) {
     let A_ref = obpmark_rust::matrix_2d::Matrix::new(A.get_data(), size, size);
     let B_ref = obpmark_rust::matrix_2d::Matrix::new(B.get_data(), size, size);
 
-    let mut C_ref = obpmark_rust::matrix_2d::Matrix::from_random_seed(0, size, size);
+    let mut C_ref = obpmark_rust::matrix_2d::Matrix::zeroes(size, size);
 
     A_ref.multiply(&B_ref, &mut C_ref).unwrap();
 

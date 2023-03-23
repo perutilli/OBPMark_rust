@@ -15,6 +15,19 @@ pub enum Error {
     InvalidDimensions,
 }
 
+/// Trait that all matrix structs should implement
+/// It contains basic methods such as `new`, `get_data`, `zeroes`
+pub trait BaseMatrix {
+    fn new(data: Vec<Vec<Number>>, rows: usize, cols: usize) -> Self;
+    fn get_data(&self) -> Vec<Vec<Number>>;
+    fn zeroes(rows: usize, cols: usize) -> Self
+    where
+        Self: Sized,
+    {
+        Self::new(vec![vec![Number::default(); cols]; rows], rows, cols)
+    }
+}
+
 pub trait MatMul {
     fn multiply(&self, other: &Self, result: &mut Self) -> Result<(), Error>;
 }

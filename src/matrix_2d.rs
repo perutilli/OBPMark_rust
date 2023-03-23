@@ -1,6 +1,8 @@
 use std::fmt::Display;
 
-use crate::{format_number, random_matrix, Error, FromRandomSeed, MatMul, Number, Relu};
+use crate::{
+    format_number, random_matrix, BaseMatrix, Error, FromRandomSeed, MatMul, Number, Relu,
+};
 
 pub struct Matrix {
     data: Vec<Vec<Number>>,
@@ -8,12 +10,12 @@ pub struct Matrix {
     cols: usize,
 }
 
-impl Matrix {
-    pub fn new(data: Vec<Vec<Number>>, rows: usize, cols: usize) -> Matrix {
+impl BaseMatrix for Matrix {
+    fn new(data: Vec<Vec<Number>>, rows: usize, cols: usize) -> Matrix {
         Matrix { data, rows, cols }
     }
 
-    pub fn get_data(&self) -> Vec<Vec<Number>> {
+    fn get_data(&self) -> Vec<Vec<Number>> {
         self.data.clone()
     }
 }

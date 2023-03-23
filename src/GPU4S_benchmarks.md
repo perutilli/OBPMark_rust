@@ -1,6 +1,7 @@
 ## Future improvements
 * Think of potential verification function where it takes the closures to execute to get the expected result, so that verification could be one line.
 * Probably we want a trait for Matrix, so that we are sure that some functions have a certain signature, this is not strictly necessary since at compilation time we know which matrix type we are using (which is also good for performance), however it would be nice to have.
+* Many things that are pub now might be better as pub(crate) probably
 
 ### RNGs
 Each benchmark could potentially want a different rng, however I don't know that this is worth the effort.  
@@ -18,12 +19,12 @@ Also how come it is so fast -> Quite sure it uses BLAS or something similar, we 
 List of all common arguments for all benchmarks, and ones that could be common if not already present, not necessarily with the same exact behaviour as the original benchmark:
 * size (-s, --size): size of matrix or matrices (this can be common for the current implementations since they are all square matrices and if there are 2 they are the same size)
 * export (-e, --export): export the results of the output in hexadecimal format (right now it says also verification, for the moment I would leave that out) (this would be -g at the moment)
-* verify (-v, --verify): verify the output against the reference cpu implementation (for now it will be against the Rust's 2d vector implementation, later we might want this to be against the original C implementation)
+* verify (-v, --verify): verify the output against the reference cpu implementation (for now it will be against the Rust's 2d vector implementation, later we might want this to be against the original C implementation) or against the file specified
 * NOT CONSIDERED -g: not considered at the moment
 * output (-o, --output): print the results to stdout in a human readable format that is not suitable for verification (hence it is probably fine to keep it for stdout)
 * timing (-t, --timing): print the timing of the execution: in the gpu version there are 3 times (copy to gpu, kernel execution, copy back to cpu), for now we only have one
 * NOT CONSIDERED -c, -C: having only one time, this does not seem useful
-* input (-i, --input): pass input data and the result and compares (using the hex format)
+* input (-i, --input): pass input data (using the hex format)
 * NOT RELEVANT -d: not relevant for cpu benchmarks
 * help (-h, --help): print help information, taken care of by clap
 We can put this in a clap struct in a module "benchmark_utils" or something like that, and then we can import it in all the benchmarks.  
@@ -36,7 +37,6 @@ Is any combination of the arguments valid?
 Only problematic one I can think of is verify and input, it would make more sense to have input have only the input matrix and verify in two flavours:
 * with empty value -> verify against the cpu implementation
 * with value -> verify against the file with name provided  
-TODO: modify the arguments description to reflect this
   
 This way all arguments are valid in any combination  
 Should we check valid values for different arguments before running the benchmark?
