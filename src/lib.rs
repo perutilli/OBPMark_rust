@@ -126,6 +126,15 @@ pub trait Softmax {
     fn softmax(&self, result: &mut Self) -> Result<(), Error>;
 }
 
+pub trait MaxPooling {
+    fn max_pooling(
+        &self,
+        result: &mut Self,
+        row_stride: usize,
+        col_stride: usize,
+    ) -> Result<(), Error>;
+}
+
 pub fn random_matrix_data(seed: u64, rows: usize, cols: usize) -> Vec<Vec<Number>> {
     // NOTE: the seeding works only on the same machine/configuration
     let mut rng = StdRng::seed_from_u64(seed);

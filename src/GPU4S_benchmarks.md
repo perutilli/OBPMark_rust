@@ -1,5 +1,7 @@
 ## Current tasks
-* Implement all benchmarks in their naive (1d and 2d vector) form (original names):
+* [x] Accept non common arguments: test clap(flatten)
+* [ ] Improve benchmark template to reflect changes
+* [ ] Implement all benchmarks in their naive (1d and 2d vector) form (original names):
     - [ ] cifar_10
     - [ ] cifar_10_multiple
     - [ ] convolution_2D_bench
@@ -17,8 +19,8 @@
     - [x] relu_bench
     - [ ] softmax_bench TODO: implement it for int, need to wait for Leonidas
     - [ ] wavelet_transform
-* Implement from_file and to_file for Matrix types
-* Create unit tests for unit testable functions
+* [x] Implement from_file and to_file for Matrix types
+* [ ] Create unit tests for unit testable functions (this will need a list)
 
 ## Questions for Leonidas
 * Softmax does not seem to work for int in the C cpu implementation, here is the output I get:
@@ -46,6 +48,9 @@
 * Make a macro or something so that the 1d indexing can be written as the 2d one
 * Sadly I think we will need the matrices to be generic (OBPMark repo benchmarks would be easier if we do it this way)
 * Add information to file errors
+* Maybe move input outside of CommonArgs so it can require the exact number of files in depending on the benchmark
+* Move seed to config or something
+* Make non common but required arguments more prominent (e.g. stride in max pooling)
 
 ### RNGs
 Each benchmark could potentially want a different rng, however I don't know that this is worth the effort.  

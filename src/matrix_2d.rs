@@ -1,6 +1,6 @@
 use std::fmt::Display;
 
-use crate::{format_number, BaseMatrix, Error, MatMul, Number, Relu, Softmax};
+use crate::{format_number, BaseMatrix, Error, MatMul, MaxPooling, Number, Relu, Softmax};
 
 pub struct Matrix {
     data: Vec<Vec<Number>>,
@@ -80,6 +80,31 @@ impl Softmax for Matrix {
             }
             for j in 0..self.cols {
                 result.data[i][j] /= sum;
+            }
+        }
+        Ok(())
+    }
+}
+
+impl MaxPooling for Matrix {
+    fn max_pooling(
+        &self,
+        result: &mut Matrix,
+        row_stride: usize,
+        col_stride: usize,
+    ) -> Result<(), Error> {
+        if self.rows != result.rows * row_stride || self.cols != result.cols * col_stride {
+            return Err(Error::InvalidDimensions);
+        }
+        for i in 0..result.rows {
+            for j in 0..result.cols {
+                let mut max = self.data[i * row_stride][j * col_stride];
+                for k in 0..row_stride {
+                    for l in 0..col_stride {
+                        max = max.max(self.data[i * row_stride + k][j * col_stride + l]);
+                    }
+                }
+                result.data[i][j] = max;
             }
         }
         Ok(())
