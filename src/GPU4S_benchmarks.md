@@ -45,6 +45,7 @@
 * Many things that are pub now might be better as pub(crate) probably
 * Make a macro or something so that the 1d indexing can be written as the 2d one
 * Sadly I think we will need the matrices to be generic (OBPMark repo benchmarks would be easier if we do it this way)
+* Add information to file errors
 
 ### RNGs
 Each benchmark could potentially want a different rng, however I don't know that this is worth the effort.  

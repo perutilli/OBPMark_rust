@@ -1,7 +1,7 @@
 use rand::rngs::StdRng;
 use rand::{Rng, SeedableRng};
 use std::fs::File;
-use std::io::{self, BufRead};
+use std::io::{self, BufRead, Write};
 use std::path::Path;
 
 #[cfg(feature = "float")]
@@ -16,6 +16,19 @@ pub type Number = f32;
 #[derive(Debug)]
 pub enum Error {
     InvalidDimensions,
+}
+
+#[derive(Debug)]
+pub enum FileError {
+    IoError(std::io::Error),
+    InvalidSize,
+    InvalidDatatype,
+}
+
+impl From<std::io::Error> for FileError {
+    fn from(error: std::io::Error) -> Self {
+        FileError::IoError(error)
+    }
 }
 
 /// Trait that all matrix structs should implement
@@ -38,7 +51,7 @@ pub trait BaseMatrix {
         Self::new(data, rows, cols)
     }
 
-    fn from_file(path: &Path, rows: usize, cols: usize) -> Result<Self, std::io::Error>
+    fn from_file(path: &Path, rows: usize, cols: usize) -> Result<Self, FileError>
     where
         Self: Sized,
     {
@@ -48,9 +61,13 @@ pub trait BaseMatrix {
         for _ in 0..rows {
             let mut row = Vec::new();
             for _ in 0..cols {
-                let line = lines.next().unwrap()?;
-                // TODO: this error should not be a io::Error, but an invalid size error
-                assert_eq!(line.len(), std::mem::size_of::<Number>() * 2); // TODO: this could return Err
+                let line = match lines.next() {
+                    Some(line) => line?,
+                    None => return Err(FileError::InvalidSize),
+                };
+                if line.len() != std::mem::size_of::<Number>() * 2 {
+                    return Err(FileError::InvalidDatatype);
+                }
                 let values: Vec<_> = line
                     .chars()
                     .map(|c| c.to_digit(16).unwrap() as u8)
@@ -63,7 +80,39 @@ pub trait BaseMatrix {
         }
         Ok(Self::new(data, rows, cols))
     }
+
+    fn to_file(&self, path: &Path) -> Result<(), std::io::Error> {
+        let mut file = File::create(path)?;
+        for row in self.get_data() {
+            for col in row {
+                let bytes = col.to_be_bytes();
+                let values = bytes
+                    .iter()
+                    .map(|b| format!("{:02x}", b))
+                    .collect::<Vec<String>>()
+                    .join("");
+                writeln!(file, "{}", values)?;
+            }
+        }
+        Ok(())
+    }
 }
+
+/*
+TODO: this is not possible like so, look here https://www.reddit.com/r/rust/comments/7qqbyp/comment/dss5b6z/
+impl Display for BaseMatrix {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        for row in self.get_data() {
+            for el in row {
+                // NOTE: this way we have a space before the newline, might not be what we want
+                write!(f, "{} ", format_number(&el))?;
+            }
+            writeln!(f)?;
+        }
+        Ok(())
+    }
+}
+*/
 
 pub trait MatMul {
     fn multiply(&self, other: &Self, result: &mut Self) -> Result<(), Error>;
