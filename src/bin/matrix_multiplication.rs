@@ -7,7 +7,7 @@
 use clap::Parser;
 use core::panic;
 use obpmark_rust::{BaseMatrix, MatMul};
-use std::time::Instant;
+use std::{path::Path, time::Instant};
 
 use obpmark_rust::benchmark_utils::CommonArgs;
 
@@ -41,7 +41,8 @@ fn main() {
             if v.len() != 2 {
                 panic!("Expected 2 input files, got {}", v.len());
             }
-            unimplemented!("Reading input from file not yet implemented");
+            A = Matrix::from_file(Path::new(&v[0]), args.common.size, args.common.size).unwrap();
+            B = Matrix::from_file(Path::new(&v[1]), args.common.size, args.common.size).unwrap();
         }
         None => {
             A = Matrix::from_random_seed(seed, args.common.size, args.common.size);
@@ -70,7 +71,7 @@ fn main() {
     match args.common.export {
         Some(filename) => {
             // export output
-            unimplemented!("Export not yet implemented, filename: {}", filename);
+            C.to_file(Path::new(&filename)).unwrap();
         }
         None => (),
     }
