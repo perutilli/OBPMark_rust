@@ -21,7 +21,7 @@ pub enum Error {
 #[derive(Debug)]
 pub enum FileError {
     IoError(std::io::Error),
-    InvalidSize,
+    InvalidSize(usize, usize),
     InvalidDatatype,
 }
 
@@ -58,12 +58,12 @@ pub trait BaseMatrix {
         let file = File::open(path)?;
         let mut lines = io::BufReader::new(file).lines();
         let mut data = Vec::new();
-        for _ in 0..rows {
+        for i in 0..rows {
             let mut row = Vec::new();
-            for _ in 0..cols {
+            for j in 0..cols {
                 let line = match lines.next() {
                     Some(line) => line?,
-                    None => return Err(FileError::InvalidSize),
+                    None => return Err(FileError::InvalidSize(i, j)),
                 };
                 if line.len() != std::mem::size_of::<Number>() * 2 {
                     return Err(FileError::InvalidDatatype);

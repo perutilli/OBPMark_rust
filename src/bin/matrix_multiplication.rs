@@ -79,20 +79,27 @@ fn main() {
     match args.common.verify {
         Some(Some(filename)) => {
             // verify against file
-            unimplemented!(
-                "Verification with file not yet implemented, filename: {}",
-                filename
-            );
+            let C_ref = Matrix::from_file(Path::new(&filename), args.common.size, args.common.size)
+                .unwrap();
+            if C.get_data() == C_ref.get_data() {
+                println!("Verification passed");
+            } else {
+                println!("Verification failed");
+            }
         }
         Some(None) => {
             // verify against cpu implementation
-            verify(&A, &B, &C, args.common.size);
+            if verify(&A, &B, &C, args.common.size) {
+                println!("Verification passed");
+            } else {
+                println!("Verification failed");
+            }
         }
         None => (),
     }
 }
 
-fn verify(A: &Matrix, B: &Matrix, C: &Matrix, size: usize) {
+fn verify(A: &Matrix, B: &Matrix, C: &Matrix, size: usize) -> bool {
     let A_ref = obpmark_rust::matrix_2d::Matrix::new(A.get_data(), size, size);
     let B_ref = obpmark_rust::matrix_2d::Matrix::new(B.get_data(), size, size);
 
@@ -100,21 +107,5 @@ fn verify(A: &Matrix, B: &Matrix, C: &Matrix, size: usize) {
 
     A_ref.multiply(&B_ref, &mut C_ref).unwrap();
 
-    if C.get_data() == C_ref.get_data() {
-        println!("Verification passed");
-    } else {
-        let C_data = C.get_data();
-        let C_ref_data = C_ref.get_data();
-        for i in 0..size {
-            for j in 0..size {
-                if (C_data[i][j] - C_ref_data[i][j]) as f64 > 1e-4 {
-                    println!("Verification failed");
-                    println!("C: \n{:?}", C_data[i][j]);
-                    println!("C_ref: \n{:?}", C_ref_data[i][j]);
-                    return;
-                }
-            }
-        }
-        println!("Verification passed using epsilon of 1e-4");
-    }
+    C.get_data() == C_ref.get_data()
 }
