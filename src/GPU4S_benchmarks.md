@@ -100,52 +100,80 @@ Should we check valid values for different arguments before running the benchmar
     - verify against the cpu implementation, signal the error to the user
 
 ```Rust
-...
-fn main() {
-    let args = CommonArgs::parse();
+#![allow(non_snake_case)]
+use clap::Parser;
+use obpmark_rust::{BaseMatrix, BenchmarkTrait};
+use std::time::Instant;
 
-    match args.input {
+use obpmark_rust::benchmark_utils::CommonArgs;
+
+#[cfg(feature = "1d")]
+use obpmark_rust::matrix_1d::Matrix;
+#[cfg(feature = "2d")]
+use obpmark_rust::matrix_2d::Matrix;
+#[cfg(not(any(feature = "1d", feature = "2d")))]
+use obpmark_rust::matrix_2d::Matrix;
+
+#[derive(Parser, Debug)]
+#[command(about = "Benchmark description")] // TODO: add description
+struct Args {
+    #[clap(flatten)]
+    common: CommonArgs,
+}
+
+fn main() {
+    let args = Args::parse();
+
+    match args.common.input {
         Some(v) => {
-            // read input from file
-            if v.len() != EXPECTED {
+            if v.len() != EXP {
                 panic!("Expected EXP input files, got {}", v.len());
             }
-            // read the matrix/matrices
-        },
+            unimplemented!("Reading input from file not yet implemented");
+        }
         None => {
-            // generate input
+            // TODO: generate input
         }
     }
 
-    // run the benchmark
-    // timing regardless of -t
+    let t0 = Instant::now();
 
-    if args.timing {
-        // print timing
+    // TODO: run the benchmark function
+
+    let t1 = Instant::now();
+
+    if args.common.timing {
+        println!("Elapsed: {:.2?}", t1 - t0);
     }
 
-    if args.output {
-        // print output
+    if args.common.output {
+        println!("Output:");
+        // TODO: print output
     }
 
-    match args.export {
+    match args.common.export {
         Some(filename) => {
             // export output
+            unimplemented!("Export not yet implemented, filename: {}", filename);
         }
         None => (),
     }
 
-    match args.verify {
+    match args.common.verify {
         Some(Some(filename)) => {
             // verify against file
-        },
+            unimplemented!(
+                "Verification with file not yet implemented, filename: {}",
+                filename
+            );
+        }
         Some(None) => {
             // verify against cpu implementation
-        },
+            // TODO: verify
+        }
         None => (),
     }
 }
-
 ```
 
 

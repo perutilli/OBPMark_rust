@@ -14,6 +14,7 @@ use obpmark_rust::matrix_2d::Matrix;
 use obpmark_rust::matrix_2d::Matrix;
 
 #[derive(Parser, Debug)]
+#[command(about = "Max pooling benchmark")]
 struct Args {
     /// Common arguments
     #[clap(flatten)]

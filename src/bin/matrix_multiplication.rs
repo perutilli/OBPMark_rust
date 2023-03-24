@@ -20,8 +20,15 @@ use obpmark_rust::matrix_2d::Matrix;
 #[cfg(feature = "ndarray")]
 use obpmark_rust::matrix_ndarray::Matrix; // once again for linting reasons
 
+#[derive(Parser, Debug)]
+#[command(about = "Matrix multiplication benchmark")]
+struct Args {
+    #[clap(flatten)]
+    common: CommonArgs,
+}
+
 fn main() {
-    let args = CommonArgs::parse();
+    let args = Args::parse();
 
     let seed: u64 = 34523459;
 
@@ -29,7 +36,7 @@ fn main() {
     let B;
     let mut C;
 
-    match args.input {
+    match args.common.input {
         Some(v) => {
             if v.len() != 2 {
                 panic!("Expected 2 input files, got {}", v.len());
@@ -37,13 +44,13 @@ fn main() {
             unimplemented!("Reading input from file not yet implemented");
         }
         None => {
-            A = Matrix::from_random_seed(seed, args.size, args.size);
+            A = Matrix::from_random_seed(seed, args.common.size, args.common.size);
             // TODO: decide if this offset to the seed is ok
-            B = Matrix::from_random_seed(seed + 10, args.size, args.size);
+            B = Matrix::from_random_seed(seed + 10, args.common.size, args.common.size);
         }
     }
 
-    C = Matrix::zeroes(args.size, args.size);
+    C = Matrix::zeroes(args.common.size, args.common.size);
 
     let t0 = Instant::now();
 
@@ -51,16 +58,16 @@ fn main() {
 
     let t1 = Instant::now();
 
-    if args.timing {
+    if args.common.timing {
         println!("Elapsed: {:.2?}", t1 - t0);
     }
 
-    if args.output {
+    if args.common.output {
         println!("Output:");
         println!("{}", C);
     }
 
-    match args.export {
+    match args.common.export {
         Some(filename) => {
             // export output
             unimplemented!("Export not yet implemented, filename: {}", filename);
@@ -68,7 +75,7 @@ fn main() {
         None => (),
     }
 
-    match args.verify {
+    match args.common.verify {
         Some(Some(filename)) => {
             // verify against file
             unimplemented!(
@@ -78,7 +85,7 @@ fn main() {
         }
         Some(None) => {
             // verify against cpu implementation
-            verify(&A, &B, &C, args.size);
+            verify(&A, &B, &C, args.common.size);
         }
         None => (),
     }

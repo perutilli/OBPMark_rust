@@ -15,14 +15,21 @@ use obpmark_rust::matrix_2d::Matrix;
 #[cfg(feature = "ndarray")] // TODO: ndarray not supported yet
 use obpmark_rust::matrix_ndarray::Matrix; // once again for linting reasons
 
+#[derive(Parser, Debug)]
+#[command(about = "Rectified Linear Unit benchmark")]
+struct Args {
+    #[clap(flatten)]
+    common: CommonArgs,
+}
+
 fn main() {
-    let args = CommonArgs::parse();
+    let args = Args::parse();
 
     let seed = 38945;
 
     let A;
 
-    match args.input {
+    match args.common.input {
         Some(v) => {
             // read input from file
             if v.len() != 1 {
@@ -33,11 +40,11 @@ fn main() {
         }
         None => {
             // generate input
-            A = Matrix::from_random_seed(seed, args.size, args.size);
+            A = Matrix::from_random_seed(seed, args.common.size, args.common.size);
         }
     }
 
-    let mut B = Matrix::zeroes(args.size, args.size);
+    let mut B = Matrix::zeroes(args.common.size, args.common.size);
 
     let t0 = Instant::now();
 
@@ -45,17 +52,17 @@ fn main() {
 
     let t1 = Instant::now();
 
-    if args.timing {
+    if args.common.timing {
         println!("Elapsed: {:.2?}", t1 - t0);
     }
 
-    if args.output {
+    if args.common.output {
         // print output
         println!("Output:");
         println!("{}", B);
     }
 
-    match args.export {
+    match args.common.export {
         Some(filename) => {
             // export output
             unimplemented!(
@@ -66,7 +73,7 @@ fn main() {
         None => (),
     }
 
-    match args.verify {
+    match args.common.verify {
         Some(Some(filename)) => {
             // verify against file
             unimplemented!(
@@ -76,7 +83,7 @@ fn main() {
         }
         Some(None) => {
             // verify against cpu implementation
-            if verify(&A, &B, args.size) {
+            if verify(&A, &B, args.common.size) {
                 println!("Verification passed");
             } else {
                 println!("Verification failed");
