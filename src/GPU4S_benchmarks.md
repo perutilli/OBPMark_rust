@@ -52,6 +52,8 @@
 * Maybe move input outside of CommonArgs so it can require the exact number of files in depending on the benchmark
 * Move seed to config or something
 * Make non common but required arguments more prominent (e.g. stride in max pooling) (maybe, usage should be enough actually)
+* Make max pooling deal with more complex cases (https://stackoverflow.com/questions/37674306/what-is-the-difference-between-same-and-valid-padding-in-tf-nn-max-pool-of-t)
+* Right now we will just panic if --export or --verify provide invalid paths, should handle this better
 
 ### RNGs
 Each benchmark could potentially want a different rng, however I don't know that this is worth the effort.  

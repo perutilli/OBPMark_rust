@@ -1,17 +1,11 @@
 #![allow(non_snake_case)]
-use std::time::Instant;
-
-use obpmark_rust::benchmark_utils::CommonArgs;
 use obpmark_rust::{BaseMatrix, MaxPooling};
+use std::time::Instant;
 
 use clap::Parser;
 
-#[cfg(feature = "1d")]
-use obpmark_rust::matrix_1d::Matrix;
-#[cfg(feature = "2d")]
-use obpmark_rust::matrix_2d::Matrix;
-#[cfg(not(any(feature = "1d", feature = "2d")))]
-use obpmark_rust::matrix_2d::Matrix;
+use obpmark_rust::benchmark_utils::{verify, CommonArgs, Matrix};
+use obpmark_rust::matrix_2d::Matrix as RefMatrix;
 
 #[derive(Parser, Debug)]
 #[command(about = "Max pooling benchmark")]
@@ -31,7 +25,6 @@ fn main() {
     let seed = 38945;
 
     if args.common.size % args.stride != 0 {
-        // TODO: check if this is generally true in common max pooling implementations
         panic!("Size must be a multiple of stride");
     }
 
@@ -87,21 +80,18 @@ fn main() {
         }
         Some(None) => {
             // verify against cpu implementation
-            if verify(&A, &B, args.common.size, args.stride, B_size) {
-                println!("Verification successful");
-            } else {
-                println!("Verification failed");
-            }
+            let B_ref = get_ref_result(&A, args.common.size, args.stride, B_size);
+            verify(&B, &B_ref);
         }
         None => (),
     }
 }
 
-fn verify(A: &Matrix, B: &Matrix, size: usize, stride: usize, B_size: usize) -> bool {
-    let A_ref = obpmark_rust::matrix_2d::Matrix::new(A.get_data(), size, size);
-    let mut B_ref = obpmark_rust::matrix_2d::Matrix::zeroes(B_size, B_size);
+fn get_ref_result(A: &Matrix, size: usize, stride: usize, B_size: usize) -> RefMatrix {
+    let A_ref = RefMatrix::new(A.get_data(), size, size);
+    let mut B_ref = RefMatrix::zeroes(B_size, B_size);
 
     A_ref.max_pooling(&mut B_ref, stride, stride).unwrap();
 
-    return B_ref.get_data() == B.get_data();
+    B_ref
 }

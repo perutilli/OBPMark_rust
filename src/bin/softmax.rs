@@ -4,16 +4,8 @@ use core::panic;
 use obpmark_rust::{BaseMatrix, Softmax};
 use std::time::Instant;
 
-use obpmark_rust::benchmark_utils::CommonArgs;
-
-#[cfg(feature = "1d")]
-use obpmark_rust::matrix_1d::Matrix;
-#[cfg(feature = "2d")]
-use obpmark_rust::matrix_2d::Matrix;
-#[cfg(not(any(feature = "1d", feature = "2d", feature = "ndarray")))]
-use obpmark_rust::matrix_2d::Matrix;
-#[cfg(feature = "ndarray")]
-use obpmark_rust::matrix_ndarray::Matrix; // once again for linting reasons
+use obpmark_rust::benchmark_utils::{verify, CommonArgs, Matrix};
+use obpmark_rust::matrix_2d::Matrix as RefMatrix;
 
 #[derive(Parser, Debug)]
 #[command(about = "Softmax function benchmark")]
@@ -77,22 +69,19 @@ fn main() {
         }
         Some(None) => {
             // verify against cpu implementation
-            if verify(&A, &B, args.common.size) {
-                println!("Verification successful");
-            } else {
-                println!("Verification failed");
-            }
+            let B_ref = get_ref_result(&A, args.common.size);
+            verify(&B, &B_ref);
         }
         None => (),
     }
 }
 
-fn verify(A: &Matrix, B: &Matrix, size: usize) -> bool {
-    let A_ref = obpmark_rust::matrix_2d::Matrix::new(A.get_data(), size, size);
+fn get_ref_result(A: &Matrix, size: usize) -> RefMatrix {
+    let A_ref = RefMatrix::new(A.get_data(), size, size);
 
-    let mut B_ref = obpmark_rust::matrix_2d::Matrix::zeroes(size, size);
+    let mut B_ref = RefMatrix::zeroes(size, size);
 
     A_ref.softmax(&mut B_ref).unwrap();
 
-    B.get_data() == B_ref.get_data()
+    B_ref
 }
