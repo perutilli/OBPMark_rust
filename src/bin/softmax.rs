@@ -4,8 +4,10 @@ use core::panic;
 use obpmark_rust::{BaseMatrix, Softmax};
 use std::time::Instant;
 
-use obpmark_rust::benchmark_utils::{verify, CommonArgs, Matrix, Number};
+use obpmark_rust::benchmark_utils::{CommonArgs, Matrix, Number};
 use obpmark_rust::matrix_2d::Matrix2d as RefMatrix;
+
+use obpmark_rust::verify;
 
 #[derive(Parser, Debug)]
 #[command(about = "Softmax function benchmark")]
@@ -81,7 +83,7 @@ fn main() {
         Some(None) => {
             // verify against cpu implementation
             let B_ref = get_ref_result(&A, args.common.size);
-            verify(&B.get_data(), &B_ref.get_data());
+            verify!(B.get_data(), B_ref.get_data());
         }
         None => (),
     }

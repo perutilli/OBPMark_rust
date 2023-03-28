@@ -50,11 +50,13 @@ pub struct CommonArgs {
     pub print_input: bool,
 }
 
-pub fn verify(mat: &Vec<Vec<Number>>, mat_ref: &Vec<Vec<Number>>) {
-    // TODO: potentially use epsilon for comparison
-    if mat != mat_ref {
-        println!("Verification failed");
-    } else {
-        println!("Verification passed");
-    }
+#[macro_export]
+macro_rules! verify {
+    ($res: expr, $ref_res: expr) => {
+        if $res != $ref_res {
+            println!("Verification failed");
+        } else {
+            println!("Verification passed");
+        }
+    };
 }

@@ -9,8 +9,10 @@ use core::panic;
 use obpmark_rust::{BaseMatrix, MatMul};
 use std::{path::Path, time::Instant};
 
-use obpmark_rust::benchmark_utils::{verify, CommonArgs, Matrix, Number};
+use obpmark_rust::benchmark_utils::{CommonArgs, Matrix, Number};
 use obpmark_rust::matrix_2d::Matrix2d as RefMatrix;
+
+use obpmark_rust::verify;
 
 #[derive(Parser, Debug)]
 #[command(about = "Matrix multiplication benchmark")]
@@ -101,7 +103,7 @@ fn main() {
         Some(None) => {
             // verify against cpu implementation
             let C_ref = get_ref_result(&A, &B, args.common.size);
-            verify(&C.get_data(), &C_ref.get_data());
+            verify!(C.get_data(), C_ref.get_data());
         }
         None => (),
     }
