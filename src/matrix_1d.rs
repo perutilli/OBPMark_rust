@@ -58,7 +58,7 @@ impl<T: Num> MatMul for Matrix<T> {
         }
         for i in 0..self.rows {
             for j in 0..other.cols {
-                let mut sum = T::default();
+                let mut sum = T::zero();
                 // NOTE: this allows result to not be all zeros
                 for k in 0..self.cols {
                     sum += self.data[i * self.cols + k] * other.data[k * other.cols + j];
@@ -97,7 +97,7 @@ impl<T: Num + Float> Softmax for Matrix<T> {
             return Err(Error::InvalidDimensions);
         }
         for i in 0..self.rows {
-            let mut sum = T::default();
+            let mut sum = T::zero();
             for j in 0..self.cols {
                 let val = self.data[i * self.rows + j].exp();
                 sum += val;

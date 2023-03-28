@@ -149,7 +149,7 @@ pub fn random_matrix_data<T: Num>(
 ) -> Vec<Vec<T>> {
     // NOTE: the seeding works only on the same machine/configuration
     let mut rng = StdRng::seed_from_u64(seed);
-    let mut data = vec![vec![T::default(); cols]; rows];
+    let mut data = vec![vec![T::zero(); cols]; rows];
     for row in &mut data {
         for col in row {
             *col = rng.gen_range(min..max);
