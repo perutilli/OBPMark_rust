@@ -1,5 +1,3 @@
-use std::fmt::Display;
-
 use num::Float;
 
 use crate::{format_number, BaseMatrix, Error, MatMul, MaxPooling, Num, Relu, Softmax};
@@ -28,28 +26,7 @@ impl<T: Num> BaseMatrix<T> for Matrix1d<T> {
     }
 }
 
-impl<T: Num> Display for Matrix1d<T> {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        write!(
-            f,
-            "{}",
-            self.data
-                .iter()
-                .enumerate()
-                .map(|(i, x)| {
-                    if i % self.cols != self.cols - 1 {
-                        // if we are not at the end of the row
-                        format!("{} ", format_number(x))
-                    } else {
-                        // if we are at the end of the row
-                        format!("{}\n", format_number(x))
-                    }
-                })
-                .collect::<Vec<String>>()
-                .join(""),
-        )
-    }
-}
+impl_display!(Matrix1d);
 
 impl<T: Num> MatMul for Matrix1d<T> {
     fn multiply(&self, other: &Matrix1d<T>, result: &mut Matrix1d<T>) -> Result<(), Error> {

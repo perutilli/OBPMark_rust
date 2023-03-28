@@ -1,5 +1,3 @@
-use std::fmt::Display;
-
 use ndarray::Array2;
 
 use crate::{format_number, BaseMatrix, Num};
@@ -27,18 +25,7 @@ impl<T: Num> BaseMatrix<T> for MatrixNdArray<T> {
     }
 }
 
-impl<T: Num> Display for MatrixNdArray<T> {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        for row in self.data.outer_iter() {
-            for el in row {
-                // NOTE: this way we have a space before the newline, might not be what we want
-                write!(f, "{} ", format_number(el))?;
-            }
-            writeln!(f)?;
-        }
-        Ok(())
-    }
-}
+impl_display!(MatrixNdArray);
 
 /*
 impl<T: Num> MatMul for Matrix<T> {

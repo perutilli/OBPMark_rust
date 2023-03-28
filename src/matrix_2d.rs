@@ -1,5 +1,3 @@
-use std::fmt::Display;
-
 use num::Float;
 
 use crate::{format_number, BaseMatrix, Error, MatMul, MaxPooling, Num, Relu, Softmax};
@@ -20,18 +18,7 @@ impl<T: Num> BaseMatrix<T> for Matrix2d<T> {
     }
 }
 
-impl<T: Num> Display for Matrix2d<T> {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        for row in &self.data {
-            for el in row {
-                // NOTE: this way we have a space before the newline, might not be what we want
-                write!(f, "{} ", format_number(el))?;
-            }
-            writeln!(f)?;
-        }
-        Ok(())
-    }
-}
+impl_display!(Matrix2d);
 
 impl<T: Num> MatMul for Matrix2d<T> {
     fn multiply(&self, other: &Matrix2d<T>, result: &mut Matrix2d<T>) -> Result<(), Error> {

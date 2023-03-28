@@ -103,6 +103,23 @@ pub trait BaseMatrix<T: Num> {
     }
 }
 
+macro_rules! impl_display {
+    ($t:ident) => {
+        impl<T: Num> std::fmt::Display for $t<T> {
+            fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+                for row in self.get_data() {
+                    for el in row {
+                        // NOTE: this way we have a space before the newline, might not be what we want
+                        write!(f, "{} ", format_number(&el))?;
+                    }
+                    writeln!(f)?;
+                }
+                Ok(())
+            }
+        }
+    };
+    () => {};
+}
 /*
 TODO: this is not possible like so, look here https://www.reddit.com/r/rust/comments/7qqbyp/comment/dss5b6z/
 impl Display for BaseMatrix {
