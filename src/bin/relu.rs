@@ -4,7 +4,7 @@ use core::panic;
 use obpmark_rust::{BaseMatrix, Relu};
 use std::time::Instant;
 
-use obpmark_rust::benchmark_utils::{verify, CommonArgs, Matrix};
+use obpmark_rust::benchmark_utils::{verify, CommonArgs, Matrix, Number};
 use obpmark_rust::matrix_2d::Matrix as RefMatrix;
 
 #[derive(Parser, Debug)]
@@ -32,7 +32,13 @@ fn main() {
         }
         None => {
             // generate input
-            A = Matrix::from_random_seed(seed, args.common.size, args.common.size);
+            A = Matrix::from_random_seed(
+                seed,
+                args.common.size,
+                args.common.size,
+                "-10".parse::<Number>().unwrap(),
+                "10".parse::<Number>().unwrap(),
+            );
         }
     }
 
@@ -76,13 +82,13 @@ fn main() {
         Some(None) => {
             // verify against cpu implementation
             let B_ref = get_ref_result(&A, args.common.size);
-            verify(&B, &B_ref);
+            verify(&B.get_data(), &B_ref.get_data());
         }
         None => (),
     }
 }
 
-fn get_ref_result(A: &Matrix, size: usize) -> RefMatrix {
+fn get_ref_result(A: &Matrix, size: usize) -> RefMatrix<Number> {
     let A_ref = RefMatrix::new(A.get_data(), size, size);
     let mut B_ref = RefMatrix::zeroes(size, size);
 

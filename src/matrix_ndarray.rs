@@ -2,16 +2,16 @@ use std::fmt::Display;
 
 use ndarray::Array2;
 
-use crate::{format_number, BaseMatrix, Error, MatMul, Number};
+use crate::{format_number, BaseMatrix, Error, MatMul, Num};
 
-pub struct Matrix {
-    data: Array2<Number>,
+pub struct Matrix<T: Num> {
+    data: Array2<T>,
     rows: usize,
     cols: usize,
 }
 
-impl BaseMatrix for Matrix {
-    fn new(data: Vec<Vec<Number>>, rows: usize, cols: usize) -> Matrix {
+impl<T: Num> BaseMatrix<T> for Matrix<T> {
+    fn new(data: Vec<Vec<T>>, rows: usize, cols: usize) -> Self {
         Matrix {
             data: Array2::from_shape_vec((rows, cols), data.into_iter().flatten().collect())
                 .unwrap(),
@@ -20,12 +20,12 @@ impl BaseMatrix for Matrix {
         }
     }
 
-    fn get_data(&self) -> Vec<Vec<Number>> {
+    fn get_data(&self) -> Vec<Vec<T>> {
         self.data.outer_iter().map(|x| x.to_vec()).collect()
     }
 }
 
-impl Display for Matrix {
+impl<T: Num> Display for Matrix<T> {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         for row in self.data.outer_iter() {
             for el in row {
@@ -38,8 +38,9 @@ impl Display for Matrix {
     }
 }
 
-impl MatMul for Matrix {
-    fn multiply(&self, other: &Matrix, result: &mut Matrix) -> Result<(), Error> {
+/*
+impl<T: Num> MatMul for Matrix<T> {
+    fn multiply(&self, other: &Matrix<T>, result: &mut Matrix<T>) -> Result<(), Error> {
         if self.cols != other.rows {
             return Err(Error::InvalidDimensions);
         }
@@ -48,3 +49,4 @@ impl MatMul for Matrix {
         Ok(())
     }
 }
+ */

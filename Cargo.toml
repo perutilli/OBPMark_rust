@@ -9,6 +9,8 @@ edition = "2021"
 clap = { version = "4.1.8", features = ["derive"] }
 rand = "0.8.5"
 ndarray = "0.15.6"
+funty = "2.0.0"
+num = "0.4.0"
 
 [features]
 default = []

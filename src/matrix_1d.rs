@@ -1,15 +1,17 @@
 use std::fmt::Display;
 
-use crate::{format_number, BaseMatrix, Error, MatMul, MaxPooling, Number, Relu, Softmax};
+use num::Float;
 
-pub struct Matrix {
-    data: Vec<Number>,
+use crate::{format_number, BaseMatrix, Error, MatMul, MaxPooling, Num, Relu, Softmax};
+
+pub struct Matrix<T: Num> {
+    data: Vec<T>,
     rows: usize,
     cols: usize,
 }
 
-impl BaseMatrix for Matrix {
-    fn new(data: Vec<Vec<Number>>, rows: usize, cols: usize) -> Matrix {
+impl<T: Num> BaseMatrix<T> for Matrix<T> {
+    fn new(data: Vec<Vec<T>>, rows: usize, cols: usize) -> Matrix<T> {
         Matrix {
             data: data.into_iter().flatten().collect(),
             rows,
@@ -17,16 +19,16 @@ impl BaseMatrix for Matrix {
         }
     }
 
-    fn get_data(&self) -> Vec<Vec<Number>> {
+    fn get_data(&self) -> Vec<Vec<T>> {
         self.data
             .clone()
             .chunks(self.cols)
             .map(|x| x.to_vec())
-            .collect::<Vec<Vec<Number>>>()
+            .collect::<Vec<Vec<T>>>()
     }
 }
 
-impl Display for Matrix {
+impl<T: Num> Display for Matrix<T> {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         write!(
             f,
@@ -49,14 +51,14 @@ impl Display for Matrix {
     }
 }
 
-impl MatMul for Matrix {
-    fn multiply(&self, other: &Matrix, result: &mut Matrix) -> Result<(), Error> {
+impl<T: Num> MatMul for Matrix<T> {
+    fn multiply(&self, other: &Matrix<T>, result: &mut Matrix<T>) -> Result<(), Error> {
         if self.cols != other.rows {
             return Err(Error::InvalidDimensions);
         }
         for i in 0..self.rows {
             for j in 0..other.cols {
-                let mut sum = Number::default();
+                let mut sum = T::default();
                 // NOTE: this allows result to not be all zeros
                 for k in 0..self.cols {
                     sum += self.data[i * self.cols + k] * other.data[k * other.cols + j];
@@ -68,15 +70,19 @@ impl MatMul for Matrix {
     }
 }
 
-impl Relu for Matrix {
-    fn relu(&self, result: &mut Matrix) -> Result<(), Error> {
+impl<T: Num> Relu for Matrix<T> {
+    fn relu(&self, result: &mut Matrix<T>) -> Result<(), Error> {
         if self.rows != result.rows || self.cols != result.cols {
             return Err(Error::InvalidDimensions);
         }
         for i in 0..self.rows {
             for j in 0..self.cols {
-                result.data[i * self.rows + j] =
-                    self.data[i * self.rows + j].max(Number::default());
+                if self.data[i * self.rows + j] > T::zero() {
+                    result.data[i * self.rows + j] = self.data[i * self.rows + j];
+                } else {
+                    result.data[i * self.rows + j] = T::zero();
+                }
+                // result.data[i * self.rows + j] = self.data[i * self.rows + j].max(T::default());
             }
         }
         Ok(())
@@ -84,13 +90,14 @@ impl Relu for Matrix {
 }
 
 #[cfg(not(feature = "int"))]
-impl Softmax for Matrix {
-    fn softmax(&self, result: &mut Matrix) -> Result<(), Error> {
+// TODO: check that Float is what we want
+impl<T: Num + Float> Softmax for Matrix<T> {
+    fn softmax(&self, result: &mut Matrix<T>) -> Result<(), Error> {
         if self.rows != result.rows || self.cols != result.cols {
             return Err(Error::InvalidDimensions);
         }
         for i in 0..self.rows {
-            let mut sum = Number::default();
+            let mut sum = T::default();
             for j in 0..self.cols {
                 let val = self.data[i * self.rows + j].exp();
                 sum += val;
@@ -104,10 +111,10 @@ impl Softmax for Matrix {
     }
 }
 
-impl MaxPooling for Matrix {
+impl<T: Num> MaxPooling for Matrix<T> {
     fn max_pooling(
         &self,
-        result: &mut Matrix,
+        result: &mut Matrix<T>,
         row_stride: usize,
         col_stride: usize,
     ) -> Result<(), Error> {
@@ -119,10 +126,19 @@ impl MaxPooling for Matrix {
                 let mut max = self.data[i * row_stride * self.cols + j * col_stride];
                 for k in 0..row_stride {
                     for l in 0..col_stride {
+                        if max
+                            < self.data
+                                [i * row_stride * self.cols + j * col_stride + k * self.cols + l]
+                        {
+                            max = self.data
+                                [i * row_stride * self.cols + j * col_stride + k * self.cols + l];
+                        }
+                        /*
                         max = max.max(
                             self.data
                                 [i * row_stride * self.cols + j * col_stride + k * self.cols + l],
                         );
+                         */
                     }
                 }
                 result.data[i * result.cols + j] = max;

@@ -1,4 +1,9 @@
 ## Current tasks
+* [ ] Moving to generics for lib
+    - [x] Fixing problems with verify function (mod benchmark_utils)
+    - [x] Basic testing
+    - [x] Check all the code to see that it makes sense
+    - [ ] Make issue on funty, I think it makes sense to point this out
 * [x] Accept non common arguments: test clap(flatten)
 * [x] Improve benchmark template to reflect changes
 * [ ] Test --input and --export functionalities
@@ -54,6 +59,16 @@
 * Make non common but required arguments more prominent (e.g. stride in max pooling) (maybe, usage should be enough actually)
 * Make max pooling deal with more complex cases (https://stackoverflow.com/questions/37674306/what-is-the-difference-between-same-and-valid-padding-in-tf-nn-max-pool-of-t)
 * Right now we will just panic if --export or --verify provide invalid paths, should handle this better
+* Make display a macro to avoid code duplication
+
+### Generics
+How do we make the matrices generic without breaking everything?
+* We still need a type (`Number`) for the GPU4S which will be known at compile time, probably defined in benchmark_utils
+* The matrices have to be generic over a type (let's call it `Num`) which will have a bunch of traits (`Add<Output = Num>`, `Sub`, `Mul`, `Div`, etc)
+* This way we have 2 domains:
+    - The library one (Matrix, Matrix2d, etc) which is fully generic
+    - The GPU4S benchmark one (matrix_multiplication_bench, etc) which is not generic and uses the `Number` type (known at compile time)
+* In the same vain the Matrix structures should be renamed to reflect their internal structure (e.g. `obpmark_rust::matrix_2d::Matrix` -> `obpmark_rust::matrix_2d::Matrix2d`, maybe also change the module structure), and the type Matrix should once again be aliased in the benchmark_utils module to be the one required at compile time
 
 ### RNGs
 Each benchmark could potentially want a different rng, however I don't know that this is worth the effort.  

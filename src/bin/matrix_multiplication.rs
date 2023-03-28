@@ -9,7 +9,7 @@ use core::panic;
 use obpmark_rust::{BaseMatrix, MatMul};
 use std::{path::Path, time::Instant};
 
-use obpmark_rust::benchmark_utils::{verify, CommonArgs, Matrix};
+use obpmark_rust::benchmark_utils::{verify, CommonArgs, Matrix, Number};
 use obpmark_rust::matrix_2d::Matrix as RefMatrix;
 
 #[derive(Parser, Debug)]
@@ -37,9 +37,21 @@ fn main() {
             B = Matrix::from_file(Path::new(&v[1]), args.common.size, args.common.size).unwrap();
         }
         None => {
-            A = Matrix::from_random_seed(seed, args.common.size, args.common.size);
+            A = Matrix::from_random_seed(
+                seed,
+                args.common.size,
+                args.common.size,
+                "-10".parse::<Number>().unwrap(),
+                "10".parse::<Number>().unwrap(),
+            );
             // TODO: decide if this offset to the seed is ok
-            B = Matrix::from_random_seed(seed + 10, args.common.size, args.common.size);
+            B = Matrix::from_random_seed(
+                seed + 10,
+                args.common.size,
+                args.common.size,
+                "-10".parse::<Number>().unwrap(),
+                "10".parse::<Number>().unwrap(),
+            );
         }
     }
 
@@ -82,13 +94,13 @@ fn main() {
         Some(None) => {
             // verify against cpu implementation
             let C_ref = get_ref_result(&A, &B, args.common.size);
-            verify(&C, &C_ref);
+            verify(&C.get_data(), &C_ref.get_data());
         }
         None => (),
     }
 }
 
-fn get_ref_result(A: &Matrix, B: &Matrix, size: usize) -> Matrix {
+fn get_ref_result(A: &Matrix, B: &Matrix, size: usize) -> RefMatrix<Number> {
     let A_ref = RefMatrix::new(A.get_data(), size, size);
     let B_ref = RefMatrix::new(B.get_data(), size, size);
 

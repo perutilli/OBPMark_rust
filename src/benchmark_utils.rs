@@ -1,15 +1,22 @@
 use clap::Parser;
 
-use crate::BaseMatrix;
+#[cfg(feature = "float")]
+pub type Number = f32;
+#[cfg(feature = "double")]
+pub type Number = f64;
+#[cfg(feature = "int")]
+pub type Number = i32;
+#[cfg(not(any(feature = "float", feature = "double", feature = "int")))]
+pub type Number = f32;
 
 #[cfg(feature = "1d")]
-pub type Matrix = crate::matrix_1d::Matrix;
+pub type Matrix = crate::matrix_1d::Matrix<Number>;
 #[cfg(feature = "2d")]
-pub type Matrix = crate::matrix_2d::Matrix;
+pub type Matrix = crate::matrix_2d::Matrix<Number>;
 #[cfg(not(any(feature = "1d", feature = "2d", feature = "ndarray")))]
-pub type Matrix = crate::matrix_2d::Matrix;
+pub type Matrix = crate::matrix_2d::Matrix<Number>;
 #[cfg(feature = "ndarray")]
-pub type Matrix = crate::matrix_ndarray::Matrix; // once again for linting reasons
+pub type Matrix = crate::matrix_ndarray::Matrix<Number>; // once again for linting reasons
 
 #[derive(Parser, Debug)]
 pub struct CommonArgs {
@@ -39,9 +46,9 @@ pub struct CommonArgs {
     pub input: Option<Vec<String>>,
 }
 
-pub fn verify(mat: &Matrix, mat_ref: &Matrix) {
+pub fn verify(mat: &Vec<Vec<Number>>, mat_ref: &Vec<Vec<Number>>) {
     // TODO: potentially use epsilon for comparison
-    if mat.get_data() != mat_ref.get_data() {
+    if mat != mat_ref {
         println!("Verification failed");
     } else {
         println!("Verification passed");
