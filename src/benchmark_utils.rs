@@ -44,6 +44,10 @@ pub struct CommonArgs {
     /// Uses "mat_A.in" ["mat_B.in"] for input data, can take 1 or 2 files
     #[arg(short, long, num_args = 1..=2)]
     pub input: Option<Vec<String>>,
+
+    /// Print the input matrix (or matrices) to stdout
+    #[arg(short, long, default_value_t = false)]
+    pub print_input: bool,
 }
 
 pub fn verify(mat: &Vec<Vec<Number>>, mat_ref: &Vec<Vec<Number>>) {

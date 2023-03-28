@@ -40,6 +40,11 @@ fn main() {
         }
     }
 
+    if args.common.print_input {
+        println!("A:");
+        println!("{}", A);
+    }
+
     B = Matrix::zeroes(args.common.size, args.common.size);
 
     let t0 = Instant::now();

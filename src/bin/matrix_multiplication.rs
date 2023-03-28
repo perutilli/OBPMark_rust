@@ -55,6 +55,13 @@ fn main() {
         }
     }
 
+    if args.common.print_input {
+        println!("A:");
+        println!("{}", A);
+        println!("B:");
+        println!("{}", B);
+    }
+
     C = Matrix::zeroes(args.common.size, args.common.size);
 
     let t0 = Instant::now();

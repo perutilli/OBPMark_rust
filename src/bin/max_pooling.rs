@@ -54,6 +54,11 @@ fn main() {
         }
     }
 
+    if args.common.print_input {
+        println!("A:");
+        println!("{}", A);
+    }
+
     let t0 = Instant::now();
 
     A.max_pooling(&mut B, args.stride, args.stride).unwrap();

@@ -52,23 +52,20 @@
 * Improve ouput formatting to take config like number of digits after the decimal point etc (https://doc.rust-lang.org/std/fmt/)
 * Many things that are pub now might be better as pub(crate) probably
 * Make a macro or something so that the 1d indexing can be written as the 2d one
-* Sadly I think we will need the matrices to be generic (OBPMark repo benchmarks would be easier if we do it this way)
 * Add information to file errors
 * Maybe move input outside of CommonArgs so it can require the exact number of files in depending on the benchmark
 * Move seed to config or something
 * Make non common but required arguments more prominent (e.g. stride in max pooling) (maybe, usage should be enough actually)
 * Make max pooling deal with more complex cases (https://stackoverflow.com/questions/37674306/what-is-the-difference-between-same-and-valid-padding-in-tf-nn-max-pool-of-t)
 * Right now we will just panic if --export or --verify provide invalid paths, should handle this better
-* Make display a macro to avoid code duplication
+* Make macro to parse numbers in the benchmarks when calling functions like Matrix::from_random_seed
 
 ### Generics
-How do we make the matrices generic without breaking everything?
 * We still need a type (`Number`) for the GPU4S which will be known at compile time, probably defined in benchmark_utils
 * The matrices have to be generic over a type (let's call it `Num`) which will have a bunch of traits (`Add<Output = Num>`, `Sub`, `Mul`, `Div`, etc)
 * This way we have 2 domains:
     - The library one (Matrix, Matrix2d, etc) which is fully generic
     - The GPU4S benchmark one (matrix_multiplication_bench, etc) which is not generic and uses the `Number` type (known at compile time)
-* In the same vain the Matrix structures should be renamed to reflect their internal structure (e.g. `obpmark_rust::matrix_2d::Matrix` -> `obpmark_rust::matrix_2d::Matrix2d`, maybe also change the module structure), and the type Matrix should once again be aliased in the benchmark_utils module to be the one required at compile time
 
 ### RNGs
 Each benchmark could potentially want a different rng, however I don't know that this is worth the effort.  
@@ -87,18 +84,15 @@ List of all common arguments for all benchmarks, and ones that could be common i
 * size (-s, --size): size of matrix or matrices (this can be common for the current implementations since they are all square matrices and if there are 2 they are the same size)
 * export (-e, --export): export the results of the output in hexadecimal format (right now it says also verification, for the moment I would leave that out) (this would be -g at the moment)
 * verify (-v, --verify): verify the output against the reference cpu implementation (for now it will be against the Rust's 2d vector implementation, later we might want this to be against the original C implementation) or against the file specified
-* NOT CONSIDERED -g: not considered at the moment
 * output (-o, --output): print the results to stdout in a human readable format that is not suitable for verification (hence it is probably fine to keep it for stdout)
 * timing (-t, --timing): print the timing of the execution: in the gpu version there are 3 times (copy to gpu, kernel execution, copy back to cpu), for now we only have one
-* NOT CONSIDERED -c, -C: having only one time, this does not seem useful
 * input (-i, --input): pass input data (using the hex format)
-* NOT RELEVANT -d: not relevant for cpu benchmarks
 * help (-h, --help): print help information, taken care of by clap
-We can put this in a clap struct in a module "benchmark_utils" or something like that, and then we can import it in all the benchmarks.  
-Then we should think about a macro or something that will take care of the common arguments (this might be a bit tricky, leaving it for later)
-
-#### Potential additions
-* print inputs
+* print-input (-p, --print-input): print the input matrix (or matrices) in a human readable format
+* common but not implemented:
+  - NOT CONSIDERED -g: not considered at the moment
+  - NOT CONSIDERED -c, -C: having only one time, this does not seem useful
+  - NOT RELEVANT -d: not relevant for cpu benchmarks
 
 ### Arguments specific to the benchmarks
 TODO:
