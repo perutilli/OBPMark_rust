@@ -5,7 +5,7 @@ use obpmark_rust::{BaseMatrix, Softmax};
 use std::time::Instant;
 
 use obpmark_rust::benchmark_utils::{verify, CommonArgs, Matrix, Number};
-use obpmark_rust::matrix_2d::Matrix as RefMatrix;
+use obpmark_rust::matrix_2d::Matrix2d as RefMatrix;
 
 #[derive(Parser, Debug)]
 #[command(about = "Softmax function benchmark")]

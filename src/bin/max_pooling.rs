@@ -5,7 +5,7 @@ use std::time::Instant;
 use clap::Parser;
 
 use obpmark_rust::benchmark_utils::{verify, CommonArgs, Matrix, Number};
-use obpmark_rust::matrix_2d::Matrix as RefMatrix;
+use obpmark_rust::matrix_2d::Matrix2d as RefMatrix;
 
 #[derive(Parser, Debug)]
 #[command(about = "Max pooling benchmark")]

@@ -2,21 +2,23 @@ use std::fmt::Display;
 
 use ndarray::Array2;
 
-use crate::{format_number, BaseMatrix, Error, MatMul, Num};
+use crate::{format_number, BaseMatrix, Num};
 
-pub struct Matrix<T: Num> {
+pub struct MatrixNdArray<T: Num> {
     data: Array2<T>,
+    /*
     rows: usize,
     cols: usize,
+     */
 }
 
-impl<T: Num> BaseMatrix<T> for Matrix<T> {
+impl<T: Num> BaseMatrix<T> for MatrixNdArray<T> {
     fn new(data: Vec<Vec<T>>, rows: usize, cols: usize) -> Self {
-        Matrix {
+        MatrixNdArray {
             data: Array2::from_shape_vec((rows, cols), data.into_iter().flatten().collect())
                 .unwrap(),
-            rows,
-            cols,
+            // rows,
+            // cols,
         }
     }
 
@@ -25,7 +27,7 @@ impl<T: Num> BaseMatrix<T> for Matrix<T> {
     }
 }
 
-impl<T: Num> Display for Matrix<T> {
+impl<T: Num> Display for MatrixNdArray<T> {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         for row in self.data.outer_iter() {
             for el in row {

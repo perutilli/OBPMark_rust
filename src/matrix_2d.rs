@@ -4,15 +4,15 @@ use num::Float;
 
 use crate::{format_number, BaseMatrix, Error, MatMul, MaxPooling, Num, Relu, Softmax};
 
-pub struct Matrix<T: Num> {
+pub struct Matrix2d<T: Num> {
     data: Vec<Vec<T>>,
     rows: usize,
     cols: usize,
 }
 
-impl<T: Num> BaseMatrix<T> for Matrix<T> {
-    fn new(data: Vec<Vec<T>>, rows: usize, cols: usize) -> Matrix<T> {
-        Matrix { data, rows, cols }
+impl<T: Num> BaseMatrix<T> for Matrix2d<T> {
+    fn new(data: Vec<Vec<T>>, rows: usize, cols: usize) -> Matrix2d<T> {
+        Matrix2d { data, rows, cols }
     }
 
     fn get_data(&self) -> Vec<Vec<T>> {
@@ -20,7 +20,7 @@ impl<T: Num> BaseMatrix<T> for Matrix<T> {
     }
 }
 
-impl<T: Num> Display for Matrix<T> {
+impl<T: Num> Display for Matrix2d<T> {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         for row in &self.data {
             for el in row {
@@ -33,8 +33,8 @@ impl<T: Num> Display for Matrix<T> {
     }
 }
 
-impl<T: Num> MatMul for Matrix<T> {
-    fn multiply(&self, other: &Matrix<T>, result: &mut Matrix<T>) -> Result<(), Error> {
+impl<T: Num> MatMul for Matrix2d<T> {
+    fn multiply(&self, other: &Matrix2d<T>, result: &mut Matrix2d<T>) -> Result<(), Error> {
         if self.cols != other.rows {
             return Err(Error::InvalidDimensions);
         }
@@ -53,8 +53,8 @@ impl<T: Num> MatMul for Matrix<T> {
     }
 }
 
-impl<T: Num> Relu for Matrix<T> {
-    fn relu(&self, result: &mut Matrix<T>) -> Result<(), Error> {
+impl<T: Num> Relu for Matrix2d<T> {
+    fn relu(&self, result: &mut Matrix2d<T>) -> Result<(), Error> {
         if self.rows != result.rows || self.cols != result.cols {
             return Err(Error::InvalidDimensions);
         }
@@ -73,8 +73,8 @@ impl<T: Num> Relu for Matrix<T> {
 }
 
 #[cfg(not(feature = "int"))]
-impl<T: Num + Float> Softmax for Matrix<T> {
-    fn softmax(&self, result: &mut Matrix<T>) -> Result<(), Error> {
+impl<T: Num + Float> Softmax for Matrix2d<T> {
+    fn softmax(&self, result: &mut Matrix2d<T>) -> Result<(), Error> {
         if self.rows != result.rows || self.cols != result.cols {
             return Err(Error::InvalidDimensions);
         }
@@ -93,10 +93,10 @@ impl<T: Num + Float> Softmax for Matrix<T> {
     }
 }
 
-impl<T: Num> MaxPooling for Matrix<T> {
+impl<T: Num> MaxPooling for Matrix2d<T> {
     fn max_pooling(
         &self,
-        result: &mut Matrix<T>,
+        result: &mut Matrix2d<T>,
         row_stride: usize,
         col_stride: usize,
     ) -> Result<(), Error> {

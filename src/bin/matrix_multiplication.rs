@@ -10,7 +10,7 @@ use obpmark_rust::{BaseMatrix, MatMul};
 use std::{path::Path, time::Instant};
 
 use obpmark_rust::benchmark_utils::{verify, CommonArgs, Matrix, Number};
-use obpmark_rust::matrix_2d::Matrix as RefMatrix;
+use obpmark_rust::matrix_2d::Matrix2d as RefMatrix;
 
 #[derive(Parser, Debug)]
 #[command(about = "Matrix multiplication benchmark")]
