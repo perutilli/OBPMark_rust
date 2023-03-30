@@ -32,8 +32,8 @@ fn main() {
 
     match args.common.input {
         Some(v) => {
-            if v.len() != 1 {
-                panic!("Expected 1 input files, got {}", v.len());
+            if v.len() != 2 {
+                panic!("Expected 2 input files, got {}", v.len());
             }
             A = Matrix::from_file(Path::new(&v[0]), args.common.size, args.common.size).unwrap();
             kernel =
