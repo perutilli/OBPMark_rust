@@ -1,5 +1,4 @@
 use funty::Floating;
-use num::Float;
 
 use crate::{
     format_number, BaseMatrix, Convolution, Correlation, Error, MatMul, MaxPooling, Num, Relu,
@@ -63,8 +62,7 @@ impl<T: Num> Relu for Matrix2d<T> {
     }
 }
 
-#[cfg(not(feature = "int"))]
-impl<T: Num + Float> Softmax for Matrix2d<T> {
+impl<T: Num + Floating> Softmax for Matrix2d<T> {
     fn softmax(&self, result: &mut Matrix2d<T>) -> Result<(), Error> {
         if self.rows != result.rows || self.cols != result.cols {
             return Err(Error::InvalidDimensions);

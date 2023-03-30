@@ -180,6 +180,7 @@ pub fn random_matrix_data<T: Num>(
     data
 }
 
+// TODO: cfg should not be in the lib part, we should configure this some other way
 #[cfg(feature = "int")]
 pub fn format_number<T: Num>(number: &T) -> String {
     // Ok for now, could make it a little more pretty

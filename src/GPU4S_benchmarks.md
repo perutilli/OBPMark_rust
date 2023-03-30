@@ -16,7 +16,7 @@
     - [ ] fast_fourier_transform_bench
     - [ ] fast_fourier_transform_window_bench
     - [ ] finite_impulse_response_bench
-    - [ ] LNR_bench
+    - [x] LNR_bench
     - [x] matrix_multiplication_bench
     - [ ] matrix_multiplication_bench_fp16
     - [x] max_pooling_bench
@@ -35,6 +35,7 @@
 
 ## Questions for Leonidas
 * Does memory_bandwidth_bench make sense in our case?
+* `finite_impulse_response_filter` does not compile!! Also `execute_kernel` in `lib_cpu` and `vector_convolution` in `cpu_functions` do not seem to do the same thing to me
 
 ## Future improvements
 * Improve verification so that the benchmark contains only the code that is unique to it
@@ -106,13 +107,6 @@ use std::time::Instant;
 
 use obpmark_rust::benchmark_utils::CommonArgs;
 
-#[cfg(feature = "1d")]
-use obpmark_rust::matrix_1d::Matrix;
-#[cfg(feature = "2d")]
-use obpmark_rust::matrix_2d::Matrix;
-#[cfg(not(any(feature = "1d", feature = "2d")))]
-use obpmark_rust::matrix_2d::Matrix;
-
 #[derive(Parser, Debug)]
 #[command(about = "Benchmark description")] // TODO: add description
 struct Args {
@@ -175,156 +169,6 @@ fn main() {
 }
 ```
 
-
-## Original arguments
-
-```C
-void print_usage(const char * appName)
-{
-	printf("Usage: %s -s Size [-v] [-e] [-o] [-t] [-d] [-i input_file_A_MATRIX input_file_B_MATRIX] \n", appName);
-	printf(" -s Size : set size of x and y of matrices A and B with Size \n");
-	printf(" -e: exports the results of the output and the verification in hexadecimal format (this enables the verification of the results) \n");
-	printf(" -v: verify the output of the gpu program with the cpu output \n");
-	printf(" -g: exports the results of the output \n");
-	printf(" -o: prints the results\n");
-	printf(" -t: prints the timing\n");
-	printf(" -c: prints the timing in csv format\n");
-	printf(" -i: pass input data and the result and compares\n");
-	printf(" -d: selects GPU\n");
-	printf(" -h: print help information\n");
-}
-
-void print_usage(const char * appName)
-{
-	printf("Usage: %s -s Size [-v] [-e] [-o] [-t] [-d] [-i input_file_A_MATRIX input_file_B_MATRIX] \n", appName);
-	printf(" -s Size : set size of x and y of matrices A and B with Size \n");
-	printf(" -e: exports the results of the output and the verification in hexadecimal format (this enables the verification of the results) \n");
-	printf(" -v: verify the output of the gpu program with the cpu output \n");
-	printf(" -g: exports the results of the output \n");
-	printf(" -o: prints the results\n");
-	printf(" -t: prints the timing\n");
-	printf(" -c: prints the timing in csv format\n");
-	printf(" -C: prints the timing in csv format with timestamp\n");
-	printf(" -i: pass input data and the result and compares\n");
-	printf(" -d: selects GPU\n");
-	printf(" -f: mutes all print\n");
-	printf(" -h: print help information\n");
-}
-
-void print_usage(const char * appName)
-{
-	printf("Usage: %s -s Size -k [-v] [-e] [-o] [-t] [-d] [-i input_file_A_MATRIX input_file_B_MATRIX] \n", appName);
-	printf(" -s Size : set size of x and y of matrices A and B with Size \n");
-	printf(" -k: size of the kernel\n");
-	printf(" -e: exports the results of the output and the verification in hexadecimal format (this enables the verification of the results) \n");
-	printf(" -v: verify the output of the gpu program with the cpu output \n");
-	printf(" -g: exports the results of the output \n");
-	printf(" -o: prints the results\n");
-	printf(" -t: prints the timing\n");
-	printf(" -c: prints the timing in csv format\n");
-	printf(" -C: prints the timing in csv format with timestamp\n");
-	printf(" -q: prints input values\n");
-	printf(" -i: pass input data and the result and compares\n");
-	printf(" -d: selects GPU\n");
-	printf(" -f: mutes all print\n");
-	printf(" -h: print help information\n");
-}
-void print_usage(const char * appName)
-{
-	printf("Usage: %s -s Size [-w] [-v] [-e] [-o] [-t] [-c] [-d] [-i input_file_A_MATRIX ] \n", appName);
-	printf(" -s Size : set size of furier transform power of 2 \n");
-	printf(" -w: window size power of 2 and smaller than size\n");
-	printf(" -e: exports the results of the output and the verification in hexadecimal format (this enables the verification of the results) \n");
-	printf(" -v: verify the output of the gpu program with the cpu output \n");
-	printf(" -g: exports the results of the output \n");
-	printf(" -o: prints the results\n");
-	printf(" -t: prints the timing\n");
-	printf(" -c: prints the timing in csv format\n");
-	printf(" -C: prints the timing in csv format with timestamp\n");
-	printf(" -i: pass input data and the result and compares\n");
-	printf(" -q: prints input\n");
-	printf(" -d: selects GPU\n");
-	printf(" -h: print help information\n");
-}
-
-void print_usage(const char * appName)
-{
-	printf("Usage: %s -s Size [-v] [-e] [-o] [-t] [-d] [-i input_file_A_MATRIX input_file_B_MATRIX] \n", appName);
-	printf(" -s Size : set size of x and y of matrices A and B with Size \n");
-	printf(" -e: exports the results of the output and the verification in hexadecimal format (this enables the verification of the results) \n");
-	printf(" -v: verify the output of the gpu program with the cpu output \n");
-	printf(" -g: exports the results of the output \n");
-	printf(" -o: prints the results\n");
-	printf(" -t: prints the timing\n");
-	printf(" -c: prints the timing in csv format\n");
-	printf(" -C: prints the timing in csv format with timestamp\n");
-	printf(" -i: pass input data and the result and compares\n");
-	printf(" -d: selects GPU\n");
-	printf(" -f: mutes all print\n");
-	printf(" -h: print help information\n");
-}
-
-void print_usage(const char * appName)
-{
-	printf("Usage: %s -s Size [-w] [-v] [-e] [-o] [-t] [-c] [-d] [-i input_file_A_MATRIX ] \n", appName);
-	printf(" -s Size : set size of furier transform power of 2 \n");
-	printf(" -e: exports the results of the output and the verification in hexadecimal format (this enables the verification of the results) \n");
-	printf(" -v: verify the output of the gpu program with the cpu output \n");
-	printf(" -g: exports the results of the output \n");
-	printf(" -o: prints the results\n");
-	printf(" -t: prints the timing\n");
-	printf(" -c: prints the timing in csv format\n");
-	printf(" -C: prints the timing in csv format with timestamp\n");
-	printf(" -i: pass input data and the result and compares\n");
-	printf(" -q: prints input\n");
-	printf(" -d: selects GPU\n");
-	printf(" -h: print help information\n");
-}
-
-void print_usage(const char * appName)
-{
-	printf("Usage: %s -s Size -k [-v] [-e] [-o] [-t] [-d] [-i input_file_A_MATRIX input_file_B_MATRIX] \n", appName);
-	printf(" -s Size : set size of x and y of matrix A and matrix B\n");
-	printf(" -e: exports the results of the output and the verification in hexadecimal format (this enables the verification of the results) \n");
-	printf(" -v: verify the output of the gpu program with the cpu output \n");
-	printf(" -g: exports the results of the output \n");
-	printf(" -o: prints the results\n");
-	printf(" -t: prints the timing\n");
-	printf(" -c: prints the timing in csv format\n");
-	printf(" -C: prints the timing in csv format with timestamp\n");
-	printf(" -q: prints input values\n");
-	printf(" -i: pass input data and the result and compares\n");
-	printf(" -d: selects GPU\n");
-	printf(" -f: mutes all print\n");
-	printf(" -h: print help information\n");
-}
-
-void print_usage(const char * appName)
-{
-	printf("Usage: %s -s Size -k [-v] [-e] [-o] [-t] [-d] [-i input_file_A_MATRIX input_file_B_MATRIX] \n", appName);
-	printf(" -s Size : set size of x and y of matrices A and B with Size \n");
-	printf(" -k: size of the kernel\n");
-	printf(" -e: exports the results of the output and the verification in hexadecimal format (this enables the verification of the results) \n");
-	printf(" -v: verify the output of the gpu program with the cpu output \n");
-	printf(" -g: exports the results of the output \n");
-	printf(" -o: prints the results\n");
-	printf(" -t: prints the timing\n");
-	printf(" -c: prints the timing in csv format\n");
-	printf(" -C: prints the timing in csv format with timestamp\n");
-	printf(" -q: prints input values\n");
-	printf(" -i: pass input data and the result and compares\n");
-	printf(" -d: selects GPU\n");
-	printf(" -f: mutes all print\n");
-	printf(" -h: print help information\n");
-}
-```
-
-
-
-
-
-
-
 ## General notes
 <mark>Remember to use the `--release` flag when compiling the benchmarks if testing the performance!!!</mark>
 
@@ -339,60 +183,3 @@ These are some probably more suitable alternatives:
 * rulinalg a linear algebra library written in Rust that doesn’t require heavy external dependencies. (https://github.com/AtheMathmo/rulinalg/) -> apparently not maintained anymore 
  
 Is this even the direction we want to go? I think we might want to implement this ourselves, in which case though we should probably have this be a separate library, so that the code is usable not exclusively for this benchmark.
-
-How can I check correctness??
-
-Our structure could be the following:
-
-`lib.rs`
-```rust
-mod matrix_1d;
-mod matrix_2d;
-mod matrix_ndarray;
-
-// error enum definition
-
-trait MatMul {
-    fn mat_mul(&self, other: &Self, res: &mut Self) -> Result<(), Error>;
-}
-```
-
-`matrix_1d.rs`
-```rust
-pub struct Matrix {
-    data: Vec<Number>,
-    rows: usize,
-    cols: usize,
-}
-
-impl MatMul for Matrix {
-    fn mat_mul(&self, other: &Self, res: &mut Self) -> Result<(), Error> {
-        // do stuff
-    }
-}
-```
-
-`matrix_2d.rs`
-```rust
-pub struct Matrix {
-    data: Vec<Vec<Number>>,
-    rows: usize,
-    cols: usize,
-}
-```
-
-`main.rs`
-```rust
-#[cfg(feature = "matrix_1d")]
-use matrix_1d::Matrix;
-#[cfg(feature = "matrix_2d")]
-use matrix_2d::Matrix;
-#[cfg(feature = "matrix_ndarray")]
-use matrix_ndarray::Matrix;
-
-```
-I think it should check all the boxes:  
-- [x] straight forward and localized conditional compilation
-- [x] binary size should be the same as if we had a single implementation
-- [x] completely transparent to the main function, it only has to use the `Matrix` type
-- [x] each benchmark defines a new trait and implements it for the various matrix types
