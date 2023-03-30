@@ -1,4 +1,4 @@
-use funty;
+use funty::{self, Floating};
 use num;
 use rand::distributions::uniform::SampleUniform;
 use rand::rngs::StdRng;
@@ -156,6 +156,10 @@ pub trait Correlation {
 
 pub trait Convolution {
     fn convolute(&self, kernel: &Self, padding: Padding, result: &mut Self) -> Result<(), Error>;
+}
+
+pub trait LRN<T: Num + Floating> {
+    fn lrn(&self, result: &mut Self, alpha: T, beta: T, k: T) -> Result<(), Error>;
 }
 
 pub fn random_matrix_data<T: Num>(

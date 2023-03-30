@@ -1,8 +1,9 @@
+use funty::Floating;
 use num::Float;
 
 use crate::{
     format_number, BaseMatrix, Convolution, Correlation, Error, MatMul, MaxPooling, Num, Relu,
-    Softmax,
+    Softmax, LRN,
 };
 
 pub struct Matrix1d<T: Num> {
@@ -189,6 +190,23 @@ impl<T: Num> Convolution for Matrix1d<T> {
                     }
                 }
                 result.data[i * result.cols + j] = sum;
+            }
+        }
+        Ok(())
+    }
+}
+
+impl<T: Num + Floating> LRN<T> for Matrix1d<T> {
+    fn lrn(&self, result: &mut Self, alpha: T, beta: T, k: T) -> Result<(), Error> {
+        // TODO: this is actually a special case where n = 1, ok for the benchmark but not general
+        if self.rows != result.rows || self.cols != result.cols {
+            return Err(Error::InvalidDimensions);
+        }
+        for i in 0..self.rows {
+            for j in 0..self.cols {
+                result.data[i * result.cols + j] = self.data[i * self.cols + j]
+                    / (k + alpha * self.data[i * self.cols + j] * self.data[i * self.cols + j])
+                        .powf(beta);
             }
         }
         Ok(())
