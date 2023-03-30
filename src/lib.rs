@@ -120,21 +120,6 @@ macro_rules! impl_display {
     };
     () => {};
 }
-/*
-TODO: this is not possible like so, look here https://www.reddit.com/r/rust/comments/7qqbyp/comment/dss5b6z/
-impl Display for BaseMatrix {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        for row in self.get_data() {
-            for el in row {
-                // NOTE: this way we have a space before the newline, might not be what we want
-                write!(f, "{} ", format_number(&el))?;
-            }
-            writeln!(f)?;
-        }
-        Ok(())
-    }
-}
-*/
 
 pub trait MatMul {
     fn multiply(&self, other: &Self, result: &mut Self) -> Result<(), Error>;
@@ -155,6 +140,13 @@ pub trait MaxPooling {
         row_stride: usize,
         col_stride: usize,
     ) -> Result<(), Error>;
+}
+
+// TODO: check with Leonidas the expected precision of this
+// in the C version it is Num: i32 -> f32, Num: f32 -> f32, Num: f64 -> f64
+// for semplicity I am going to use f64 for all for now
+pub trait Correlation {
+    fn correlation(&self, other: &Self) -> Result<f64, Error>;
 }
 
 pub fn random_matrix_data<T: Num>(

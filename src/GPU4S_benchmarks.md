@@ -1,5 +1,5 @@
 ## Current tasks
-* [ ] Moving to generics for lib
+* [x] Moving to generics for lib
     - [x] Fixing problems with verify function (mod benchmark_utils)
     - [x] Basic testing
     - [x] Check all the code to see that it makes sense
@@ -19,32 +19,21 @@
     - [ ] LNR_bench
     - [x] matrix_multiplication_bench
     - [ ] matrix_multiplication_bench_fp16
-    - [ ] matrix_multiplication_tensor_bench
     - [x] max_pooling_bench
     - [ ] memory_bandwidth_bench
     - [x] relu_bench
-    - [ ] softmax_bench TODO: implement it for int, need to wait for Leonidas
+    - [x] softmax_bench TODO: It does not make sense for int, should be enforced at compile time
     - [ ] wavelet_transform
 * [x] Implement from_file and to_file for Matrix types
 * [ ] Create unit tests for unit testable functions (this will need a list)
 
+## 29/03 Meeting
+* Correlation in the C version it is Num: i32 -> f32, Num: f32 -> f32, Num: f64 -> f64, Keep the behaviour (maybe or just make all f64)
+* Is this something we might be interested in: make max pooling deal with more complex cases (https://stackoverflow.com/questions/37674306/what-is-the-difference-between-same-and-valid-padding-in-tf-nn-max-pool-of-t) No but keep it for documentation purposes
+* The benchmarks should be exactly the same as the original ones so that we can compare the results
+* File stuff is not necessary for embedded systems, only when running on top of OS, so it is not as important
+
 ## Questions for Leonidas
-* Softmax does not seem to work for INT in the C cpu implementation, here is the output I get:
-    ```bash
-    ./bin/softmax_cpu_int_16 -s 10 -o
-    Using device: Generic device
-    0 -2 -2 -2 -2 -2 -2 0 -2 0 
-    -2 -2 -2 -2 -2 -2 -2 0 0 -2 
-    -2 -2 0 -2 -2 -2 -2 0 -2 -2 
-    0 -2 -2 0 -2 -2 -2 0 0 -2 
-    0 -2 -2 -2 -2 -2 0 0 -2 -2 
-    0 -2 -2 -2 -2 -2 -2 0 -2 0 
-    -2 0 -2 -2 0 -2 0 -2 -2 -2 
-    0 -2 -2 -2 -2 0 0 -2 0 0 
-    -2 -2 -2 -2 -2 0 -2 -2 -2 -2 
-    -2 -2 0 0 -2 -2 -2 -2 -2 -2 
-    ```
-    What would be the correct output? If the output has to be int then wouldn't this just be argmax?
 
 
 ## Future improvements
@@ -55,8 +44,6 @@
 * Add information to file errors
 * Maybe move input outside of CommonArgs so it can require the exact number of files in depending on the benchmark
 * Move seed to config or something
-* Make non common but required arguments more prominent (e.g. stride in max pooling) (maybe, usage should be enough actually)
-* Make max pooling deal with more complex cases (https://stackoverflow.com/questions/37674306/what-is-the-difference-between-same-and-valid-padding-in-tf-nn-max-pool-of-t)
 * Right now we will just panic if --export or --verify provide invalid paths, should handle this better
 * Make macro to parse numbers in the benchmarks when calling functions like Matrix::from_random_seed
 

@@ -1,6 +1,8 @@
 use num::Float;
 
-use crate::{format_number, BaseMatrix, Error, MatMul, MaxPooling, Num, Relu, Softmax};
+use crate::{
+    format_number, BaseMatrix, Correlation, Error, MatMul, MaxPooling, Num, Relu, Softmax,
+};
 
 pub struct Matrix2d<T: Num> {
     data: Vec<Vec<T>>,
@@ -105,5 +107,33 @@ impl<T: Num> MaxPooling for Matrix2d<T> {
             }
         }
         Ok(())
+    }
+}
+
+impl<T: Num> Correlation for Matrix2d<T> {
+    fn correlation(&self, other: &Matrix2d<T>) -> Result<f64, Error> {
+        if self.rows != other.rows || self.cols != other.cols {
+            return Err(Error::InvalidDimensions);
+        }
+
+        let mut acc_self_sq = 0_f64;
+        let mut acc_other_sq = 0_f64;
+        let mut acc_self_other = 0_f64;
+
+        let self_mean =
+            self.data.iter().flatten().sum::<T>().as_f64() / (self.rows * self.cols) as f64;
+        let other_mean =
+            other.data.iter().flatten().sum::<T>().as_f64() / (other.rows * other.cols) as f64;
+
+        for i in 0..self.rows {
+            for j in 0..self.cols {
+                let self_delta = self.data[i][j].as_f64() - self_mean;
+                let other_delta = other.data[i][j].as_f64() - other_mean;
+                acc_self_sq += self_delta * self_delta;
+                acc_other_sq += other_delta * other_delta;
+                acc_self_other += self_delta * other_delta;
+            }
+        }
+        Ok(acc_self_other / (acc_self_sq * acc_other_sq).sqrt())
     }
 }
