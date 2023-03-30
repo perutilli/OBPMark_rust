@@ -10,8 +10,8 @@
 * [ ] Implement all benchmarks in their naive (1d and 2d vector) form (original names):
     - [ ] cifar_10
     - [ ] cifar_10_multiple
-    - [ ] convolution_2D_bench
-    - [ ] correlation_2D
+    - [x] convolution_2D_bench
+    - [x] correlation_2D
     - [ ] fast_fourier_transform_2D_bench
     - [ ] fast_fourier_transform_bench
     - [ ] fast_fourier_transform_window_bench
@@ -34,7 +34,7 @@
 * File stuff is not necessary for embedded systems, only when running on top of OS, so it is not as important
 
 ## Questions for Leonidas
-
+* Does memory_bandwidth_bench make sense in our case?
 
 ## Future improvements
 * Improve verification so that the benchmark contains only the code that is unique to it

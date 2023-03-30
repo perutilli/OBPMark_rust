@@ -60,3 +60,10 @@ macro_rules! verify {
         }
     };
 }
+
+#[macro_export]
+macro_rules! number {
+    ($e:expr) => {
+        $e.parse::<Number>().unwrap()
+    };
+}

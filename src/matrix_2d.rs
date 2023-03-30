@@ -1,7 +1,8 @@
 use num::Float;
 
 use crate::{
-    format_number, BaseMatrix, Correlation, Error, MatMul, MaxPooling, Num, Relu, Softmax,
+    format_number, BaseMatrix, Convolution, Correlation, Error, MatMul, MaxPooling, Num, Relu,
+    Softmax,
 };
 
 pub struct Matrix2d<T: Num> {
@@ -135,5 +136,46 @@ impl<T: Num> Correlation for Matrix2d<T> {
             }
         }
         Ok(acc_self_other / (acc_self_sq * acc_other_sq).sqrt())
+    }
+}
+
+use crate::Padding;
+impl<T: Num> Convolution for Matrix2d<T> {
+    fn convolute(&self, kernel: &Self, padding: Padding, result: &mut Self) -> Result<(), Error> {
+        match padding {
+            Padding::Zeroes => (),
+        }
+
+        if self.rows != result.rows || self.cols != result.cols {
+            // NOTE: this is a very specific kind of convolution, we probably want to support
+            //       more general cases, in particular at least the no padding case
+            return Err(Error::InvalidDimensions);
+        }
+
+        if kernel.rows % 2 == 0 || kernel.cols % 2 == 0 {
+            return Err(Error::InvalidKernelDimensions);
+        }
+
+        let kernel_y_radius = (kernel.rows - 1) / 2;
+        let kernel_x_radius = (kernel.cols - 1) / 2;
+
+        for i in 0..self.rows {
+            for j in 0..self.cols {
+                let mut sum = T::zero();
+                for k in 0..kernel.rows {
+                    for l in 0..kernel.cols {
+                        let y = (i + k) as isize - kernel_y_radius as isize;
+                        let x = (j + l) as isize - kernel_x_radius as isize;
+                        if (y > 0 && y < self.rows as isize) && (x > 0 && x < self.cols as isize) {
+                            let y = y as usize;
+                            let x = x as usize;
+                            sum += self.data[y][x] * kernel.data[k][l];
+                        }
+                    }
+                }
+                result.data[i][j] = sum;
+            }
+        }
+        Ok(())
     }
 }

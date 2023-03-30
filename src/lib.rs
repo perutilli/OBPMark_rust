@@ -16,6 +16,7 @@ impl Num for i32 {}
 #[derive(Debug)]
 pub enum Error {
     InvalidDimensions,
+    InvalidKernelDimensions,
 }
 
 #[derive(Debug)]
@@ -23,6 +24,10 @@ pub enum FileError {
     IoError(std::io::Error),
     InvalidSize(usize, usize),
     InvalidDatatype,
+}
+
+pub enum Padding {
+    Zeroes,
 }
 
 impl From<std::io::Error> for FileError {
@@ -147,6 +152,10 @@ pub trait MaxPooling {
 // for semplicity I am going to use f64 for all for now
 pub trait Correlation {
     fn correlation(&self, other: &Self) -> Result<f64, Error>;
+}
+
+pub trait Convolution {
+    fn convolute(&self, kernel: &Self, padding: Padding, result: &mut Self) -> Result<(), Error>;
 }
 
 pub fn random_matrix_data<T: Num>(
