@@ -1,4 +1,5 @@
 ## Current tasks
+* [ ] Probably move to num_traits (from num)
 * [x] Moving to generics for lib
     - [x] Fixing problems with verify function (mod benchmark_utils)
     - [x] Basic testing
@@ -18,14 +19,18 @@
     - [ ] finite_impulse_response_bench
     - [x] LNR_bench
     - [x] matrix_multiplication_bench
-    - [ ] matrix_multiplication_bench_fp16
+    - [ ] matrix_multiplication_bench_fp16; Waiting for call with Leonidas
     - [x] max_pooling_bench
-    - [ ] memory_bandwidth_bench
+    - [ ] memory_bandwidth_bench; Does not apply (?)
     - [x] relu_bench
     - [x] softmax_bench TODO: It does not make sense for int, should be enforced at compile time
     - [ ] wavelet_transform
 * [x] Implement from_file and to_file for Matrix types
+* [ ] Test the performance against the original benchmarks
 * [ ] Create unit tests for unit testable functions (this will need a list)
+* [ ] set for now just panics if indeces are invalid, maybe should return Result
+* [ ] fft macro could be a single one for both 1d and 2d given that the the matrix always has 1 row
+* [ ] understand how we should verify our output against matlab for fft
 
 ## 29/03 Meeting
 * Correlation in the C version it is Num: i32 -> f32, Num: f32 -> f32, Num: f64 -> f64, Keep the behaviour (maybe or just make all f64)
@@ -34,8 +39,13 @@
 * File stuff is not necessary for embedded systems, only when running on top of OS, so it is not as important
 
 ## Questions for Leonidas
-* Does memory_bandwidth_bench make sense in our case?
-* `finite_impulse_response_filter` does not compile!! Also `execute_kernel` in `lib_cpu` and `vector_convolution` in `cpu_functions` do not seem to do the same thing to me
+* Does memory_bandwidth_bench make sense in our case? (believe it does not, I think it measures the time to copy to and from the device)
+* `finite_impulse_response_filter` does not compile for CPU as well (as fft)
+* The fft benchmarks are not available in CPU versions (mentioned in person)
+* Discuss the f16 situation (check obsidian note for more info)
+* fft seems to work differently in that it modifies the input vector, instead of having a separate result, should we leave it as such or modify to be coherent with the rest? (I think it would be better to modify it)
+* The 1d version of fft to me seems like it uses real numbers, is that true?
+* Generally how should we evaluate the performace of the parallel benchmarks? Considering that we are running them on linux at the moment, should we have a target machine against which optimize? Should we not try and optimize the os ones? What are your thoughts on this?
 
 ## Future improvements
 * Improve verification so that the benchmark contains only the code that is unique to it
@@ -46,7 +56,9 @@
 * Maybe move input outside of CommonArgs so it can require the exact number of files in depending on the benchmark
 * Move seed to config or something
 * Right now we will just panic if --export or --verify provide invalid paths, should handle this better
-* Make macro to parse numbers in the benchmarks when calling functions like Matrix::from_random_seed
+
+### Open questions
+* How do we do verification in a resonable and automated way?
 
 ### Generics
 * We still need a type (`Number`) for the GPU4S which will be known at compile time, probably defined in benchmark_utils
@@ -63,7 +75,7 @@ Using an offset to the seed to generate different matrices in the mat mul benchm
 ### Ndarray correcteness
 As (maybe) expected, the ndarray fails verification for float and double. However sometimes it does pass using epsilon of 1e-4 (same used in the original benchmark). Why does this happen?  
 Also how come it is so fast -> Quite sure it uses BLAS or something similar, we need to be sure of this.   
-<mark> I think we might want to abandon ndarray at least for the moment</mark>, it might not be mantained anymore. I do want to come back to it, but it seems a bit too opaque of a package. 
+<mark>I think we might want to abandon ndarray at least for the moment</mark>, it might not be mantained anymore. I do want to come back to it, but it seems a bit too opaque of a package. 
 
 ## Standardizing arguments
 
