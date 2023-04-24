@@ -11,6 +11,7 @@ rand = "0.8.5"
 ndarray = "0.15.6"
 funty = "2.0.0"
 num = "0.4.0"
+num-traits = "0.2.14"
 
 [features]
 default = []

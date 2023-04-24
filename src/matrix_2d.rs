@@ -3,8 +3,8 @@ use std::sync::Arc;
 use std::thread;
 
 use crate::{
-    format_number, BaseMatrix, Convolution, Correlation, Error, MatMul, MaxPooling, Num,
-    ParallelMatMul, Relu, Softmax, LRN,
+    format_number, BaseMatrix, Convolution, Correlation, Error, FastFourierTransform, MatMul,
+    MaxPooling, Num, ParallelMatMul, Relu, Softmax, LRN,
 };
 
 pub struct Matrix2d<T: Num> {
@@ -20,6 +20,11 @@ impl<T: Num> BaseMatrix<T> for Matrix2d<T> {
 
     fn get_data(&self) -> Vec<Vec<T>> {
         self.data.clone()
+    }
+
+    fn set(&mut self, row: usize, col: usize, value: T) {
+        assert!(row < self.rows && col < self.cols, "Invalid indexing");
+        self.data[row][col] = value;
     }
 }
 
@@ -196,6 +201,66 @@ impl<T: Num + Floating> LRN<T> for Matrix2d<T> {
         Ok(())
     }
 }
+
+macro_rules! impl_fft {
+    ($t:tt) => {
+        impl FastFourierTransform for Matrix2d<$t> {
+            fn fft(&mut self, nn: usize) -> Result<(), Error> {
+                if self.rows != 1 {
+                    return Err(Error::InvalidDimensions);
+                }
+
+                let data = &mut self.data[1];
+
+                let n = nn << 1;
+                let mut j = 1;
+                for i in 1..n {
+                    if j > i {
+                        data.swap(j - 1, i - 1);
+                        data.swap(j, i);
+                    }
+                    let mut m = nn;
+                    while m >= 2 && j > m {
+                        j -= m;
+                        m >>= 1;
+                    }
+                    j += m;
+                }
+
+                let mut mmax = 2;
+                while n > mmax {
+                    let istep = mmax << 1;
+                    let theta = -(2.0 * std::$t::consts::PI / mmax as $t);
+                    let wtemp = (theta / 2.0).sin();
+                    let wpr = -2.0 * wtemp * wtemp;
+                    let wpi = (theta / 2.0).sin();
+                    let mut wr = 1.0;
+                    let mut wi = 0.0;
+                    for m in (1..mmax).step_by(2) {
+                        for i in (m..=n).step_by(istep) {
+                            let j = i + mmax;
+                            let tempr = wr * data[j - 1] - wi * data[j];
+                            let tempi = wr * data[j] + wi * data[j - 1];
+                            data[j - 1] = data[i - 1] - tempr;
+                            data[j] = data[i] - tempi;
+                            data[i - 1] += tempr;
+                            data[i] += tempi;
+                        }
+                        let wtemp = wr;
+                        wr += wr * wpr - wi * wpi;
+                        wi += wi * wpr + wtemp * wpi;
+                    }
+                    mmax = istep;
+                }
+                Ok(())
+            }
+        }
+    };
+    () => {};
+}
+
+impl_fft!(f32);
+impl_fft!(f64);
 
 impl<T: Num> ParallelMatMul for Matrix2d<T> {
     fn parallel_multiply(

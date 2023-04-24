@@ -1,12 +1,11 @@
-use crate::ParallelMatMul;
 use std::sync::Arc;
 use std::thread;
 
 use funty::Floating;
 
 use crate::{
-    format_number, BaseMatrix, Convolution, Correlation, Error, MatMul, MaxPooling, Num, Relu,
-    Softmax, LRN,
+    format_number, BaseMatrix, Convolution, Correlation, Error, FastFourierTransform, MatMul,
+    MaxPooling, Num, ParallelMatMul, Relu, Softmax, LRN,
 };
 
 pub struct Matrix1d<T: Num> {
@@ -30,6 +29,10 @@ impl<T: Num> BaseMatrix<T> for Matrix1d<T> {
             .chunks(self.cols)
             .map(|x| x.to_vec())
             .collect::<Vec<Vec<T>>>()
+    }
+    fn set(&mut self, row: usize, col: usize, value: T) {
+        assert!(row < self.rows && col < self.cols, "Invalid indexing");
+        self.data[row * self.cols + col] = value;
     }
 }
 
@@ -214,60 +217,62 @@ impl<T: Num + Floating> LRN<T> for Matrix1d<T> {
     }
 }
 
-/*
-impl<T: Num> ParallelMatMul for Matrix2d<T> {
-    fn parallel_multiply(
-        &self,
-        other: &Self,
-        result: &mut Self,
-        n_threads: usize,
-    ) -> Result<(), Error> {
-        if self.cols != other.rows || self.rows != result.rows || other.cols != result.cols {
-            return Err(Error::InvalidDimensions);
-        }
-        if self.rows % n_threads != 0 {
-            return Err(Error::InvalidNumberOfThreads);
-        }
-        // first we create an Arc for the input data
-        let self_data = Arc::new(self.clone());
-        let other_data = Arc::new(other.clone());
-        thread::scope(|s| {
-            let mut threads_handles = Vec::new();
-            let rows_per_thread = self.rows / n_threads;
-            // this scope says that all the threads will be joined before the scope ends
-            // i.e right after the most external for loop ends
-            // the compiler is not able to infer the lifetime of the threads
-            for chunk in 0..(self.rows / rows_per_thread) {
-                let self_data = self_data.clone();
-                let other_data = other_data.clone();
-                //let result_row = &mut (result.data[i]);
-                threads_handles.push(s.spawn(move || {
-                    let mut result_rows = vec![vec![T::zero(); other.cols]; rows_per_thread];
-                    for i in 0..rows_per_thread {
-                        for j in 0..other.cols {
-                            let mut sum = T::zero();
-                            for k in 0..self.cols {
-                                sum += self_data.data[i + chunk * rows_per_thread][k]
-                                    * other_data.data[k][j];
-                            }
-                            result_rows[i][j] = sum;
-                        }
-                    }
-                    result_rows
-                }));
-            }
-            for (i, handle) in threads_handles.into_iter().enumerate() {
-                let chunk = handle.join().unwrap();
-                for (j, row) in chunk.into_iter().enumerate() {
-                    result.data[i * rows_per_thread + j] = row;
+macro_rules! impl_fft {
+    ($t:tt) => {
+        impl FastFourierTransform for Matrix1d<$t> {
+            fn fft(&mut self, nn: usize) -> Result<(), Error> {
+                if self.rows != 1 {
+                    return Err(Error::InvalidDimensions);
                 }
-            }
-        });
+                let n = nn << 1;
+                let mut j = 1;
+                for i in 1..n {
+                    if j > i {
+                        self.data.swap(j - 1, i - 1);
+                        self.data.swap(j, i);
+                    }
+                    let mut m = nn;
+                    while m >= 2 && j > m {
+                        j -= m;
+                        m >>= 1;
+                    }
+                    j += m;
+                }
 
-        Ok(())
-    }
+                let mut mmax = 2;
+                while n > mmax {
+                    let istep = mmax << 1;
+                    let theta = -(2.0 * std::$t::consts::PI / mmax as $t);
+                    let wtemp = (theta / 2.0).sin();
+                    let wpr = -2.0 * wtemp * wtemp;
+                    let wpi = (theta / 2.0).sin();
+                    let mut wr = 1.0;
+                    let mut wi = 0.0;
+                    for m in (1..mmax).step_by(2) {
+                        for i in (m..=n).step_by(istep) {
+                            let j = i + mmax;
+                            let tempr = wr * self.data[j - 1] - wi * self.data[j];
+                            let tempi = wr * self.data[j] + wi * self.data[j - 1];
+                            self.data[j - 1] = self.data[i - 1] - tempr;
+                            self.data[j] = self.data[i] - tempi;
+                            self.data[i - 1] += tempr;
+                            self.data[i] += tempi;
+                        }
+                        let wtemp = wr;
+                        wr += wr * wpr - wi * wpi;
+                        wi += wi * wpr + wtemp * wpi;
+                    }
+                    mmax = istep;
+                }
+                Ok(())
+            }
+        }
+    };
+    () => {};
 }
-The code above is the implementation for the 2d matrix. Below we implement the trait for the 1d version */
+
+impl_fft!(f32);
+impl_fft!(f64);
 
 impl<T: Num> ParallelMatMul for Matrix1d<T> {
     fn parallel_multiply(

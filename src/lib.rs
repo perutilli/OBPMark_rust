@@ -1,5 +1,5 @@
 use funty::{self, Floating};
-use num;
+use num_traits;
 use rand::distributions::uniform::SampleUniform;
 use rand::rngs::StdRng;
 use rand::{Rng, SeedableRng};
@@ -7,7 +7,7 @@ use std::fs::File;
 use std::io::{self, BufRead, Write};
 use std::path::Path;
 
-pub trait Num: funty::Numeric + num::Zero + SampleUniform {}
+pub trait Num: funty::Numeric + num_traits::Zero + SampleUniform {}
 
 impl Num for f32 {}
 impl Num for f64 {}
@@ -107,6 +107,7 @@ pub trait BaseMatrix<T: Num> {
         }
         Ok(())
     }
+    fn set(&mut self, row: usize, col: usize, value: T);
 }
 
 macro_rules! impl_display {
@@ -161,6 +162,10 @@ pub trait Convolution {
 
 pub trait LRN<T: Num + Floating> {
     fn lrn(&self, result: &mut Self, alpha: T, beta: T, k: T) -> Result<(), Error>;
+}
+
+pub trait FastFourierTransform {
+    fn fft(&mut self, nn: usize) -> Result<(), Error>;
 }
 
 pub trait ParallelMatMul {

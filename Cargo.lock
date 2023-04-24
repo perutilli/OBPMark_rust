@@ -253,6 +253,7 @@ dependencies = [
  "funty",
  "ndarray",
  "num",
+ "num-traits",
  "rand",
 ]
 

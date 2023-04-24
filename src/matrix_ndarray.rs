@@ -23,6 +23,10 @@ impl<T: Num> BaseMatrix<T> for MatrixNdArray<T> {
     fn get_data(&self) -> Vec<Vec<T>> {
         self.data.outer_iter().map(|x| x.to_vec()).collect()
     }
+
+    fn set(&mut self, row: usize, col: usize, value: T) {
+        unimplemented!("{} {} {}", row, col, value);
+    }
 }
 
 impl_display!(MatrixNdArray);
