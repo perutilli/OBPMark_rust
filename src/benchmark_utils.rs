@@ -46,8 +46,12 @@ pub struct CommonArgs {
     pub input: Option<Vec<String>>,
 
     /// Print the input matrix (or matrices) to stdout
-    #[arg(short, long, default_value_t = false)]
+    #[arg(long, default_value_t = false)]
     pub print_input: bool,
+
+    /// Number of threads to use (default: 1)
+    #[arg(short, long, default_value_t = 1)]
+    pub parallel: usize,
 }
 
 #[macro_export]

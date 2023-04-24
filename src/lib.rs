@@ -17,6 +17,7 @@ impl Num for i32 {}
 pub enum Error {
     InvalidDimensions,
     InvalidKernelDimensions,
+    InvalidNumberOfThreads,
 }
 
 #[derive(Debug)]
@@ -160,6 +161,15 @@ pub trait Convolution {
 
 pub trait LRN<T: Num + Floating> {
     fn lrn(&self, result: &mut Self, alpha: T, beta: T, k: T) -> Result<(), Error>;
+}
+
+pub trait ParallelMatMul {
+    fn parallel_multiply(
+        &self,
+        other: &Self,
+        result: &mut Self,
+        n_threads: usize,
+    ) -> Result<(), Error>;
 }
 
 pub fn random_matrix_data<T: Num>(

@@ -6,7 +6,7 @@
 #![allow(non_snake_case)] // TODO: decide if we want to keep this or not
 use clap::Parser;
 use core::panic;
-use obpmark_rust::{BaseMatrix, MatMul};
+use obpmark_rust::{BaseMatrix, MatMul, ParallelMatMul};
 use std::{path::Path, time::Instant};
 
 use obpmark_rust::benchmark_utils::{CommonArgs, Matrix, Number};
@@ -68,7 +68,10 @@ fn main() {
 
     let t0 = Instant::now();
 
-    A.multiply(&B, &mut C).unwrap();
+    match args.common.parallel {
+        1 => A.multiply(&B, &mut C).unwrap(),
+        n => A.parallel_multiply(&B, &mut C, n).unwrap(),
+    }
 
     let t1 = Instant::now();
 
