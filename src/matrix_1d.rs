@@ -4,8 +4,8 @@ use std::thread;
 use funty::Floating;
 
 use crate::{
-    format_number, BaseMatrix, Convolution, Correlation, Error, FastFourierTransform, MatMul,
-    MaxPooling, Num, ParallelMatMul, Relu, Softmax, LRN,
+    format_number, BaseMatrix, Convolution, Correlation, Error, FastFourierTransform,
+    FastFourierTransformWindowed, MatMul, MaxPooling, Num, ParallelMatMul, Relu, Softmax, LRN,
 };
 
 pub struct Matrix1d<T: Num> {
@@ -220,16 +220,21 @@ impl<T: Num + Floating> LRN<T> for Matrix1d<T> {
 macro_rules! impl_fft {
     ($t:tt) => {
         impl FastFourierTransform for Matrix1d<$t> {
-            fn fft(&mut self, nn: usize) -> Result<(), Error> {
+            fn fft(&mut self, nn: usize, start_pos: usize) -> Result<(), Error> {
                 if self.rows != 1 {
                     return Err(Error::InvalidDimensions);
                 }
+
+                let window = nn << 1;
+
                 let n = nn << 1;
                 let mut j = 1;
                 for i in 1..n {
                     if j > i {
-                        self.data.swap(j - 1, i - 1);
-                        self.data.swap(j, i);
+                        self.data
+                            .swap(window * start_pos + j - 1, window * start_pos + i - 1);
+                        self.data
+                            .swap(window * start_pos + j, window * start_pos + i);
                     }
                     let mut m = nn;
                     while m >= 2 && j > m {
@@ -251,12 +256,16 @@ macro_rules! impl_fft {
                     for m in (1..mmax).step_by(2) {
                         for i in (m..=n).step_by(istep) {
                             let j = i + mmax;
-                            let tempr = wr * self.data[j - 1] - wi * self.data[j];
-                            let tempi = wr * self.data[j] + wi * self.data[j - 1];
-                            self.data[j - 1] = self.data[i - 1] - tempr;
-                            self.data[j] = self.data[i] - tempi;
-                            self.data[i - 1] += tempr;
-                            self.data[i] += tempi;
+                            let tempr = wr * self.data[window * start_pos + j - 1]
+                                - wi * self.data[window * start_pos + j];
+                            let tempi = wr * self.data[window * start_pos + j]
+                                + wi * self.data[window * start_pos + j - 1];
+                            self.data[window * start_pos + j - 1] =
+                                self.data[window * start_pos + i - 1] - tempr;
+                            self.data[window * start_pos + j] =
+                                self.data[window * start_pos + i] - tempi;
+                            self.data[window * start_pos + i - 1] += tempr;
+                            self.data[window * start_pos + i] += tempi;
                         }
                         let wtemp = wr;
                         wr += wr * wpr - wi * wpi;
@@ -273,6 +282,37 @@ macro_rules! impl_fft {
 
 impl_fft!(f32);
 impl_fft!(f64);
+
+impl FastFourierTransformWindowed for Matrix1d<f32> {
+    fn fftw(&mut self, nn: usize, window: usize, result: &mut Self) -> Result<(), Error> {
+        if self.rows != 1 {
+            return Err(Error::InvalidDimensions);
+        }
+        for i in (0..(nn * 2 - window + 1)).step_by(2) {
+            for j in 0..window {
+                result.data[i * window + j] = self.data[i + j];
+            }
+            result.fft(window >> 1, i)?;
+        }
+        Ok(())
+    }
+}
+
+// TODO: code duplication, turn into a macro
+impl FastFourierTransformWindowed for Matrix1d<f64> {
+    fn fftw(&mut self, nn: usize, window: usize, result: &mut Self) -> Result<(), Error> {
+        if self.rows != 1 {
+            return Err(Error::InvalidDimensions);
+        }
+        for i in (0..(nn * 2 - window + 1)).step_by(2) {
+            for j in 0..window {
+                result.data[i * window + j] = self.data[i + j];
+            }
+            result.fft(window >> 1, i)?;
+        }
+        Ok(())
+    }
+}
 
 impl<T: Num> ParallelMatMul for Matrix1d<T> {
     fn parallel_multiply(

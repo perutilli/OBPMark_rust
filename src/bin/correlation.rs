@@ -40,7 +40,6 @@ fn main() {
                 "-10".parse::<Number>().unwrap(),
                 "10".parse::<Number>().unwrap(),
             );
-            // TODO: decide if this offset to the seed is ok
             B = Matrix::from_random_seed(
                 seed + 10,
                 args.common.size,

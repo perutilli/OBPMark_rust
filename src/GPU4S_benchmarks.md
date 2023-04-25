@@ -70,7 +70,7 @@
 ### RNGs
 Each benchmark could potentially want a different rng, however I don't know that this is worth the effort.  
 For now the rng will generate random numbers between -100 and 100, regardless of the type of the matrix.  
-Using an offset to the seed to generate different matrices in the mat mul benchmark.
+CHECK THIS: Using an offset to the seed to generate different matrices in the mat mul benchmark.
 
 ### Ndarray correcteness
 As (maybe) expected, the ndarray fails verification for float and double. However sometimes it does pass using epsilon of 1e-4 (same used in the original benchmark). Why does this happen?  
@@ -110,76 +110,6 @@ Should we check valid values for different arguments before running the benchmar
 * verify could have an invalid filename -> what do we do if we fail to open the verification file? two options:
     - skip verification, signal the error to the user
     - verify against the cpu implementation, signal the error to the user
-
-```Rust
-#![allow(non_snake_case)]
-use clap::Parser;
-use obpmark_rust::{BaseMatrix, BenchmarkTrait};
-use std::time::Instant;
-
-use obpmark_rust::benchmark_utils::CommonArgs;
-
-#[derive(Parser, Debug)]
-#[command(about = "Benchmark description")] // TODO: add description
-struct Args {
-    #[clap(flatten)]
-    common: CommonArgs,
-}
-
-fn main() {
-    let args = Args::parse();
-
-    match args.common.input {
-        Some(v) => {
-            if v.len() != EXP {
-                panic!("Expected EXP input files, got {}", v.len());
-            }
-            unimplemented!("Reading input from file not yet implemented");
-        }
-        None => {
-            // TODO: generate input
-        }
-    }
-
-    let t0 = Instant::now();
-
-    // TODO: run the benchmark function
-
-    let t1 = Instant::now();
-
-    if args.common.timing {
-        println!("Elapsed: {:.2?}", t1 - t0);
-    }
-
-    if args.common.output {
-        println!("Output:");
-        // TODO: print output
-    }
-
-    match args.common.export {
-        Some(filename) => {
-            // export output
-            unimplemented!("Export not yet implemented, filename: {}", filename);
-        }
-        None => (),
-    }
-
-    match args.common.verify {
-        Some(Some(filename)) => {
-            // verify against file
-            unimplemented!(
-                "Verification with file not yet implemented, filename: {}",
-                filename
-            );
-        }
-        Some(None) => {
-            // verify against cpu implementation
-            // TODO: verify
-        }
-        None => (),
-    }
-}
-```
 
 ## General notes
 <mark>Remember to use the `--release` flag when compiling the benchmarks if testing the performance!!!</mark>

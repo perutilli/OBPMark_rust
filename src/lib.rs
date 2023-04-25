@@ -165,7 +165,11 @@ pub trait LRN<T: Num + Floating> {
 }
 
 pub trait FastFourierTransform {
-    fn fft(&mut self, nn: usize) -> Result<(), Error>;
+    fn fft(&mut self, nn: usize, start_pos: usize) -> Result<(), Error>;
+}
+
+pub trait FastFourierTransformWindowed: FastFourierTransform {
+    fn fftw(&mut self, nn: usize, window: usize, result: &mut Self) -> Result<(), Error>;
 }
 
 pub trait ParallelMatMul {

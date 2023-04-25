@@ -40,7 +40,6 @@ pub struct CommonArgs {
     #[arg(short, long, default_value_t = false)]
     pub timing: bool,
 
-    // TODO: maybe this should be benchmark specific to avoid confusion
     /// Uses "mat_A.in" ["mat_B.in"] for input data, can take 1 or 2 files
     #[arg(short, long, num_args = 1..=2)]
     pub input: Option<Vec<String>>,

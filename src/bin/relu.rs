@@ -1,4 +1,4 @@
-#![allow(non_snake_case)] // TODO: decide if we want to keep this or not
+#![allow(non_snake_case)]
 use clap::Parser;
 use core::panic;
 use obpmark_rust::{BaseMatrix, Relu};

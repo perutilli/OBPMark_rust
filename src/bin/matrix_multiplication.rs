@@ -3,7 +3,7 @@
  * It multiplies two square matrices with side length `size`
  */
 
-#![allow(non_snake_case)] // TODO: decide if we want to keep this or not
+#![allow(non_snake_case)]
 use clap::Parser;
 use core::panic;
 use obpmark_rust::{BaseMatrix, MatMul, ParallelMatMul};
@@ -46,7 +46,6 @@ fn main() {
                 "-10".parse::<Number>().unwrap(),
                 "10".parse::<Number>().unwrap(),
             );
-            // TODO: decide if this offset to the seed is ok
             B = Matrix::from_random_seed(
                 seed + 10,
                 args.common.size,

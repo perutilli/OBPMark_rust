@@ -205,19 +205,21 @@ impl<T: Num + Floating> LRN<T> for Matrix2d<T> {
 macro_rules! impl_fft {
     ($t:tt) => {
         impl FastFourierTransform for Matrix2d<$t> {
-            fn fft(&mut self, nn: usize) -> Result<(), Error> {
+            fn fft(&mut self, nn: usize, start_pos: usize) -> Result<(), Error> {
                 if self.rows != 1 {
                     return Err(Error::InvalidDimensions);
                 }
 
                 let data = &mut self.data[1];
 
+                let window = nn << 1;
+
                 let n = nn << 1;
                 let mut j = 1;
                 for i in 1..n {
                     if j > i {
-                        data.swap(j - 1, i - 1);
-                        data.swap(j, i);
+                        data.swap(window * start_pos + j - 1, window * start_pos + i - 1);
+                        data.swap(window * start_pos + j, window * start_pos + i);
                     }
                     let mut m = nn;
                     while m >= 2 && j > m {
@@ -239,12 +241,15 @@ macro_rules! impl_fft {
                     for m in (1..mmax).step_by(2) {
                         for i in (m..=n).step_by(istep) {
                             let j = i + mmax;
-                            let tempr = wr * data[j - 1] - wi * data[j];
-                            let tempi = wr * data[j] + wi * data[j - 1];
-                            data[j - 1] = data[i - 1] - tempr;
-                            data[j] = data[i] - tempi;
-                            data[i - 1] += tempr;
-                            data[i] += tempi;
+                            let tempr = wr * data[window * start_pos + j - 1]
+                                - wi * data[window * start_pos + j];
+                            let tempi = wr * data[window * start_pos + j]
+                                + wi * data[window * start_pos + j - 1];
+                            data[window * start_pos + j - 1] =
+                                data[window * start_pos + i - 1] - tempr;
+                            data[window * start_pos + j] = data[window * start_pos + i] - tempi;
+                            data[window * start_pos + i - 1] += tempr;
+                            data[window * start_pos + i] += tempi;
                         }
                         let wtemp = wr;
                         wr += wr * wpr - wi * wpi;

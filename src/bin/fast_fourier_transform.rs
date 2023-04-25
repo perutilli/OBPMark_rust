@@ -48,7 +48,7 @@ fn main() {
     let t0 = Instant::now();
 
     match args.common.parallel {
-        1 => A.fft(args.common.size >> 1).unwrap(), // the >> 1 is to keep it consistent with the reference implementation
+        1 => A.fft(args.common.size >> 1, 0).unwrap(), // the >> 1 is to keep it consistent with the reference implementation
         _n => unimplemented!("Parallel version not yet implemented"),
     }
 
