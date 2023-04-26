@@ -1,5 +1,5 @@
 ## Current tasks
-* [ ] Probably move to num_traits (from num)
+* [x] Probably move to num_traits (from num)
 * [x] Moving to generics for lib
     - [x] Fixing problems with verify function (mod benchmark_utils)
     - [x] Basic testing
@@ -30,7 +30,7 @@
 * [ ] Create unit tests for unit testable functions (this will need a list)
 * [ ] set for now just panics if indeces are invalid, maybe should return Result
 * [ ] fft macro could be a single one for both 1d and 2d given that the the matrix always has 1 row
-* [ ] understand how we should verify our output against matlab for fft
+* [x] understand how we should verify our output against matlab for fft
 
 ## 29/03 Meeting
 * Correlation in the C version it is Num: i32 -> f32, Num: f32 -> f32, Num: f64 -> f64, Keep the behaviour (maybe or just make all f64)
@@ -43,9 +43,10 @@
 * `finite_impulse_response_filter` does not compile for CPU as well (as fft)
 * The fft benchmarks are not available in CPU versions (mentioned in person)
 * Discuss the f16 situation (check obsidian note for more info)
-* fft seems to work differently in that it modifies the input vector, instead of having a separate result, should we leave it as such or modify to be coherent with the rest? (I think it would be better to modify it)
-* The 1d version of fft to me seems like it uses real numbers, is that true?
-* Generally how should we evaluate the performace of the parallel benchmarks? Considering that we are running them on linux at the moment, should we have a target machine against which optimize? Should we not try and optimize the os ones? What are your thoughts on this?
+* fft seems to work differently in that it modifies the input vector, instead of having a separate result, should we leave it as such or modify to be coherent with the rest? (This I think would mean having the function copy A to B)
+* The 1d version of fft uses only real numbers, is there a reason for this?
+* fft works against matlab!
+* Generally how should we evaluate the performance of the parallel benchmarks? Considering that we are running them on linux at the moment, should we have a target machine against which optimize? Should we not try and optimize the os ones? What are your thoughts on this?
 
 ## Future improvements
 * Improve verification so that the benchmark contains only the code that is unique to it

@@ -210,13 +210,13 @@ macro_rules! impl_fft {
                     return Err(Error::InvalidDimensions);
                 }
 
-                let data = &mut self.data[1];
+                let data = &mut self.data[0];
 
                 let window = nn << 1;
 
                 let n = nn << 1;
                 let mut j = 1;
-                for i in 1..n {
+                for i in (1..n).step_by(2) {
                     if j > i {
                         data.swap(window * start_pos + j - 1, window * start_pos + i - 1);
                         data.swap(window * start_pos + j, window * start_pos + i);
@@ -235,7 +235,7 @@ macro_rules! impl_fft {
                     let theta = -(2.0 * std::$t::consts::PI / mmax as $t);
                     let wtemp = (theta / 2.0).sin();
                     let wpr = -2.0 * wtemp * wtemp;
-                    let wpi = (theta / 2.0).sin();
+                    let wpi = (theta).sin();
                     let mut wr = 1.0;
                     let mut wi = 0.0;
                     for m in (1..mmax).step_by(2) {
