@@ -1,4 +1,3 @@
-use funty::Floating;
 use std::sync::Arc;
 use std::thread;
 
@@ -69,7 +68,7 @@ impl<T: Num> Relu for Matrix2d<T> {
     }
 }
 
-impl<T: Num + Floating> Softmax for Matrix2d<T> {
+impl<T: Num + num_traits::Float> Softmax for Matrix2d<T> {
     fn softmax(&self, result: &mut Matrix2d<T>) -> Result<(), Error> {
         if self.rows != result.rows || self.cols != result.cols {
             return Err(Error::InvalidDimensions);
@@ -128,14 +127,14 @@ impl<T: Num> Correlation for Matrix2d<T> {
         let mut acc_self_other = 0_f64;
 
         let self_mean =
-            self.data.iter().flatten().sum::<T>().as_f64() / (self.rows * self.cols) as f64;
+            self.data.iter().flatten().sum::<T>().as_() / (self.rows * self.cols) as f64;
         let other_mean =
-            other.data.iter().flatten().sum::<T>().as_f64() / (other.rows * other.cols) as f64;
+            other.data.iter().flatten().sum::<T>().as_() / (other.rows * other.cols) as f64;
 
         for i in 0..self.rows {
             for j in 0..self.cols {
-                let self_delta = self.data[i][j].as_f64() - self_mean;
-                let other_delta = other.data[i][j].as_f64() - other_mean;
+                let self_delta = self.data[i][j].as_() - self_mean;
+                let other_delta = other.data[i][j].as_() - other_mean;
                 acc_self_sq += self_delta * self_delta;
                 acc_other_sq += other_delta * other_delta;
                 acc_self_other += self_delta * other_delta;
@@ -186,7 +185,7 @@ impl<T: Num> Convolution for Matrix2d<T> {
     }
 }
 
-impl<T: Num + Floating> LRN<T> for Matrix2d<T> {
+impl<T: Num + num_traits::Float> LRN<T> for Matrix2d<T> {
     fn lrn(&self, result: &mut Self, alpha: T, beta: T, k: T) -> Result<(), Error> {
         // TODO: this is actually a special case where n = 1, ok for the benchmark but not general
         if self.rows != result.rows || self.cols != result.cols {

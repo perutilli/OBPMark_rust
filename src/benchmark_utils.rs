@@ -6,7 +6,14 @@ pub type Number = f32;
 pub type Number = f64;
 #[cfg(feature = "int")]
 pub type Number = i32;
-#[cfg(not(any(feature = "float", feature = "double", feature = "int")))]
+#[cfg(feature = "half")]
+pub type Number = half::f16;
+#[cfg(not(any(
+    feature = "float",
+    feature = "double",
+    feature = "int",
+    feature = "half"
+)))]
 pub type Number = f32;
 
 #[cfg(feature = "1d")]

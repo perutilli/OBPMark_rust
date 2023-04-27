@@ -1,8 +1,6 @@
 use std::sync::Arc;
 use std::thread;
 
-use funty::Floating;
-
 use crate::{
     format_number, BaseMatrix, Convolution, Correlation, Error, FastFourierTransform,
     FastFourierTransformWindowed, MatMul, MaxPooling, Num, ParallelMatMul, Relu, Softmax, LRN,
@@ -30,6 +28,7 @@ impl<T: Num> BaseMatrix<T> for Matrix1d<T> {
             .map(|x| x.to_vec())
             .collect::<Vec<Vec<T>>>()
     }
+
     fn set(&mut self, row: usize, col: usize, value: T) {
         assert!(row < self.rows && col < self.cols, "Invalid indexing");
         self.data[row * self.cols + col] = value;
@@ -38,24 +37,35 @@ impl<T: Num> BaseMatrix<T> for Matrix1d<T> {
 
 impl_display!(Matrix1d);
 
-impl<T: Num> MatMul for Matrix1d<T> {
-    fn multiply(&self, other: &Matrix1d<T>, result: &mut Matrix1d<T>) -> Result<(), Error> {
-        if self.cols != other.rows {
-            return Err(Error::InvalidDimensions);
-        }
-        for i in 0..self.rows {
-            for j in 0..other.cols {
-                let mut sum = T::zero();
-                // NOTE: this allows result to not be all zeros
-                for k in 0..self.cols {
-                    sum += self.data[i * self.cols + k] * other.data[k * other.cols + j];
-                }
-                result.data[i * self.rows + j] = sum;
+macro_rules! expand_multiply {
+    ($t: ty, $zero: expr) => {
+        fn multiply(&self, other: &Matrix1d<$t>, result: &mut Matrix1d<$t>) -> Result<(), Error> {
+            if self.cols != other.rows {
+                return Err(Error::InvalidDimensions);
             }
+            for i in 0..self.rows {
+                for j in 0..other.cols {
+                    let mut sum = $zero;
+                    // NOTE: this allows result to not be all zeros
+                    for k in 0..self.cols {
+                        sum += self.data[i * self.cols + k] * other.data[k * other.cols + j];
+                    }
+                    result.data[i * self.rows + j] = sum;
+                }
+            }
+            Ok(())
         }
-        Ok(())
-    }
+    };
 }
+
+impl<T: Num> MatMul for Matrix1d<T> {
+    expand_multiply!(T, T::zero());
+}
+/*
+impl MatMul for Matrix1d<f16> {
+    expand_multiply!(f16, f16::from_f32(0.0));
+}
+*/
 
 impl<T: Num> Relu for Matrix1d<T> {
     fn relu(&self, result: &mut Matrix1d<T>) -> Result<(), Error> {
@@ -76,7 +86,7 @@ impl<T: Num> Relu for Matrix1d<T> {
     }
 }
 
-impl<T: Num + Floating> Softmax for Matrix1d<T> {
+impl<T: Num + num_traits::Float> Softmax for Matrix1d<T> {
     fn softmax(&self, result: &mut Matrix1d<T>) -> Result<(), Error> {
         if self.rows != result.rows || self.cols != result.cols {
             return Err(Error::InvalidDimensions);
@@ -143,13 +153,13 @@ impl<T: Num> Correlation for Matrix1d<T> {
         let mut acc_other_sq = 0_f64;
         let mut acc_self_other = 0_f64;
 
-        let self_mean = self.data.iter().sum::<T>().as_f64() / (self.rows * self.cols) as f64;
-        let other_mean = other.data.iter().sum::<T>().as_f64() / (other.rows * other.cols) as f64;
+        let self_mean = self.data.iter().sum::<T>().as_() / (self.rows * self.cols) as f64;
+        let other_mean = other.data.iter().sum::<T>().as_() / (other.rows * other.cols) as f64;
 
         for i in 0..self.rows {
             for j in 0..self.cols {
-                let self_delta = self.data[i * self.cols + j].as_f64() - self_mean;
-                let other_delta = other.data[i * self.cols + j].as_f64() - other_mean;
+                let self_delta = self.data[i * self.cols + j].as_() - self_mean;
+                let other_delta = other.data[i * self.cols + j].as_() - other_mean;
                 acc_self_sq += self_delta * self_delta;
                 acc_other_sq += other_delta * other_delta;
                 acc_self_other += self_delta * other_delta;
@@ -200,7 +210,7 @@ impl<T: Num> Convolution for Matrix1d<T> {
     }
 }
 
-impl<T: Num + Floating> LRN<T> for Matrix1d<T> {
+impl<T: Num + num_traits::Float> LRN<T> for Matrix1d<T> {
     fn lrn(&self, result: &mut Self, alpha: T, beta: T, k: T) -> Result<(), Error> {
         // TODO: this is actually a special case where n = 1, ok for the benchmark but not general
         if self.rows != result.rows || self.cols != result.cols {
