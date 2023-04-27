@@ -1,5 +1,6 @@
 ## Current tasks
 * [x] Probably move to num_traits (from num)
+* [ ] Move seed to argument in clap
 * [x] Moving to generics for lib
     - [x] Fixing problems with verify function (mod benchmark_utils)
     - [x] Basic testing
@@ -42,20 +43,6 @@
 * The benchmarks should be exactly the same as the original ones so that we can compare the results
 * File stuff is not necessary for embedded systems, only when running on top of OS, so it is not as important
 
-## Questions for Leonidas
-* Does memory_bandwidth_bench make sense in our case? (believe it does not, I think it measures the time to copy to and from the device)
-* `finite_impulse_response_filter` does not compile for CPU as well (as fft)
-* 2d implementations for inherently 1d benchmarks (like simple fft and finite impulse response filter)
-* The fft benchmarks are not available in CPU versions (mentioned in person)
-* Discuss the f16 situation (check obsidian note for more info)
-* fft seems to work differently in that it modifies the input vector, instead of having a separate result, should we leave it as such or modify to be coherent with the rest? (This I think would mean having the function copy A to B)
-* The 1d version of fft uses only real numbers, is there a reason for this?
-* fft works against matlab!
-* fft seems to work only with powers of 2 sizes, I can't check if it is the same for the original benchmark not being able to run it
-* how can I test the fft windowed? I can't seem to find a matlab equivalent and I cannot compile the C version (it is not available for CPU)
-* Generally how should we evaluate the performance of the parallel benchmarks? Considering that we are running them on linux at the moment, should we have a target machine against which optimize? Should we not try and optimize the os ones? What are your thoughts on this?
-* finite impulse response filter is just a 1d convolution, does it make sense to have it as a separate benchmark?
-
 ## Future improvements
 * Improve verification so that the benchmark contains only the code that is unique to it
 * Improve ouput formatting to take config like number of digits after the decimal point etc (https://doc.rust-lang.org/std/fmt/)
@@ -68,6 +55,8 @@
 
 ### Open questions
 * How do we do verification in a resonable and automated way?
+  * It could make sense to have a script that runs the rust version with different seeds (we would have to add an option to output the matrix(ces)), then having the output and inputs we run the c code with the inputs and have a script compare the outputs (i don't know how automizable this could be)
+  * Otherwise ffi would be the move probably, I think this is quite a bit more complicated
 
 ### Generics
 * We still need a type (`Number`) for the GPU4S which will be known at compile time, probably defined in benchmark_utils

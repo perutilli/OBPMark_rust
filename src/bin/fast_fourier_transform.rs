@@ -31,12 +31,6 @@ fn main() {
         }
         None => {
             A = Matrix::from_random_seed(seed, 1, args.common.size, number!("-10"), number!("10"));
-            // Here we zero every other element in the matrix to make it consistent with the
-            // reference implementation
-            // TODO: ask Leonidas about this and maybe don't do it so custom
-            for i in (1..args.common.size).step_by(2) {
-                A.set(0, i, number!("0"));
-            }
         }
     }
 
