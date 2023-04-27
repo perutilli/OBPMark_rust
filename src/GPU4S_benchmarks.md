@@ -13,24 +13,28 @@
     - [ ] cifar_10_multiple
     - [x] convolution_2D_bench
     - [x] correlation_2D
-    - [ ] fast_fourier_transform_2D_bench
-    - [ ] fast_fourier_transform_bench
+    - [ ] fast_fourier_transform_2D_bench; this is only available in library implementation
+    - [x] fast_fourier_transform_bench
     - [ ] fast_fourier_transform_window_bench
-    - [ ] finite_impulse_response_bench
+    - [x] finite_impulse_response_bench => special case of convolution (1d)
     - [x] LNR_bench
     - [x] matrix_multiplication_bench
     - [ ] matrix_multiplication_bench_fp16; Waiting for call with Leonidas
     - [x] max_pooling_bench
-    - [ ] memory_bandwidth_bench; Does not apply (?)
+    - [x] memory_bandwidth_bench; Does not apply (?)
     - [x] relu_bench
     - [x] softmax_bench TODO: It does not make sense for int, should be enforced at compile time
     - [ ] wavelet_transform
+      - [ ] understand how to deal with constants and stuff
 * [x] Implement from_file and to_file for Matrix types
 * [ ] Test the performance against the original benchmarks
+* [ ] Rethink significantly the num traits stuff
+  - [ ] It might be good to move some of the more complicated stuff to macros where we cannot easily use traits, avoiding to much headaches in trying to make the traits work (like in fft)
 * [ ] Create unit tests for unit testable functions (this will need a list)
 * [ ] set for now just panics if indeces are invalid, maybe should return Result
 * [ ] fft macro could be a single one for both 1d and 2d given that the the matrix always has 1 row
 * [x] understand how we should verify our output against matlab for fft
+* [ ] remove ndarray probably
 
 ## 29/03 Meeting
 * Correlation in the C version it is Num: i32 -> f32, Num: f32 -> f32, Num: f64 -> f64, Keep the behaviour (maybe or just make all f64)
@@ -41,12 +45,16 @@
 ## Questions for Leonidas
 * Does memory_bandwidth_bench make sense in our case? (believe it does not, I think it measures the time to copy to and from the device)
 * `finite_impulse_response_filter` does not compile for CPU as well (as fft)
+* 2d implementations for inherently 1d benchmarks (like simple fft and finite impulse response filter)
 * The fft benchmarks are not available in CPU versions (mentioned in person)
 * Discuss the f16 situation (check obsidian note for more info)
 * fft seems to work differently in that it modifies the input vector, instead of having a separate result, should we leave it as such or modify to be coherent with the rest? (This I think would mean having the function copy A to B)
 * The 1d version of fft uses only real numbers, is there a reason for this?
 * fft works against matlab!
+* fft seems to work only with powers of 2 sizes, I can't check if it is the same for the original benchmark not being able to run it
+* how can I test the fft windowed? I can't seem to find a matlab equivalent and I cannot compile the C version (it is not available for CPU)
 * Generally how should we evaluate the performance of the parallel benchmarks? Considering that we are running them on linux at the moment, should we have a target machine against which optimize? Should we not try and optimize the os ones? What are your thoughts on this?
+* finite impulse response filter is just a 1d convolution, does it make sense to have it as a separate benchmark?
 
 ## Future improvements
 * Improve verification so that the benchmark contains only the code that is unique to it
