@@ -9,7 +9,7 @@ use obpmark_rust::benchmark_utils::{CommonArgs, Matrix, Number};
 use obpmark_rust::number;
 
 #[derive(Parser, Debug)]
-#[command(about = "Matrix multiplication benchmark")]
+#[command(about = "FFT benchmark")]
 struct Args {
     #[clap(flatten)]
     common: CommonArgs,
