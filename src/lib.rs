@@ -204,7 +204,6 @@ pub fn format_number<T: Number>(number: &T) -> String {
 
 pub mod matrix_1d;
 pub mod matrix_2d;
-pub mod matrix_ndarray;
 
 pub mod benchmark_utils;
 pub mod number_traits;

@@ -8,7 +8,6 @@ edition = "2021"
 [dependencies]
 clap = { version = "4.1.8", features = ["derive"] }
 rand = "0.8.5"
-ndarray = "0.15.6"
 num-traits = "0.2.14"
 half = {version = "2.2.1", features = ["num-traits"]}
 
@@ -22,4 +21,3 @@ half = []
 
 1d = []
 2d = []
-ndarray = []

@@ -20,10 +20,8 @@ pub type Number = f32;
 pub type Matrix = crate::matrix_1d::Matrix1d<Number>;
 #[cfg(feature = "2d")]
 pub type Matrix = crate::matrix_2d::Matrix2d<Number>;
-#[cfg(not(any(feature = "1d", feature = "2d", feature = "ndarray")))]
+#[cfg(not(any(feature = "1d", feature = "2d")))]
 pub type Matrix = crate::matrix_2d::Matrix2d<Number>;
-#[cfg(feature = "ndarray")]
-pub type Matrix = crate::matrix_ndarray::MatrixNdArray<Number>; // once again for linting reasons
 
 #[derive(Parser, Debug)]
 pub struct CommonArgs {

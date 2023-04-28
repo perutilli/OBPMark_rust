@@ -36,7 +36,7 @@
 * [ ] set for now just panics if indeces are invalid, maybe should return Result
 * [ ] fft macro could be a single one for both 1d and 2d given that the the matrix always has 1 row
 * [x] understand how we should verify our output against matlab for fft
-* [ ] remove ndarray probably
+* [x] remove ndarray probably
 
 ## 29/03 Meeting
 * Correlation in the C version it is Num: i32 -> f32, Num: f32 -> f32, Num: f64 -> f64, Keep the behaviour (maybe or just make all f64)
