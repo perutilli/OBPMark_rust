@@ -2,17 +2,17 @@ use std::sync::Arc;
 use std::thread;
 
 use crate::{
-    format_number, BaseMatrix, Convolution, Correlation, Error, FastFourierTransform, MatMul,
-    MaxPooling, Num, ParallelMatMul, Relu, Softmax, LRN,
+    format_number, BaseMatrix, Convolution, Correlation, Error, FastFourierTransform, Float,
+    MatMul, MaxPooling, Number, ParallelMatMul, Relu, Softmax, LRN,
 };
 
-pub struct Matrix2d<T: Num> {
+pub struct Matrix2d<T: Number> {
     data: Vec<Vec<T>>,
     rows: usize,
     cols: usize,
 }
 
-impl<T: Num> BaseMatrix<T> for Matrix2d<T> {
+impl<T: Number> BaseMatrix<T> for Matrix2d<T> {
     fn new(data: Vec<Vec<T>>, rows: usize, cols: usize) -> Matrix2d<T> {
         Matrix2d { data, rows, cols }
     }
@@ -29,7 +29,7 @@ impl<T: Num> BaseMatrix<T> for Matrix2d<T> {
 
 impl_display!(Matrix2d);
 
-impl<T: Num> MatMul for Matrix2d<T> {
+impl<T: Number> MatMul for Matrix2d<T> {
     fn multiply(&self, other: &Matrix2d<T>, result: &mut Matrix2d<T>) -> Result<(), Error> {
         if self.cols != other.rows {
             return Err(Error::InvalidDimensions);
@@ -49,7 +49,7 @@ impl<T: Num> MatMul for Matrix2d<T> {
     }
 }
 
-impl<T: Num> Relu for Matrix2d<T> {
+impl<T: Number> Relu for Matrix2d<T> {
     fn relu(&self, result: &mut Matrix2d<T>) -> Result<(), Error> {
         if self.rows != result.rows || self.cols != result.cols {
             return Err(Error::InvalidDimensions);
@@ -68,7 +68,7 @@ impl<T: Num> Relu for Matrix2d<T> {
     }
 }
 
-impl<T: Num + num_traits::Float> Softmax for Matrix2d<T> {
+impl<T: Number + num_traits::Float> Softmax for Matrix2d<T> {
     fn softmax(&self, result: &mut Matrix2d<T>) -> Result<(), Error> {
         if self.rows != result.rows || self.cols != result.cols {
             return Err(Error::InvalidDimensions);
@@ -88,7 +88,7 @@ impl<T: Num + num_traits::Float> Softmax for Matrix2d<T> {
     }
 }
 
-impl<T: Num> MaxPooling for Matrix2d<T> {
+impl<T: Number> MaxPooling for Matrix2d<T> {
     fn max_pooling(
         &self,
         result: &mut Matrix2d<T>,
@@ -116,7 +116,7 @@ impl<T: Num> MaxPooling for Matrix2d<T> {
     }
 }
 
-impl<T: Num> Correlation for Matrix2d<T> {
+impl<T: Number> Correlation for Matrix2d<T> {
     fn correlation(&self, other: &Matrix2d<T>) -> Result<f64, Error> {
         if self.rows != other.rows || self.cols != other.cols {
             return Err(Error::InvalidDimensions);
@@ -145,7 +145,7 @@ impl<T: Num> Correlation for Matrix2d<T> {
 }
 
 use crate::Padding;
-impl<T: Num> Convolution for Matrix2d<T> {
+impl<T: Number> Convolution for Matrix2d<T> {
     fn convolute(&self, kernel: &Self, padding: Padding, result: &mut Self) -> Result<(), Error> {
         match padding {
             Padding::Zeroes => (),
@@ -185,7 +185,7 @@ impl<T: Num> Convolution for Matrix2d<T> {
     }
 }
 
-impl<T: Num + num_traits::Float> LRN<T> for Matrix2d<T> {
+impl<T: Float> LRN<T> for Matrix2d<T> {
     fn lrn(&self, result: &mut Self, alpha: T, beta: T, k: T) -> Result<(), Error> {
         // TODO: this is actually a special case where n = 1, ok for the benchmark but not general
         if self.rows != result.rows || self.cols != result.cols {
@@ -266,7 +266,7 @@ macro_rules! impl_fft {
 impl_fft!(f32);
 impl_fft!(f64);
 
-impl<T: Num> ParallelMatMul for Matrix2d<T> {
+impl<T: Number> ParallelMatMul for Matrix2d<T> {
     fn parallel_multiply(
         &self,
         other: &Self,

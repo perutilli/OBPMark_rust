@@ -3,16 +3,17 @@ use std::thread;
 
 use crate::{
     format_number, BaseMatrix, Convolution, Correlation, Error, FastFourierTransform,
-    FastFourierTransformWindowed, MatMul, MaxPooling, Num, ParallelMatMul, Relu, Softmax, LRN,
+    FastFourierTransformWindowed, Float, MatMul, MaxPooling, Number, ParallelMatMul, Relu, Softmax,
+    LRN,
 };
 
-pub struct Matrix1d<T: Num> {
+pub struct Matrix1d<T: Number> {
     data: Vec<T>,
     rows: usize,
     cols: usize,
 }
 
-impl<T: Num> BaseMatrix<T> for Matrix1d<T> {
+impl<T: Number> BaseMatrix<T> for Matrix1d<T> {
     fn new(data: Vec<Vec<T>>, rows: usize, cols: usize) -> Matrix1d<T> {
         Matrix1d {
             data: data.into_iter().flatten().collect(),
@@ -58,7 +59,7 @@ macro_rules! expand_multiply {
     };
 }
 
-impl<T: Num> MatMul for Matrix1d<T> {
+impl<T: Number> MatMul for Matrix1d<T> {
     expand_multiply!(T, T::zero());
 }
 /*
@@ -67,7 +68,7 @@ impl MatMul for Matrix1d<f16> {
 }
 */
 
-impl<T: Num> Relu for Matrix1d<T> {
+impl<T: Number> Relu for Matrix1d<T> {
     fn relu(&self, result: &mut Matrix1d<T>) -> Result<(), Error> {
         if self.rows != result.rows || self.cols != result.cols {
             return Err(Error::InvalidDimensions);
@@ -86,7 +87,7 @@ impl<T: Num> Relu for Matrix1d<T> {
     }
 }
 
-impl<T: Num + num_traits::Float> Softmax for Matrix1d<T> {
+impl<T: Number + num_traits::Float> Softmax for Matrix1d<T> {
     fn softmax(&self, result: &mut Matrix1d<T>) -> Result<(), Error> {
         if self.rows != result.rows || self.cols != result.cols {
             return Err(Error::InvalidDimensions);
@@ -106,7 +107,7 @@ impl<T: Num + num_traits::Float> Softmax for Matrix1d<T> {
     }
 }
 
-impl<T: Num> MaxPooling for Matrix1d<T> {
+impl<T: Number> MaxPooling for Matrix1d<T> {
     fn max_pooling(
         &self,
         result: &mut Matrix1d<T>,
@@ -143,7 +144,7 @@ impl<T: Num> MaxPooling for Matrix1d<T> {
     }
 }
 
-impl<T: Num> Correlation for Matrix1d<T> {
+impl<T: Number> Correlation for Matrix1d<T> {
     fn correlation(&self, other: &Matrix1d<T>) -> Result<f64, Error> {
         if self.rows != other.rows || self.cols != other.cols {
             return Err(Error::InvalidDimensions);
@@ -170,7 +171,7 @@ impl<T: Num> Correlation for Matrix1d<T> {
 }
 
 use crate::Padding;
-impl<T: Num> Convolution for Matrix1d<T> {
+impl<T: Number> Convolution for Matrix1d<T> {
     fn convolute(&self, kernel: &Self, padding: Padding, result: &mut Self) -> Result<(), Error> {
         match padding {
             Padding::Zeroes => (),
@@ -210,7 +211,7 @@ impl<T: Num> Convolution for Matrix1d<T> {
     }
 }
 
-impl<T: Num + num_traits::Float> LRN<T> for Matrix1d<T> {
+impl<T: Float> LRN<T> for Matrix1d<T> {
     fn lrn(&self, result: &mut Self, alpha: T, beta: T, k: T) -> Result<(), Error> {
         // TODO: this is actually a special case where n = 1, ok for the benchmark but not general
         if self.rows != result.rows || self.cols != result.cols {
@@ -324,7 +325,7 @@ impl FastFourierTransformWindowed for Matrix1d<f64> {
     }
 }
 
-impl<T: Num> ParallelMatMul for Matrix1d<T> {
+impl<T: Number> ParallelMatMul for Matrix1d<T> {
     fn parallel_multiply(
         &self,
         other: &Self,

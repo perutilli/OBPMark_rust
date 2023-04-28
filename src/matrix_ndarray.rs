@@ -1,8 +1,8 @@
 use ndarray::Array2;
 
-use crate::{format_number, BaseMatrix, Num};
+use crate::{format_number, BaseMatrix, Number};
 
-pub struct MatrixNdArray<T: Num> {
+pub struct MatrixNdArray<T: Number> {
     data: Array2<T>,
     /*
     rows: usize,
@@ -10,7 +10,7 @@ pub struct MatrixNdArray<T: Num> {
      */
 }
 
-impl<T: Num> BaseMatrix<T> for MatrixNdArray<T> {
+impl<T: Number> BaseMatrix<T> for MatrixNdArray<T> {
     fn new(data: Vec<Vec<T>>, rows: usize, cols: usize) -> Self {
         MatrixNdArray {
             data: Array2::from_shape_vec((rows, cols), data.into_iter().flatten().collect())

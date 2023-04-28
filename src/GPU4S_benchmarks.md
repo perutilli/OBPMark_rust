@@ -1,6 +1,7 @@
 ## Current tasks
 * [x] Probably move to num_traits (from num)
 * [ ] Move seed to argument in clap
+* [ ] Fix formatting for f16 (it does not work with typical formatting)
 * [x] Moving to generics for lib
     - [x] Fixing problems with verify function (mod benchmark_utils)
     - [x] Basic testing
@@ -20,7 +21,7 @@
     - [x] finite_impulse_response_bench => special case of convolution (1d)
     - [x] LNR_bench
     - [x] matrix_multiplication_bench
-    - [ ] matrix_multiplication_bench_fp16; Waiting for call with Leonidas
+    - [x] matrix_multiplication_bench_fp16;
     - [x] max_pooling_bench
     - [x] memory_bandwidth_bench; Does not apply (?)
     - [x] relu_bench

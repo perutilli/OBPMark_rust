@@ -1,203 +1,10 @@
-use half::f16;
-use num_traits;
 use rand::rngs::StdRng;
-use rand::{Rng, SeedableRng};
+use rand::SeedableRng;
 use std::fs::File;
 use std::io::{self, BufRead, Write};
 use std::path::Path;
 
-pub trait Fundamental:
-    'static
-    + Sized
-    + Send
-    + Sync
-    + Unpin
-    + Clone
-    + Copy
-    + Default
-    + std::str::FromStr
-    + PartialEq<Self>
-    + PartialOrd<Self>
-    + std::fmt::Debug
-    + std::fmt::Display
-{
-} // from funty
-
-impl Fundamental for f32 {}
-impl Fundamental for f64 {}
-impl Fundamental for i32 {}
-impl Fundamental for f16 {}
-
-pub trait Serialize {
-    type Bytes;
-    fn to_be_bytes(self) -> Self::Bytes;
-    fn to_le_bytes(self) -> Self::Bytes;
-    fn to_ne_bytes(self) -> Self::Bytes;
-    fn from_be_bytes(bytes: Self::Bytes) -> Self;
-    fn from_le_bytes(bytes: Self::Bytes) -> Self;
-    fn from_ne_bytes(bytes: Self::Bytes) -> Self;
-}
-
-/*
-macro_rules! impl_serialize {
-    ($type: ty, $size: tt) => {
-        impl Serialize for $type {
-            type Bytes = [u8; $size];
-            fn to_be_bytes(self) -> Self::Bytes {
-                self.to_be_bytes()
-            }
-            fn to_le_bytes(self) -> Self::Bytes {
-                self.to_le_bytes()
-            }
-            fn to_ne_bytes(self) -> Self::Bytes {
-                self.to_ne_bytes()
-            }
-            fn from_be_bytes(bytes: Self::Bytes) -> Self {
-                $type::from_be_bytes(bytes)
-            }
-            fn from_le_bytes(bytes: Self::Bytes) -> Self {
-                $type::from_le_bytes(bytes)
-            }
-            fn from_ne_bytes(bytes: Self::Bytes) -> Self {
-                $type::from_ne_bytes(bytes)
-            }
-        }
-    };
-}
- */
-
-impl Serialize for f32 {
-    type Bytes = [u8; 4];
-    fn to_be_bytes(self) -> Self::Bytes {
-        self.to_be_bytes()
-    }
-    fn to_le_bytes(self) -> Self::Bytes {
-        self.to_le_bytes()
-    }
-    fn to_ne_bytes(self) -> Self::Bytes {
-        self.to_ne_bytes()
-    }
-    fn from_be_bytes(bytes: Self::Bytes) -> Self {
-        f32::from_be_bytes(bytes)
-    }
-    fn from_le_bytes(bytes: Self::Bytes) -> Self {
-        f32::from_le_bytes(bytes)
-    }
-    fn from_ne_bytes(bytes: Self::Bytes) -> Self {
-        f32::from_ne_bytes(bytes)
-    }
-}
-
-impl Serialize for f64 {
-    type Bytes = [u8; 8];
-    fn to_be_bytes(self) -> Self::Bytes {
-        self.to_be_bytes()
-    }
-    fn to_le_bytes(self) -> Self::Bytes {
-        self.to_le_bytes()
-    }
-    fn to_ne_bytes(self) -> Self::Bytes {
-        self.to_ne_bytes()
-    }
-    fn from_be_bytes(bytes: Self::Bytes) -> Self {
-        f64::from_be_bytes(bytes)
-    }
-    fn from_le_bytes(bytes: Self::Bytes) -> Self {
-        f64::from_le_bytes(bytes)
-    }
-    fn from_ne_bytes(bytes: Self::Bytes) -> Self {
-        f64::from_ne_bytes(bytes)
-    }
-}
-
-impl Serialize for i32 {
-    type Bytes = [u8; 4];
-    fn to_be_bytes(self) -> Self::Bytes {
-        self.to_be_bytes()
-    }
-    fn to_le_bytes(self) -> Self::Bytes {
-        self.to_le_bytes()
-    }
-    fn to_ne_bytes(self) -> Self::Bytes {
-        self.to_ne_bytes()
-    }
-    fn from_be_bytes(bytes: Self::Bytes) -> Self {
-        i32::from_be_bytes(bytes)
-    }
-    fn from_le_bytes(bytes: Self::Bytes) -> Self {
-        i32::from_le_bytes(bytes)
-    }
-    fn from_ne_bytes(bytes: Self::Bytes) -> Self {
-        i32::from_ne_bytes(bytes)
-    }
-}
-
-impl Serialize for f16 {
-    type Bytes = [u8; 2];
-    fn to_be_bytes(self) -> Self::Bytes {
-        self.to_be_bytes()
-    }
-    fn to_le_bytes(self) -> Self::Bytes {
-        self.to_le_bytes()
-    }
-    fn to_ne_bytes(self) -> Self::Bytes {
-        self.to_ne_bytes()
-    }
-    fn from_be_bytes(bytes: Self::Bytes) -> Self {
-        f16::from_be_bytes(bytes)
-    }
-    fn from_le_bytes(bytes: Self::Bytes) -> Self {
-        f16::from_le_bytes(bytes)
-    }
-    fn from_ne_bytes(bytes: Self::Bytes) -> Self {
-        f16::from_ne_bytes(bytes)
-    }
-}
-
-pub trait RngRange {
-    fn gen_range(rng: &mut StdRng, min: Self, max: Self) -> Self;
-}
-
-// requires the type to implement SampleUniform
-macro_rules! impl_rng_range {
-    ($t: ty) => {
-        impl RngRange for $t {
-            fn gen_range(rng: &mut StdRng, min: Self, max: Self) -> Self {
-                rng.gen_range(min..max)
-            }
-        }
-    };
-}
-
-impl_rng_range!(f32);
-impl_rng_range!(f64);
-impl_rng_range!(i32);
-
-impl RngRange for f16 {
-    fn gen_range(rng: &mut StdRng, min: Self, max: Self) -> Self {
-        let min = f32::from(min);
-        let max = f32::from(max);
-        // TODO: this is not correct but works for the moment
-        f16::from_f32(rng.gen_range(min..max))
-    }
-}
-
-pub trait Num:
-    num_traits::NumAssignRef
-    + RngRange
-    + Serialize
-    + Fundamental
-    + RngRange
-    + num_traits::NumRef
-    + for<'a> std::iter::Sum<&'a Self>
-    + num_traits::AsPrimitive<f64>
-{
-}
-
-impl Num for f32 {}
-impl Num for f64 {}
-impl Num for i32 {}
-impl Num for f16 {}
+use number_traits::*;
 
 #[derive(Debug)]
 pub enum Error {
@@ -225,7 +32,7 @@ impl From<std::io::Error> for FileError {
 
 /// Trait that all matrix structs should implement
 /// It contains basic methods such as `new`, `get_data`, `zeroes`
-pub trait BaseMatrix<T: Num> {
+pub trait BaseMatrix<T: Number> {
     fn new(data: Vec<Vec<T>>, rows: usize, cols: usize) -> Self;
     fn get_data(&self) -> Vec<Vec<T>>;
     fn zeroes(rows: usize, cols: usize) -> Self
@@ -298,7 +105,7 @@ pub trait BaseMatrix<T: Num> {
 
 macro_rules! impl_display {
     ($t:ident) => {
-        impl<T: Num> std::fmt::Display for $t<T> {
+        impl<T: Number> std::fmt::Display for $t<T> {
             fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
                 for row in self.get_data() {
                     for el in row {
@@ -346,7 +153,7 @@ pub trait Convolution {
     fn convolute(&self, kernel: &Self, padding: Padding, result: &mut Self) -> Result<(), Error>;
 }
 
-pub trait LRN<T: Num + num_traits::Float> {
+pub trait LRN<T: Float> {
     fn lrn(&self, result: &mut Self, alpha: T, beta: T, k: T) -> Result<(), Error>;
 }
 
@@ -367,7 +174,7 @@ pub trait ParallelMatMul {
     ) -> Result<(), Error>;
 }
 
-pub fn random_matrix_data<T: Num>(
+pub fn random_matrix_data<T: Number>(
     seed: u64,
     rows: usize,
     cols: usize,
@@ -387,15 +194,11 @@ pub fn random_matrix_data<T: Num>(
 
 // TODO: cfg should not be in the lib part, we should configure this some other way
 #[cfg(feature = "int")]
-pub fn format_number<T: Num>(number: &T) -> String {
-    // Ok for now, could make it a little more pretty
-    // println!("{:10}: {}, {:?}", number, number, number.to_be_bytes());
+pub fn format_number<T: Number>(number: &T) -> String {
     format!("{:5}", number)
 }
 #[cfg(not(feature = "int"))]
-pub fn format_number<T: Num>(number: &T) -> String {
-    // Ok for now, could make it a little more pretty
-    // println!("{:10}: {}, {:?}", number, number, number.to_be_bytes());
+pub fn format_number<T: Number>(number: &T) -> String {
     format!("{:10.5}", number)
 }
 
@@ -404,3 +207,4 @@ pub mod matrix_2d;
 pub mod matrix_ndarray;
 
 pub mod benchmark_utils;
+pub mod number_traits;
