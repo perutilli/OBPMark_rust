@@ -56,6 +56,10 @@ pub struct CommonArgs {
     /// Number of threads to use (default: 1)
     #[arg(short, long, default_value_t = 1)]
     pub parallel: usize,
+
+    /// Random seed to use (default: 3894283)
+    #[arg(long, default_value_t = 3894283)]
+    pub seed: u64,
 }
 
 #[macro_export]

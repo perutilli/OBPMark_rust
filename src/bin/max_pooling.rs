@@ -24,8 +24,6 @@ struct Args {
 fn main() {
     let args = Args::parse();
 
-    let seed = 38945;
-
     if args.common.size % args.stride != 0 {
         panic!("Size must be a multiple of stride");
     }
@@ -47,7 +45,7 @@ fn main() {
         None => {
             // generate input
             A = Matrix::from_random_seed(
-                seed,
+                args.common.seed,
                 args.common.size,
                 args.common.size,
                 "-10".parse::<Number>().unwrap(),

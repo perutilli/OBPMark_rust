@@ -19,8 +19,6 @@ struct Args {
 fn main() {
     let args = Args::parse();
 
-    let seed = 38945;
-
     let A;
 
     match args.common.input {
@@ -35,7 +33,7 @@ fn main() {
         None => {
             // generate input
             A = Matrix::from_random_seed(
-                seed,
+                args.common.seed,
                 args.common.size,
                 args.common.size,
                 "-10".parse::<Number>().unwrap(),

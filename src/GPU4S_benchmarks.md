@@ -1,6 +1,6 @@
 ## Current tasks
 * [x] Probably move to num_traits (from num)
-* [ ] Move seed to argument in clap
+* [x] Move seed to argument in clap
 * [ ] Fix formatting for f16 (it does not work with typical formatting)
 * [x] Moving to generics for lib
     - [x] Fixing problems with verify function (mod benchmark_utils)
@@ -17,7 +17,7 @@
     - [x] correlation_2D
     - [ ] fast_fourier_transform_2D_bench; this is only available in library implementation
     - [x] fast_fourier_transform_bench
-    - [ ] fast_fourier_transform_window_bench
+    - [x] fast_fourier_transform_window_bench
     - [x] finite_impulse_response_bench => special case of convolution (1d)
     - [x] LNR_bench
     - [x] matrix_multiplication_bench

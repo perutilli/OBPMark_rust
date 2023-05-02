@@ -19,8 +19,6 @@ struct Args {
 fn main() {
     let args = Args::parse();
 
-    let seed: u64 = 34523459;
-
     let A;
     let B;
 
@@ -34,14 +32,14 @@ fn main() {
         }
         None => {
             A = Matrix::from_random_seed(
-                seed,
+                args.common.seed,
                 args.common.size,
                 args.common.size,
                 "-10".parse::<Number>().unwrap(),
                 "10".parse::<Number>().unwrap(),
             );
             B = Matrix::from_random_seed(
-                seed + 10,
+                args.common.seed + 10,
                 args.common.size,
                 args.common.size,
                 "-10".parse::<Number>().unwrap(),
