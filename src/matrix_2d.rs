@@ -2,8 +2,9 @@ use std::sync::Arc;
 use std::thread;
 
 use crate::{
-    format_number, BaseMatrix, Convolution, Correlation, Error, FastFourierTransform, Float,
-    MatMul, MaxPooling, Number, ParallelMatMul, Relu, Softmax, LRN,
+    format_number, BaseMatrix, Convolution, Correlation, Error, FastFourierTransform,
+    FastFourierTransformWindowed, Float, MatMul, MaxPooling, Number, ParallelMatMul, Relu, Softmax,
+    LRN,
 };
 
 pub struct Matrix2d<T: Number> {
@@ -265,6 +266,37 @@ macro_rules! impl_fft {
 
 impl_fft!(f32);
 impl_fft!(f64);
+
+impl FastFourierTransformWindowed for Matrix2d<f32> {
+    fn fftw(&mut self, nn: usize, window: usize, result: &mut Self) -> Result<(), Error> {
+        if self.rows != 1 {
+            return Err(Error::InvalidDimensions);
+        }
+        for i in (0..(nn * 2 - window + 1)).step_by(2) {
+            for j in 0..window {
+                result.data[0][i * window + j] = self.data[0][i + j];
+            }
+            result.fft(window >> 1, i)?;
+        }
+        Ok(())
+    }
+}
+
+// TODO: code duplication, should turn into a macro
+impl FastFourierTransformWindowed for Matrix2d<f64> {
+    fn fftw(&mut self, nn: usize, window: usize, result: &mut Self) -> Result<(), Error> {
+        if self.rows != 1 {
+            return Err(Error::InvalidDimensions);
+        }
+        for i in (0..(nn * 2 - window + 1)).step_by(2) {
+            for j in 0..window {
+                result.data[0][i * window + j] = self.data[0][i + j];
+            }
+            result.fft(window >> 1, i)?;
+        }
+        Ok(())
+    }
+}
 
 impl<T: Number> ParallelMatMul for Matrix2d<T> {
     fn parallel_multiply(
