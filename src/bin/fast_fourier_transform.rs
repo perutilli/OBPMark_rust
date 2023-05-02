@@ -68,8 +68,7 @@ fn main() {
     match args.common.verify {
         Some(Some(filename)) => {
             // verify against file
-            let A_ref = Matrix::from_file(Path::new(&filename), args.common.size, args.common.size)
-                .unwrap();
+            let A_ref = Matrix::from_file(Path::new(&filename), 1, args.common.size).unwrap();
             if A.get_data() == A_ref.get_data() {
                 println!("Verification passed");
             } else {
