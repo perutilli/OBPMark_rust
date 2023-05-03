@@ -26,13 +26,29 @@ impl<T: Number> BaseMatrix<T> for Matrix2d<T> {
         assert!(row < self.rows && col < self.cols, "Invalid indexing");
         self.data[row][col] = value;
     }
+
+    fn reshape(&mut self, new_rows: usize, new_cols: usize) -> Result<(), Error> {
+        println!("WARNING: reshape is an expensive operation for 2d matrices");
+        if self.rows * self.cols != new_rows * new_cols {
+            return Err(Error::InvalidDimensions);
+        }
+        let old_data = self.data.clone();
+        let flat_data: Vec<_> = old_data.into_iter().flatten().collect();
+        self.data = flat_data
+            .chunks(new_cols)
+            .map(|chunk| chunk.to_vec())
+            .collect();
+        self.rows = new_rows;
+        self.cols = new_cols;
+        Ok(())
+    }
 }
 
 impl_display!(Matrix2d);
 
 impl<T: Number> MatMul for Matrix2d<T> {
     fn multiply(&self, other: &Matrix2d<T>, result: &mut Matrix2d<T>) -> Result<(), Error> {
-        if self.cols != other.rows {
+        if self.cols != other.rows || self.rows != result.rows || other.cols != result.cols {
             return Err(Error::InvalidDimensions);
         }
 

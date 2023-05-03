@@ -34,33 +34,36 @@ impl<T: Number> BaseMatrix<T> for Matrix1d<T> {
         assert!(row < self.rows && col < self.cols, "Invalid indexing");
         self.data[row * self.cols + col] = value;
     }
+
+    fn reshape(&mut self, new_rows: usize, new_cols: usize) -> Result<(), Error> {
+        if new_rows * new_cols != self.rows * self.cols {
+            return Err(Error::InvalidDimensions);
+        }
+        self.rows = new_rows;
+        self.cols = new_cols;
+        Ok(())
+    }
 }
 
 impl_display!(Matrix1d);
 
-macro_rules! expand_multiply {
-    ($t: ty, $zero: expr) => {
-        fn multiply(&self, other: &Matrix1d<$t>, result: &mut Matrix1d<$t>) -> Result<(), Error> {
-            if self.cols != other.rows {
-                return Err(Error::InvalidDimensions);
-            }
-            for i in 0..self.rows {
-                for j in 0..other.cols {
-                    let mut sum = $zero;
-                    // NOTE: this allows result to not be all zeros
-                    for k in 0..self.cols {
-                        sum += self.data[i * self.cols + k] * other.data[k * other.cols + j];
-                    }
-                    result.data[i * self.rows + j] = sum;
-                }
-            }
-            Ok(())
-        }
-    };
-}
-
 impl<T: Number> MatMul for Matrix1d<T> {
-    expand_multiply!(T, T::zero());
+    fn multiply(&self, other: &Matrix1d<T>, result: &mut Matrix1d<T>) -> Result<(), Error> {
+        if self.cols != other.rows || self.rows != result.rows || other.cols != result.cols {
+            return Err(Error::InvalidDimensions);
+        }
+        for i in 0..self.rows {
+            for j in 0..other.cols {
+                let mut sum = T::zero();
+                // NOTE: this allows result to not be all zeros
+                for k in 0..self.cols {
+                    sum += self.data[i * self.cols + k] * other.data[k * other.cols + j];
+                }
+                result.data[i * other.cols + j] = sum;
+            }
+        }
+        Ok(())
+    }
 }
 /*
 impl MatMul for Matrix1d<f16> {
@@ -75,10 +78,10 @@ impl<T: Number> Relu for Matrix1d<T> {
         }
         for i in 0..self.rows {
             for j in 0..self.cols {
-                if self.data[i * self.rows + j] > T::zero() {
-                    result.data[i * self.rows + j] = self.data[i * self.rows + j];
+                if self.data[i * self.cols + j] > T::zero() {
+                    result.data[i * self.cols + j] = self.data[i * self.cols + j];
                 } else {
-                    result.data[i * self.rows + j] = T::zero();
+                    result.data[i * self.cols + j] = T::zero();
                 }
                 // result.data[i * self.rows + j] = self.data[i * self.rows + j].max(T::default());
             }
@@ -95,12 +98,12 @@ impl<T: Number + num_traits::Float> Softmax for Matrix1d<T> {
         for i in 0..self.rows {
             let mut sum = T::zero();
             for j in 0..self.cols {
-                let val = self.data[i * self.rows + j].exp();
+                let val = self.data[i * self.cols + j].exp();
                 sum += val;
-                result.data[i * self.rows + j] = val;
+                result.data[i * self.cols + j] = val;
             }
             for j in 0..self.cols {
-                result.data[i * self.rows + j] /= sum;
+                result.data[i * self.cols + j] /= sum;
             }
         }
         Ok(())
