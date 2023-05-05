@@ -1,6 +1,7 @@
 ## Current tasks
 * [x] Probably move to num_traits (from num)
 * [x] Move seed to argument in clap
+* [ ] Improve wavelet transform both benchmark side and library side
 * [ ] size in cifar10 doesn't do anything, however it is required by the common arguments, I think we should change this
     - Probably by having a separete macro that expands all the common arguments except size and then using that inside cifar10
 * [ ] Standardize position of result inside the calls to the benchmark functions (probaly first parameter)
@@ -15,12 +16,12 @@
 * [x] Accept non common arguments: test clap(flatten)
 * [x] Improve benchmark template to reflect changes
 * [ ] Test --input and --export functionalities
-* [ ] Implement all benchmarks in their naive (1d and 2d vector) form (original names):
+* [x] Implement all benchmarks in their naive (1d and 2d vector) form (original names):
     - [x] cifar_10
     - [x] cifar_10_multiple
     - [x] convolution_2D_bench
     - [x] correlation_2D
-    - [ ] fast_fourier_transform_2D_bench; this is only available in library implementation
+    - [x] NOT AVAILABLE IN SEQ: fast_fourier_transform_2D_bench
     - [x] fast_fourier_transform_bench
     - [x] fast_fourier_transform_window_bench
     - [x] finite_impulse_response_bench => special case of convolution (1d)
@@ -31,8 +32,7 @@
     - [x] memory_bandwidth_bench; Does not apply (?)
     - [x] relu_bench
     - [x] softmax_bench TODO: It does not make sense for int, should be enforced at compile time
-    - [ ] wavelet_transform
-      - [ ] understand how to deal with constants and stuff
+    - [x] wavelet_transform
 * [x] Implement from_file and to_file for Matrix types
 * [ ] Test the performance against the original benchmarks
 * [ ] Rethink significantly the num traits stuff

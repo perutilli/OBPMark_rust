@@ -168,6 +168,22 @@ pub trait FastFourierTransformWindowed: FastFourierTransform {
     fn fftw(&mut self, nn: usize, window: usize, result: &mut Self) -> Result<(), Error>;
 }
 
+pub trait WaveletTransformInteger<T: Integer> {
+    fn wavelet_transform(&self, result: &mut Self, size: usize) -> Result<(), Error>;
+}
+
+pub trait WaveletTransformFloating<T: Float> {
+    fn wavelet_transform(
+        &self,
+        result: &mut Self,
+        size: usize,
+        low_pass_filter: &[T],
+        low_pass_filter_size: usize,
+        high_pass_filter: &[T],
+        high_pass_filter_size: usize,
+    ) -> Result<(), Error>;
+}
+
 pub trait ParallelMatMul {
     fn parallel_multiply(
         &self,

@@ -117,3 +117,7 @@ pub trait Float: Number + num_traits::Float {}
 impl Float for f32 {}
 impl Float for f64 {}
 impl Float for f16 {}
+
+pub trait Integer: Number + num_traits::PrimInt {}
+
+impl Integer for i32 {}

@@ -4,7 +4,7 @@ use std::thread;
 use crate::{
     format_number, BaseMatrix, Convolution, Correlation, Error, FastFourierTransform,
     FastFourierTransformWindowed, Float, MatMul, MaxPooling, Number, ParallelMatMul, Relu, Softmax,
-    LRN,
+    WaveletTransformFloating, WaveletTransformInteger, LRN,
 };
 
 pub struct Matrix1d<T: Number> {
@@ -323,6 +323,113 @@ impl FastFourierTransformWindowed for Matrix1d<f64> {
                 result.data[i * window + j] = self.data[i + j];
             }
             result.fft(window >> 1, i)?;
+        }
+        Ok(())
+    }
+}
+
+// TODO: note that right now the data has a minimum size for the algorithm to work
+//       should at least document this in the error
+impl WaveletTransformInteger<i32> for Matrix1d<i32> {
+    fn wavelet_transform(&self, result: &mut Self, size: usize) -> Result<(), Error> {
+        let full_size = size * 2;
+        if self.rows != 1 || self.cols != full_size {
+            return Err(Error::InvalidDimensions);
+        }
+
+        let data = &self.data;
+
+        // high part
+        for i in 0..size {
+            result.data[i + size] = if i == 0 {
+                data[1]
+                    - (((9.0 / 16.0) * (data[0] + data[2]) as f32)
+                        - ((1.0 / 16.0) * (data[2] + data[4]) as f32)
+                        + (1.0 / 2.0)) as i32
+            } else if i == size - 2 {
+                data[2 * size - 3]
+                    - (((9.0 / 16.0) * (data[2 * size - 4] + data[2 * size - 2]) as f32)
+                        - ((1.0 / 16.0) * (data[2 * size - 6] + data[2 * size - 2]) as f32)
+                        + (1.0 / 2.0)) as i32
+            } else if i == size - 1 {
+                data[2 * size - 1]
+                    - (((9.0 / 8.0) * (data[2 * size - 2]) as f32)
+                        - ((1.0 / 8.0) * (data[2 * size - 4]) as f32)
+                        + (1.0 / 2.0)) as i32
+            } else {
+                data[2 * i + 1]
+                    - (((9.0 / 16.0) * (data[2 * i] + data[2 * i + 2]) as f32)
+                        - ((1.0 / 16.0) * (data[2 * i - 2] + data[2 * i + 4]) as f32)
+                        + (1.0 / 2.0)) as i32
+            };
+        }
+
+        // low part
+        for i in 0..size {
+            result.data[i] = if i == 0 {
+                data[0] - (-result.data[size] / 2 + 1)
+            } else {
+                data[2 * i] - (-((result.data[i + size - 1] + result.data[i + size]) / 4) + 1)
+            };
+        }
+
+        Ok(())
+    }
+}
+
+impl<T: Float> WaveletTransformFloating<T> for Matrix1d<T> {
+    fn wavelet_transform(
+        &self,
+        result: &mut Self,
+        size: usize,
+        low_pass_filter: &[T],
+        low_pass_filter_size: usize,
+        high_pass_filter: &[T],
+        high_pass_filter_size: usize,
+    ) -> Result<(), Error> {
+        let full_size = size * 2;
+
+        if self.rows != 1 || self.cols != full_size {
+            return Err(Error::InvalidDimensions);
+        }
+
+        let hi_start = -(low_pass_filter_size as isize / 2);
+        let hi_end = (low_pass_filter_size / 2) as isize;
+        let gi_start = -(high_pass_filter_size as isize / 2);
+        let gi_end = (high_pass_filter_size / 2) as isize;
+
+        for i in 0..size {
+            let mut sum_value_low = T::zero();
+            // process the lowpass filter
+            for hi in hi_start..hi_end + 1 {
+                let x_position = (2 * i) as isize + hi;
+                let x_position = if x_position < 0 {
+                    x_position * -1
+                } else if x_position > full_size as isize - 1 {
+                    full_size as isize - 1 - (x_position - (full_size as isize - 1))
+                } else {
+                    x_position
+                };
+                sum_value_low +=
+                    low_pass_filter[(hi + hi_end) as usize] * self.data[x_position as usize];
+            }
+            result.data[i] = sum_value_low;
+
+            let mut sum_value_high = T::zero();
+            // process the highpass filter
+            for gi in gi_start..gi_end + 1 {
+                let x_position = (2 * i) as isize + gi + 1;
+                let x_position = if x_position < 0 {
+                    x_position * -1
+                } else if x_position > full_size as isize - 1 {
+                    full_size as isize - 1 - (x_position - (full_size as isize - 1))
+                } else {
+                    x_position
+                };
+                sum_value_high +=
+                    high_pass_filter[(gi + gi_end) as usize] * self.data[x_position as usize];
+            }
+            result.data[i + size] = sum_value_high;
         }
         Ok(())
     }
