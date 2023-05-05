@@ -101,8 +101,6 @@ pub trait BaseMatrix<T: Number> {
         Ok(())
     }
 
-    fn set(&mut self, row: usize, col: usize, value: T);
-
     fn reshape(&mut self, new_rows: usize, new_cols: usize) -> Result<(), Error>;
 }
 

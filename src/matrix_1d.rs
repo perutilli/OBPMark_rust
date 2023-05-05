@@ -30,11 +30,6 @@ impl<T: Number> BaseMatrix<T> for Matrix1d<T> {
             .collect::<Vec<Vec<T>>>()
     }
 
-    fn set(&mut self, row: usize, col: usize, value: T) {
-        assert!(row < self.rows && col < self.cols, "Invalid indexing");
-        self.data[row * self.cols + col] = value;
-    }
-
     fn reshape(&mut self, new_rows: usize, new_cols: usize) -> Result<(), Error> {
         if new_rows * new_cols != self.rows * self.cols {
             return Err(Error::InvalidDimensions);

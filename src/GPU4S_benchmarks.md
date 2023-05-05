@@ -38,7 +38,6 @@
 * [ ] Rethink significantly the num traits stuff
   - [ ] It might be good to move some of the more complicated stuff to macros where we cannot easily use traits, avoiding to much headaches in trying to make the traits work (like in fft)
 * [ ] Create unit tests for unit testable functions (this will need a list)
-* [ ] `set` for now just panics if indeces are invalid, maybe should return Result
 * [ ] fft macro could be a single one for both 1d and 2d given that the the matrix always has 1 row
 * [x] understand how we should verify our output against matlab for fft
 * [x] remove ndarray probably
