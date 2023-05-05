@@ -1,7 +1,12 @@
 ## Current tasks
 * [x] Probably move to num_traits (from num)
 * [x] Move seed to argument in clap
+* [ ] size in cifar10 doesn't do anything, however it is required by the common arguments, I think we should change this
+    - Probably by having a separete macro that expands all the common arguments except size and then using that inside cifar10
+* [ ] Standardize position of result inside the calls to the benchmark functions (probaly first parameter)
 * [ ] Fix formatting for f16 (it does not work with typical formatting)
+* [ ] Maybe move to workspace organization (https://doc.rust-lang.org/book/ch14-03-cargo-workspaces.html)
+* [ ] Use OpenMP implementations to test fft, fft windowed and maybe cifar 10
 * [x] Moving to generics for lib
     - [x] Fixing problems with verify function (mod benchmark_utils)
     - [x] Basic testing
@@ -11,8 +16,8 @@
 * [x] Improve benchmark template to reflect changes
 * [ ] Test --input and --export functionalities
 * [ ] Implement all benchmarks in their naive (1d and 2d vector) form (original names):
-    - [ ] cifar_10
-    - [ ] cifar_10_multiple
+    - [x] cifar_10
+    - [x] cifar_10_multiple
     - [x] convolution_2D_bench
     - [x] correlation_2D
     - [ ] fast_fourier_transform_2D_bench; this is only available in library implementation
@@ -33,7 +38,7 @@
 * [ ] Rethink significantly the num traits stuff
   - [ ] It might be good to move some of the more complicated stuff to macros where we cannot easily use traits, avoiding to much headaches in trying to make the traits work (like in fft)
 * [ ] Create unit tests for unit testable functions (this will need a list)
-* [ ] set for now just panics if indeces are invalid, maybe should return Result
+* [ ] `set` for now just panics if indeces are invalid, maybe should return Result
 * [ ] fft macro could be a single one for both 1d and 2d given that the the matrix always has 1 row
 * [x] understand how we should verify our output against matlab for fft
 * [x] remove ndarray probably

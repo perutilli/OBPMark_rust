@@ -25,12 +25,16 @@ const BETA: Number = 0.75;
 struct Args {
     #[clap(flatten)]
     common: CommonArgs,
+
+    /// Number of images to process (default: 1)
+    #[arg(long, default_value_t = 1)]
+    pub images: usize,
 }
 
 fn main() {
     let args = Args::parse();
 
-    let input;
+    let mut input = Vec::new();
 
     let kernel_1;
     let kernel_2;
@@ -56,12 +60,13 @@ fn main() {
     let weights_2_rows = DENSE_2;
     let weights_2_cols = DENSE_1;
 
-    match args.common.input {
-        Some(v) => {
+    match (args.common.input, args.images) {
+        (Some(v), 1) => {
             if v.len() != 2 {
                 panic!("Expected 2 input files, got {}", v.len());
             }
-            input = Matrix::from_file(Path::new(&v[0]), CIFAR_10_INPUT, CIFAR_10_INPUT).unwrap();
+            input
+                .push(Matrix::from_file(Path::new(&v[0]), CIFAR_10_INPUT, CIFAR_10_INPUT).unwrap());
             kernel_1 = Matrix::from_file(Path::new(&v[1]), KERNEL_CON_1, KERNEL_CON_1).unwrap();
             kernel_2 = Matrix::from_file(Path::new(&v[2]), KERNEL_CON_2, KERNEL_CON_2).unwrap();
             weights_1 =
@@ -69,14 +74,17 @@ fn main() {
             weights_2 =
                 Matrix::from_file(Path::new(&v[4]), weights_2_rows, weights_2_cols).unwrap();
         }
-        None => {
-            input = Matrix::from_random_seed(
-                args.common.seed,
-                CIFAR_10_INPUT,
-                CIFAR_10_INPUT,
-                number!("-10"),
-                number!("10"),
-            );
+        (Some(_), _) => panic!("Input files not supported for multiple images"),
+        (None, n) => {
+            for i in 0..n {
+                input.push(Matrix::from_random_seed(
+                    args.common.seed + 5 + i as u64,
+                    CIFAR_10_INPUT,
+                    CIFAR_10_INPUT,
+                    number!("-10"),
+                    number!("10"),
+                ));
+            }
             kernel_1 = Matrix::from_random_seed(
                 args.common.seed + 1,
                 KERNEL_CON_1,
@@ -109,8 +117,10 @@ fn main() {
     }
 
     if args.common.print_input {
-        println!("input:");
-        println!("{}", input);
+        for i in 0..args.images {
+            println!("input_{}:", i);
+            println!("{}", input[i]);
+        }
         println!("kernel_1:");
         println!("{}", kernel_1);
         println!("kernel_2:");
@@ -144,8 +154,9 @@ fn main() {
     let t0 = Instant::now();
 
     // Run the benchmark
-    cifar_10(
+    cifar_10_multiple(
         &input,
+        args.images,
         &kernel_1,
         &kernel_2,
         &weights_1,
@@ -187,6 +198,55 @@ fn main() {
     }
 
     // TODO: add verification code
+}
+
+fn cifar_10_multiple(
+    input: &Vec<Matrix>,
+    n_images: usize,
+    kernel_1: &Matrix,
+    kernel_2: &Matrix,
+    weights_1: &Matrix,
+    weights_2: &Matrix,
+    output: &mut Matrix,
+    conv_1_out: &mut Matrix,
+    relu_1_out: &mut Matrix,
+    pool_1_out: &mut Matrix,
+    lrn_1_out: &mut Matrix,
+    conv_2_out: &mut Matrix,
+    relu_2_out: &mut Matrix,
+    lrn_2_out: &mut Matrix,
+    pool_2_out: &mut Matrix,
+    dense_layer_1_out: &mut Matrix,
+    relu_3_out: &mut Matrix,
+    dense_layer_2_out: &mut Matrix,
+    relu_4_out: &mut Matrix,
+    stride_1_size: usize,
+    stride_2_size: usize,
+) {
+    for i in 0..n_images {
+        cifar_10(
+            &input[i],
+            kernel_1,
+            kernel_2,
+            weights_1,
+            weights_2,
+            output,
+            conv_1_out,
+            relu_1_out,
+            pool_1_out,
+            lrn_1_out,
+            conv_2_out,
+            relu_2_out,
+            lrn_2_out,
+            pool_2_out,
+            dense_layer_1_out,
+            relu_3_out,
+            dense_layer_2_out,
+            relu_4_out,
+            stride_1_size,
+            stride_2_size,
+        );
+    }
 }
 
 fn cifar_10(
@@ -265,4 +325,14 @@ fn cifar_10(
 
     // Softmax
     relu_4_out.softmax(output).unwrap();
+
+    // Reshape for next iteration
+    // TODO: this is very unoptimal for 2d matrices, it might be better to
+    //       straight up reallocate pool_2_out
+    pool_2_out
+        .reshape(
+            CIFAR_10_INPUT / STRIDE_1 / STRIDE_2,
+            CIFAR_10_INPUT / STRIDE_1 / STRIDE_2,
+        )
+        .unwrap();
 }
