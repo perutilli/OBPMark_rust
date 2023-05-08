@@ -23,6 +23,12 @@ pub type Matrix = crate::matrix_2d::Matrix2d<Number>;
 #[cfg(not(any(feature = "1d", feature = "2d")))]
 pub type Matrix = crate::matrix_2d::Matrix2d<Number>;
 
+#[derive(clap::ValueEnum, Clone, Debug)]
+pub enum ParallelImpl {
+    Naive,
+    Rayon,
+}
+
 #[derive(Parser, Debug)]
 pub struct CommonArgs {
     /// Size of the matrix (or matrices)
@@ -60,6 +66,10 @@ pub struct CommonArgs {
     /// Random seed to use (default: 3894283)
     #[arg(long, default_value_t = 3894283)]
     pub seed: u64,
+
+    /// Parallel implementation to use (default: Naive)
+    #[arg(value_enum, long, default_value_t = ParallelImpl::Naive)]
+    pub parallel_impl: ParallelImpl,
 }
 
 #[macro_export]

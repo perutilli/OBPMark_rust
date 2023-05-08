@@ -1,6 +1,7 @@
 ## Current tasks
 * [x] Probably move to num_traits (from num)
 * [x] Move seed to argument in clap
+* [ ] Add information to all errors
 * [ ] Improve wavelet transform both benchmark side and library side
 * [ ] size in cifar10 doesn't do anything, however it is required by the common arguments, I think we should change this
     - Probably by having a separete macro that expands all the common arguments except size and then using that inside cifar10
@@ -42,20 +43,53 @@
 * [x] understand how we should verify our output against matlab for fft
 * [x] remove ndarray probably
 
-## 29/03 Meeting
-* Correlation in the C version it is Num: i32 -> f32, Num: f32 -> f32, Num: f64 -> f64, Keep the behaviour (maybe or just make all f64)
-* Is this something we might be interested in: make max pooling deal with more complex cases (https://stackoverflow.com/questions/37674306/what-is-the-difference-between-same-and-valid-padding-in-tf-nn-max-pool-of-t) No but keep it for documentation purposes
-* The benchmarks should be exactly the same as the original ones so that we can compare the results
-* File stuff is not necessary for embedded systems, only when running on top of OS, so it is not as important
+## Parallel benchmarks tasks (rayon)
+* [ ] Improve arguments, problem: -p necessary but value ignored
+* [ ] Implement all parallel benchmarks with rayon parallel:
+    - [ ] cifar_10
+    - [ ] cifar_10_multiple
+    - [ ] convolution_2D_bench
+    - [ ] correlation_2D
+    - [ ] NOT AVAILABLE IN SEQ: fast_fourier_transform_2D_bench
+    - [ ] fast_fourier_transform_bench
+    - [ ] fast_fourier_transform_window_bench
+    - [ ] finite_impulse_response_bench => special case of convolution (1d)
+    - [ ] LNR_bench
+    - [ ] matrix_multiplication_bench
+    - [ ] matrix_multiplication_bench_fp16;
+    - [ ] max_pooling_bench
+    - [ ] memory_bandwidth_bench; Does not apply (?)
+    - [ ] relu_bench
+    - [ ] softmax_bench TODO: It does not make sense for int, should be enforced at compile time
+    - [ ] wavelet_transform
+
+## Parallel benchmarks tasks (naive)
+* [ ] Decide on a design: this could include some sort of macro that deals with the splitting of the data, maybe even arc cloning and thread scope 
+* [ ] Implement all parallel benchmarks in naive form:
+    - [ ] cifar_10
+    - [ ] cifar_10_multiple
+    - [ ] convolution_2D_bench
+    - [ ] correlation_2D
+    - [ ] NOT AVAILABLE IN SEQ: fast_fourier_transform_2D_bench
+    - [ ] fast_fourier_transform_bench
+    - [ ] fast_fourier_transform_window_bench
+    - [ ] finite_impulse_response_bench => special case of convolution (1d)
+    - [ ] LNR_bench
+    - [ ] matrix_multiplication_bench
+    - [ ] matrix_multiplication_bench_fp16;
+    - [ ] max_pooling_bench
+    - [ ] memory_bandwidth_bench; Does not apply (?)
+    - [ ] relu_bench
+    - [ ] softmax_bench TODO: It does not make sense for int, should be enforced at compile time
+    - [ ] wavelet_transform
 
 ## Future improvements
 * Improve verification so that the benchmark contains only the code that is unique to it
 * Improve ouput formatting to take config like number of digits after the decimal point etc (https://doc.rust-lang.org/std/fmt/)
 * Many things that are pub now might be better as pub(crate) probably
-* Make a macro or something so that the 1d indexing can be written as the 2d one
-* Add information to file errors
+* Make a macro or something so that the 1d indexing can be written as the 2d one **note the errors that the lack of this caused in our code (commit in the beginning of may)**
 * Maybe move input outside of CommonArgs so it can require the exact number of files in depending on the benchmark
-* Move seed to config or something
+* [x] Move seed to config or something (Done: we moved it to the common args and given it a default value)
 * Right now we will just panic if --export or --verify provide invalid paths, should handle this better
 
 ### Open questions

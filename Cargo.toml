@@ -10,6 +10,7 @@ clap = { version = "4.1.8", features = ["derive"] }
 rand = "0.8.5"
 num-traits = "0.2.14"
 half = {version = "2.2.1", features = ["num-traits"]}
+rayon = "1.7.0"
 
 [features]
 default = []

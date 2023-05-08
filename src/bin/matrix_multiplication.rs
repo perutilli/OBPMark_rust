@@ -6,10 +6,10 @@
 #![allow(non_snake_case)]
 use clap::Parser;
 use core::panic;
-use obpmark_rust::{BaseMatrix, MatMul, ParallelMatMul};
+use obpmark_rust::{rayon_traits::RayonMatMul, BaseMatrix, MatMul, ParallelMatMul};
 use std::{path::Path, time::Instant};
 
-use obpmark_rust::benchmark_utils::{CommonArgs, Matrix, Number};
+use obpmark_rust::benchmark_utils::{CommonArgs, Matrix, Number, ParallelImpl};
 use obpmark_rust::matrix_2d::Matrix2d as RefMatrix;
 
 use obpmark_rust::verify;
@@ -65,9 +65,16 @@ fn main() {
 
     let t0 = Instant::now();
 
-    match args.common.parallel {
-        1 => A.multiply(&B, &mut C).unwrap(),
-        n => A.parallel_multiply(&B, &mut C, n).unwrap(),
+    match (args.common.parallel, args.common.parallel_impl) {
+        (n, ParallelImpl::Rayon) => {
+            println!(
+                "note than n_threads = {} is ignored in rayon implementation",
+                n
+            );
+            A.rayon_multiply(&B, &mut C).unwrap();
+        }
+        (1, _) => A.multiply(&B, &mut C).unwrap(),
+        (n, ParallelImpl::Naive) => A.parallel_multiply(&B, &mut C, n).unwrap(),
     }
 
     let t1 = Instant::now();

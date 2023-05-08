@@ -219,6 +219,8 @@ pub fn format_number<T: Number>(number: &T) -> String {
     format!("{:10.5}", number)
 }
 
+pub mod rayon_traits;
+
 pub mod matrix_1d;
 pub mod matrix_2d;
 
