@@ -1,5 +1,5 @@
 use crate::matrix_2d::Matrix2d;
-use crate::number_traits::Number;
+use crate::number_traits::{Float, Number};
 use crate::rayon_traits::*;
 use crate::Error;
 
@@ -47,6 +47,27 @@ impl<T: Number> RayonMaxPooling for Matrix2d<T> {
                     }
                 }
                 row[j] = max;
+            }
+        });
+        Ok(())
+    }
+}
+
+impl<T: Float> RayonSoftmax for Matrix2d<T> {
+    fn rayon_softmax(&self, result: &mut Matrix2d<T>) -> Result<(), Error> {
+        if self.rows != result.rows || self.cols != result.cols {
+            return Err(Error::InvalidDimensions);
+        }
+        // for i in 0..self.rows {
+        result.data.par_iter_mut().enumerate().for_each(|(i, row)| {
+            let mut sum = T::zero();
+            for j in 0..self.cols {
+                let val = self.data[i][j].exp();
+                sum += val;
+                row[j] = val;
+            }
+            for j in 0..self.cols {
+                row[j] /= sum;
             }
         });
         Ok(())

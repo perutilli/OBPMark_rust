@@ -12,3 +12,7 @@ pub trait RayonMaxPooling {
         col_stride: usize,
     ) -> Result<(), Error>;
 }
+
+pub trait RayonSoftmax {
+    fn rayon_softmax(&self, result: &mut Self) -> Result<(), Error>;
+}
