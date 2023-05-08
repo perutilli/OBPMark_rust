@@ -85,7 +85,7 @@ impl<T: Number> Relu for Matrix1d<T> {
     }
 }
 
-impl<T: Number + num_traits::Float> Softmax for Matrix1d<T> {
+impl<T: Float> Softmax for Matrix1d<T> {
     fn softmax(&self, result: &mut Matrix1d<T>) -> Result<(), Error> {
         if self.rows != result.rows || self.cols != result.cols {
             return Err(Error::InvalidDimensions);
