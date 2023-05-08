@@ -55,9 +55,9 @@
     - [ ] fast_fourier_transform_window_bench
     - [ ] finite_impulse_response_bench => special case of convolution (1d)
     - [ ] LNR_bench
-    - [ ] matrix_multiplication_bench
-    - [ ] matrix_multiplication_bench_fp16;
-    - [ ] max_pooling_bench
+    - [x] matrix_multiplication_bench
+    - [x] matrix_multiplication_bench_fp16; // Note that this did not take any additional development time
+    - [x] max_pooling_bench
     - [ ] memory_bandwidth_bench; Does not apply (?)
     - [ ] relu_bench
     - [ ] softmax_bench TODO: It does not make sense for int, should be enforced at compile time

@@ -1,10 +1,10 @@
 #![allow(non_snake_case)]
-use obpmark_rust::{BaseMatrix, MaxPooling};
+use obpmark_rust::{rayon_traits::RayonMaxPooling, BaseMatrix, MaxPooling};
 use std::time::Instant;
 
 use clap::Parser;
 
-use obpmark_rust::benchmark_utils::{CommonArgs, Matrix, Number};
+use obpmark_rust::benchmark_utils::{CommonArgs, Matrix, Number, ParallelImpl};
 use obpmark_rust::matrix_2d::Matrix2d as RefMatrix;
 
 use obpmark_rust::verify;
@@ -61,7 +61,21 @@ fn main() {
 
     let t0 = Instant::now();
 
-    A.max_pooling(&mut B, args.stride, args.stride).unwrap();
+    match (args.common.parallel, args.common.parallel_impl) {
+        (n, ParallelImpl::Rayon) => {
+            println!(
+                "note than n_threads = {} is ignored in rayon implementation",
+                n
+            );
+            A.rayon_max_pooling(&mut B, args.stride, args.stride)
+                .unwrap();
+        }
+        (1, _) => A.max_pooling(&mut B, args.stride, args.stride).unwrap(),
+
+        (_n, ParallelImpl::Naive) => {
+            unimplemented!("Naive parallel implementation not yet implemented")
+        }
+    }
 
     let t1 = Instant::now();
 
