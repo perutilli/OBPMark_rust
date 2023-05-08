@@ -1,11 +1,11 @@
 #![allow(non_snake_case)]
 use clap::Parser;
 use core::panic;
-use obpmark_rust::{BaseMatrix, Convolution, Padding};
+use obpmark_rust::{rayon_traits::RayonConvolution, BaseMatrix, Convolution, Padding};
 use std::path::Path;
 use std::time::Instant;
 
-use obpmark_rust::benchmark_utils::{CommonArgs, Matrix, Number};
+use obpmark_rust::benchmark_utils::{CommonArgs, Matrix, Number, ParallelImpl};
 use obpmark_rust::matrix_2d::Matrix2d as RefMatrix;
 
 use obpmark_rust::{number, verify};
@@ -66,7 +66,17 @@ fn main() {
 
     let t0 = Instant::now();
 
-    A.convolute(&kernel, Padding::Zeroes, &mut B).unwrap();
+    match (args.common.parallel, args.common.parallel_impl) {
+        (n, ParallelImpl::Rayon) => {
+            println!(
+                "note than n_threads = {} is ignored in rayon implementation",
+                n
+            );
+            A.rayon_convolute(&kernel, Padding::Zeroes, &mut B).unwrap();
+        }
+        (1, _) => A.convolute(&kernel, Padding::Zeroes, &mut B).unwrap(),
+        (_n, ParallelImpl::Naive) => unimplemented!("Naive parallel not yet implemented"),
+    }
 
     let t1 = Instant::now();
 
