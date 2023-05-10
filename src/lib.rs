@@ -111,7 +111,7 @@ macro_rules! impl_display {
                 for row in self.get_data() {
                     for el in row {
                         // NOTE: this way we have a space before the newline, might not be what we want
-                        write!(f, "{} ", format_number(&el))?;
+                        write!(f, "{} ", el.format())?;
                     }
                     writeln!(f)?;
                 }
@@ -207,16 +207,6 @@ pub fn random_matrix_data<T: Number>(
         }
     }
     data
-}
-
-// TODO: cfg should not be in the lib part, we should configure this some other way
-#[cfg(feature = "int")]
-pub fn format_number<T: Number>(number: &T) -> String {
-    format!("{:5}", number)
-}
-#[cfg(not(feature = "int"))]
-pub fn format_number<T: Number>(number: &T) -> String {
-    format!("{:10.5}", number)
 }
 
 pub mod rayon_traits;

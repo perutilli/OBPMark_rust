@@ -1,7 +1,7 @@
 use std::sync::Arc;
 use std::thread;
 
-use crate::{format_number, BaseMatrix, Error, Number, ParallelMatMul};
+use crate::{BaseMatrix, Error, Number, ParallelMatMul};
 
 pub struct Matrix1d<T: Number> {
     data: Vec<T>,

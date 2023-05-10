@@ -94,6 +94,33 @@ impl RngRange for f16 {
     }
 }
 
+pub trait FormatNumber {
+    fn format(self) -> String;
+}
+
+impl FormatNumber for i32 {
+    fn format(self) -> String {
+        format!("{:5}", self)
+    }
+}
+
+impl FormatNumber for f32 {
+    fn format(self) -> String {
+        format!("{:10.5}", self)
+    }
+}
+
+impl FormatNumber for f64 {
+    fn format(self) -> String {
+        format!("{:10.5}", self)
+    }
+}
+
+impl FormatNumber for f16 {
+    fn format(self) -> String {
+        format!("{:10.5}", f32::from(self))
+    }
+}
 pub trait Number:
     num_traits::NumAssignRef
     + RngRange
@@ -104,6 +131,7 @@ pub trait Number:
     + for<'a> std::iter::Sum<&'a Self>
     + std::iter::Sum<Self>
     + num_traits::AsPrimitive<f64>
+    + FormatNumber
 {
 }
 

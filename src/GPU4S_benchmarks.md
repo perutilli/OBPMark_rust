@@ -6,7 +6,7 @@
 * [ ] size in cifar10 doesn't do anything, however it is required by the common arguments, I think we should change this
     - Probably by having a separete macro that expands all the common arguments except size and then using that inside cifar10
 * [ ] Standardize position of result inside the calls to the benchmark functions (probaly first parameter)
-* [ ] Fix formatting for f16 (it does not work with typical formatting)
+* [x] Fix formatting for f16 (it does not work with typical formatting)
 * [ ] Maybe move to workspace organization (https://doc.rust-lang.org/book/ch14-03-cargo-workspaces.html)
 * [ ] Use OpenMP implementations to test fft, fft windowed and maybe cifar 10
 * [x] Moving to generics for lib
@@ -48,7 +48,7 @@
 * [ ] Implement all parallel benchmarks with rayon parallel:
     - [ ] cifar_10
     - [ ] cifar_10_multiple
-    - [ ] convolution_2D_bench
+    - [x] convolution_2D_bench
     - [ ] correlation_2D
     - [ ] NOT AVAILABLE IN SEQ: fast_fourier_transform_2D_bench
     - [ ] fast_fourier_transform_bench
@@ -60,7 +60,7 @@
     - [x] max_pooling_bench
     - [ ] memory_bandwidth_bench; Does not apply (?)
     - [ ] relu_bench
-    - [ ] softmax_bench TODO: It does not make sense for int, should be enforced at compile time
+    - [x] softmax_bench TODO: It does not make sense for int, should be enforced at compile time
     - [ ] wavelet_transform
 
 ## Parallel benchmarks tasks (naive)
