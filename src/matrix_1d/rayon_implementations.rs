@@ -150,3 +150,26 @@ impl<T: Number> RayonConvolution for Matrix1d<T> {
         Ok(())
     }
 }
+
+impl<T: Number> RayonRelu for Matrix1d<T> {
+    fn rayon_relu(&self, result: &mut Matrix1d<T>) -> Result<(), Error> {
+        if self.rows != result.rows || self.cols != result.cols {
+            return Err(Error::InvalidDimensions);
+        }
+        // for i in 0..self.rows {
+        result
+            .data
+            .par_chunks_mut(self.cols)
+            .enumerate()
+            .for_each(|(i, row)| {
+                for j in 0..self.cols {
+                    if self.data[i * self.cols + j] > T::zero() {
+                        row[j] = self.data[i * self.cols + j];
+                    } else {
+                        row[j] = T::zero();
+                    }
+                }
+            });
+        Ok(())
+    }
+}

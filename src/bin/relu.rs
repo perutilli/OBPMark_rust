@@ -1,10 +1,10 @@
 #![allow(non_snake_case)]
 use clap::Parser;
 use core::panic;
-use obpmark_rust::{BaseMatrix, Relu};
+use obpmark_rust::{rayon_traits::RayonRelu, BaseMatrix, Relu};
 use std::time::Instant;
 
-use obpmark_rust::benchmark_utils::{CommonArgs, Matrix, Number};
+use obpmark_rust::benchmark_utils::{CommonArgs, Implementation, Matrix, Number};
 use obpmark_rust::matrix_2d::Matrix2d as RefMatrix;
 
 use obpmark_rust::{number, verify};
@@ -51,7 +51,25 @@ fn main() {
 
     let t0 = Instant::now();
 
-    A.relu(&mut B).unwrap();
+    match (args.common.nthreads, args.common.implementation) {
+        (Some(n), Implementation::Sequential) if n != 1 => {
+            panic!("Cannot run sequential implementation with more than 1 thread");
+        }
+        (_, Implementation::Sequential) => {
+            A.relu(&mut B).unwrap();
+        }
+        (None, Implementation::Rayon) => {
+            A.rayon_relu(&mut B).unwrap();
+        }
+        (Some(_), Implementation::Rayon) => {
+            panic!("Cannot specify number of threads for Rayon implementation");
+        }
+        (_n, Implementation::StdParallel) => {
+            unimplemented!("Naive parallel not yet implemented");
+        }
+    }
+
+    // A.relu(&mut B).unwrap();
 
     let t1 = Instant::now();
 

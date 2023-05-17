@@ -25,3 +25,7 @@ pub trait RayonConvolution {
         result: &mut Self,
     ) -> Result<(), Error>;
 }
+
+pub trait RayonRelu {
+    fn rayon_relu(&self, result: &mut Self) -> Result<(), Error>;
+}
