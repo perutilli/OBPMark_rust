@@ -53,13 +53,13 @@
     - [ ] NOT AVAILABLE IN SEQ: fast_fourier_transform_2D_bench
     - [ ] fast_fourier_transform_bench
     - [ ] fast_fourier_transform_window_bench
-    - [ ] finite_impulse_response_bench => special case of convolution (1d)
+    - [x] finite_impulse_response_bench => special case of convolution (1d) NOTE: it is expected that this implementation time is zero (copy-paste from convolution)
     - [ ] LNR_bench
     - [x] matrix_multiplication_bench
     - [x] matrix_multiplication_bench_fp16; // Note that this did not take any additional development time
     - [x] max_pooling_bench
     - [ ] memory_bandwidth_bench; Does not apply (?)
-    - [ ] relu_bench
+    - [x] relu_bench
     - [x] softmax_bench TODO: It does not make sense for int, should be enforced at compile time
     - [ ] wavelet_transform
 
