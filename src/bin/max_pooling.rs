@@ -4,7 +4,7 @@ use std::time::Instant;
 
 use clap::Parser;
 
-use obpmark_rust::benchmark_utils::{CommonArgs, Matrix, Number, ParallelImpl};
+use obpmark_rust::benchmark_utils::{CommonArgs, Implementation, Matrix, Number};
 use obpmark_rust::matrix_2d::Matrix2d as RefMatrix;
 
 use obpmark_rust::{number, verify};
@@ -61,19 +61,20 @@ fn main() {
 
     let t0 = Instant::now();
 
-    match (args.common.parallel, args.common.parallel_impl) {
-        (n, ParallelImpl::Rayon) => {
-            println!(
-                "note than n_threads = {} is ignored in rayon implementation",
-                n
-            );
+    match (args.common.nthreads, args.common.implementation) {
+        (None, Implementation::Rayon) => {
             A.rayon_max_pooling(&mut B, args.stride, args.stride)
                 .unwrap();
         }
-        (1, _) => A.max_pooling(&mut B, args.stride, args.stride).unwrap(),
-
-        (_n, ParallelImpl::Naive) => {
-            unimplemented!("Naive parallel implementation not yet implemented")
+        (Some(_), Implementation::Rayon) => {
+            panic!("Cannot specify number of threads for Rayon implementation")
+        }
+        (Some(n), Implementation::Sequential) if n != 1 => {
+            panic!("Invalid parameter combination: sequential with nthreads != 1")
+        }
+        (_, Implementation::Sequential) => A.max_pooling(&mut B, args.stride, args.stride).unwrap(),
+        (_n, Implementation::StdParallel) => {
+            unimplemented!("Naive parallel not yet implemented")
         }
     }
 

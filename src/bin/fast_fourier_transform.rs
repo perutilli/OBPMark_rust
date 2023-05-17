@@ -4,7 +4,7 @@ use core::panic;
 use obpmark_rust::{BaseMatrix, FastFourierTransform};
 use std::{path::Path, time::Instant};
 
-use obpmark_rust::benchmark_utils::{CommonArgs, Matrix, Number};
+use obpmark_rust::benchmark_utils::{CommonArgs, Implementation, Matrix, Number};
 
 use obpmark_rust::number;
 
@@ -45,9 +45,9 @@ fn main() {
 
     let t0 = Instant::now();
 
-    match args.common.parallel {
-        1 => A.fft(args.common.size >> 1, 0).unwrap(), // the >> 1 is to keep it consistent with the reference implementation
-        _n => unimplemented!("Parallel version not yet implemented"),
+    match args.common.implementation {
+        Implementation::Sequential => A.fft(args.common.size >> 1, 0).unwrap(), // the >> 1 is to keep it consistent with the reference implementation
+        _ => unimplemented!("Parallel versions not yet implemented"),
     }
 
     let t1 = Instant::now();

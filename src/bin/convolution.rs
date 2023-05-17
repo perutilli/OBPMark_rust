@@ -5,7 +5,7 @@ use obpmark_rust::{rayon_traits::RayonConvolution, BaseMatrix, Convolution, Padd
 use std::path::Path;
 use std::time::Instant;
 
-use obpmark_rust::benchmark_utils::{CommonArgs, Matrix, Number, ParallelImpl};
+use obpmark_rust::benchmark_utils::{CommonArgs, Implementation, Matrix, Number};
 use obpmark_rust::matrix_2d::Matrix2d as RefMatrix;
 
 use obpmark_rust::{number, verify};
@@ -66,16 +66,18 @@ fn main() {
 
     let t0 = Instant::now();
 
-    match (args.common.parallel, args.common.parallel_impl) {
-        (n, ParallelImpl::Rayon) => {
-            println!(
-                "note than n_threads = {} is ignored in rayon implementation",
-                n
-            );
+    match (args.common.nthreads, args.common.implementation) {
+        (None, Implementation::Rayon) => {
             A.rayon_convolute(&kernel, Padding::Zeroes, &mut B).unwrap();
         }
-        (1, _) => A.convolute(&kernel, Padding::Zeroes, &mut B).unwrap(),
-        (_n, ParallelImpl::Naive) => unimplemented!("Naive parallel not yet implemented"),
+        (Some(_), Implementation::Rayon) => {
+            panic!("Cannot specify number of threads for Rayon implementation")
+        }
+        (Some(n), Implementation::Sequential) if n != 1 => {
+            panic!("Invalid parameter combination: sequential with nthreads != 1")
+        }
+        (_, Implementation::Sequential) => A.convolute(&kernel, Padding::Zeroes, &mut B).unwrap(),
+        (_n, Implementation::StdParallel) => unimplemented!("Naive parallel not yet implemented"),
     }
 
     let t1 = Instant::now();

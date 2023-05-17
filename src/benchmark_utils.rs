@@ -24,8 +24,9 @@ pub type Matrix = crate::matrix_2d::Matrix2d<Number>;
 pub type Matrix = crate::matrix_2d::Matrix2d<Number>;
 
 #[derive(clap::ValueEnum, Clone, Debug)]
-pub enum ParallelImpl {
-    Naive,
+pub enum Implementation {
+    Sequential,
+    StdParallel,
     Rayon,
 }
 
@@ -59,17 +60,17 @@ pub struct CommonArgs {
     #[arg(long, default_value_t = false)]
     pub print_input: bool,
 
-    /// Number of threads to use (default: 1)
-    #[arg(short, long, default_value_t = 1)]
-    pub parallel: usize,
+    /// Number of threads to use
+    #[arg(short, long)]
+    pub nthreads: Option<usize>,
 
     /// Random seed to use (default: 3894283)
     #[arg(long, default_value_t = 3894283)]
     pub seed: u64,
 
     /// Parallel implementation to use (default: Naive)
-    #[arg(value_enum, long, default_value_t = ParallelImpl::Naive)]
-    pub parallel_impl: ParallelImpl,
+    #[arg(value_enum, long, default_value_t = Implementation::Sequential)]
+    pub implementation: Implementation,
 }
 
 #[macro_export]
