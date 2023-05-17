@@ -386,3 +386,44 @@ impl<T: Float> WaveletTransformFloating<T> for Matrix1d<T> {
         Ok(())
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::super::BaseMatrix;
+    #[allow(unused_imports)]
+    use super::*;
+
+    fn gen_matrix_data(size: usize) -> Vec<Vec<f32>> {
+        let mut data = vec![vec![0.0; size]; size];
+        for i in 0..size {
+            for j in 0..size {
+                unsafe {
+                    data[i][j] = libc::rand() as f32 / 2147483647.0;
+                }
+            }
+        }
+        data
+    }
+
+    // TODO: this should be a trait called Signed maybe
+    fn abs<T: Number + std::ops::Neg<Output = T>>(x: T) -> T {
+        if x < T::zero() {
+            -x
+        } else {
+            x
+        }
+    }
+
+    #[test]
+    fn correlation() {
+        let m1;
+        let m2;
+        unsafe {
+            libc::srand(21121993);
+            m1 = Matrix1d::new(gen_matrix_data(4), 4, 4);
+            m2 = Matrix1d::new(gen_matrix_data(4), 4, 4);
+        }
+        let res = m1.correlation(&m2).unwrap();
+        assert!(abs(res - 0.073827) < 10e-6, "res = {}", res);
+    }
+}
