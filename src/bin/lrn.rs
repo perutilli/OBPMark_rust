@@ -1,11 +1,11 @@
 #![allow(non_snake_case)]
 use clap::Parser;
 use core::panic;
-use obpmark_rust::{BaseMatrix, LRN};
+use obpmark_rust::{rayon_traits::RayonLRN, BaseMatrix, LRN};
 use std::path::Path;
 use std::time::Instant;
 
-use obpmark_rust::benchmark_utils::{CommonArgs, Matrix, Number};
+use obpmark_rust::benchmark_utils::{CommonArgs, Implementation, Matrix, Number};
 use obpmark_rust::matrix_2d::Matrix2d as RefMatrix;
 
 use obpmark_rust::{number, verify};
@@ -54,7 +54,19 @@ fn main() {
 
     let t0 = Instant::now();
 
-    A.lrn(&mut B, ALPHA, BETA, K).unwrap();
+    match (args.common.nthreads, args.common.implementation) {
+        (None, Implementation::Rayon) => {
+            A.rayon_lrn(&mut B, ALPHA, BETA, K).unwrap();
+        }
+        (Some(_), Implementation::Rayon) => {
+            panic!("Cannot specify number of threads for Rayon implementation")
+        }
+        (Some(n), Implementation::Sequential) if n != 1 => {
+            panic!("Invalid parameter combination: sequential with nthreads != 1")
+        }
+        (_, Implementation::Sequential) => A.lrn(&mut B, ALPHA, BETA, K).unwrap(),
+        (_n, Implementation::StdParallel) => unimplemented!("Naive parallel not yet implemented"),
+    }
 
     let t1 = Instant::now();
 

@@ -1,3 +1,4 @@
+use crate::number_traits::Float;
 use crate::{Error, Padding};
 
 pub trait RayonMatMul {
@@ -28,4 +29,8 @@ pub trait RayonConvolution {
 
 pub trait RayonRelu {
     fn rayon_relu(&self, result: &mut Self) -> Result<(), Error>;
+}
+
+pub trait RayonLRN<T: Float> {
+    fn rayon_lrn(&self, result: &mut Self, alpha: T, beta: T, k: T) -> Result<(), Error>;
 }

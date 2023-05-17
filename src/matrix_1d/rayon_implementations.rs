@@ -173,3 +173,23 @@ impl<T: Number> RayonRelu for Matrix1d<T> {
         Ok(())
     }
 }
+
+impl<T: Float> RayonLRN<T> for Matrix1d<T> {
+    fn rayon_lrn(&self, result: &mut Self, alpha: T, beta: T, k: T) -> Result<(), Error> {
+        if self.rows != result.rows || self.cols != result.cols {
+            return Err(Error::InvalidDimensions);
+        }
+        result
+            .data
+            .par_chunks_mut(self.cols)
+            .enumerate()
+            .for_each(|(i, row)| {
+                for j in 0..self.cols {
+                    row[j] = self.data[i * self.cols + j]
+                        / (k + alpha * self.data[i * self.cols + j] * self.data[i * self.cols + j])
+                            .powf(beta);
+                }
+            });
+        Ok(())
+    }
+}

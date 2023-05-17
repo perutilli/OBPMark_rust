@@ -119,26 +119,6 @@ impl<T: Number> RayonConvolution for Matrix2d<T> {
     }
 }
 
-/*
-impl<T: Number> Relu for Matrix2d<T> {
-    fn relu(&self, result: &mut Matrix2d<T>) -> Result<(), Error> {
-        if self.rows != result.rows || self.cols != result.cols {
-            return Err(Error::InvalidDimensions);
-        }
-        for i in 0..self.rows {
-            for j in 0..self.cols {
-                if self.data[i][j] < T::zero() {
-                    result.data[i][j] = T::zero();
-                } else {
-                    result.data[i][j] = self.data[i][j];
-                }
-                // result.data[i][j] = self.data[i][j].max(T::default());
-            }
-        }
-        Ok(())
-    }
-} */
-
 impl<T: Number> RayonRelu for Matrix2d<T> {
     fn rayon_relu(&self, result: &mut Matrix2d<T>) -> Result<(), Error> {
         if self.rows != result.rows || self.cols != result.cols {
@@ -151,6 +131,21 @@ impl<T: Number> RayonRelu for Matrix2d<T> {
                 } else {
                     row[j] = self.data[i][j];
                 }
+            }
+        });
+        Ok(())
+    }
+}
+
+impl<T: Float> RayonLRN<T> for Matrix2d<T> {
+    fn rayon_lrn(&self, result: &mut Matrix2d<T>, alpha: T, beta: T, k: T) -> Result<(), Error> {
+        if self.rows != result.rows || self.cols != result.cols {
+            return Err(Error::InvalidDimensions);
+        }
+        result.data.par_iter_mut().enumerate().for_each(|(i, row)| {
+            for j in 0..self.cols {
+                row[j] =
+                    self.data[i][j] / (k + alpha * self.data[i][j] * self.data[i][j]).powf(beta);
             }
         });
         Ok(())

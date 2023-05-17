@@ -44,7 +44,7 @@
 * [x] remove ndarray probably
 
 ## Parallel benchmarks tasks (rayon)
-* [ ] Improve arguments, problem: -p necessary but value ignored
+* [x] Improve arguments, problem: -p necessary but value ignored
 * [ ] Implement all parallel benchmarks with rayon parallel:
     - [ ] cifar_10
     - [ ] cifar_10_multiple
