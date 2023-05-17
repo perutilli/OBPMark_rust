@@ -35,6 +35,7 @@ use obpmark_rust::WaveletTransformInteger;
 use std::{path::Path, time::Instant};
 
 use obpmark_rust::benchmark_utils::{CommonArgs, Matrix, Number};
+use obpmark_rust::number;
 // use obpmark_rust::matrix_2d::Matrix2d as RefMatrix;
 
 #[derive(Parser, Debug)]
@@ -62,8 +63,8 @@ fn main() {
                 args.common.seed,
                 1,
                 args.common.size,
-                "-10".parse::<Number>().unwrap(),
-                "10".parse::<Number>().unwrap(),
+                number!("-10"),
+                number!("10"),
             );
         }
     }

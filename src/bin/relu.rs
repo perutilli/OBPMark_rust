@@ -7,7 +7,7 @@ use std::time::Instant;
 use obpmark_rust::benchmark_utils::{CommonArgs, Matrix, Number};
 use obpmark_rust::matrix_2d::Matrix2d as RefMatrix;
 
-use obpmark_rust::verify;
+use obpmark_rust::{number, verify};
 
 #[derive(Parser, Debug)]
 #[command(about = "Rectified Linear Unit benchmark")]
@@ -36,8 +36,8 @@ fn main() {
                 args.common.seed,
                 args.common.size,
                 args.common.size,
-                "-10".parse::<Number>().unwrap(),
-                "10".parse::<Number>().unwrap(),
+                number!("-10"),
+                number!("10"),
             );
         }
     }
