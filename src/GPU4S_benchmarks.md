@@ -68,7 +68,7 @@
 * [ ] Implement all parallel benchmarks in naive form:
     - [ ] cifar_10
     - [ ] cifar_10_multiple
-    - [ ] convolution_2D_bench
+    - [x] convolution_2D_bench => looks quite a bit faster than the rayon version (both in 1d and 2d)
     - [ ] correlation_2D
     - [ ] NOT AVAILABLE IN SEQ: fast_fourier_transform_2D_bench
     - [ ] fast_fourier_transform_bench
