@@ -54,7 +54,7 @@
     - [ ] fast_fourier_transform_bench
     - [ ] fast_fourier_transform_window_bench
     - [x] finite_impulse_response_bench => special case of convolution (1d) NOTE: it is expected that this implementation time is zero (copy-paste from convolution)
-    - [ ] LNR_bench
+    - [x] LNR_bench
     - [x] matrix_multiplication_bench
     - [x] matrix_multiplication_bench_fp16; // Note that this did not take any additional development time
     - [x] max_pooling_bench
@@ -64,7 +64,7 @@
     - [ ] wavelet_transform
 
 ## Parallel benchmarks tasks (naive)
-* [ ] Decide on a design: this could include some sort of macro that deals with the splitting of the data, maybe even arc cloning and thread scope 
+* [x] Decide on a design: this could include some sort of macro that deals with the splitting of the data, maybe even arc cloning and thread scope 
 * [ ] Implement all parallel benchmarks in naive form:
     - [ ] cifar_10
     - [ ] cifar_10_multiple
@@ -75,8 +75,8 @@
     - [ ] fast_fourier_transform_window_bench
     - [ ] finite_impulse_response_bench => special case of convolution (1d)
     - [ ] LNR_bench
-    - [ ] matrix_multiplication_bench
-    - [ ] matrix_multiplication_bench_fp16;
+    - [x] matrix_multiplication_bench
+    - [x] matrix_multiplication_bench_fp16;
     - [ ] max_pooling_bench
     - [ ] memory_bandwidth_bench; Does not apply (?)
     - [ ] relu_bench

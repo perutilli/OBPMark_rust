@@ -182,15 +182,6 @@ pub trait WaveletTransformFloating<T: Float> {
     ) -> Result<(), Error>;
 }
 
-pub trait ParallelMatMul {
-    fn parallel_multiply(
-        &self,
-        other: &Self,
-        result: &mut Self,
-        n_threads: usize,
-    ) -> Result<(), Error>;
-}
-
 pub fn random_matrix_data<T: Number>(
     seed: u64,
     rows: usize,
@@ -209,6 +200,7 @@ pub fn random_matrix_data<T: Number>(
     data
 }
 
+pub mod parallel_traits;
 pub mod rayon_traits;
 
 pub mod matrix_1d;

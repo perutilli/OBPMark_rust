@@ -6,7 +6,9 @@
 #![allow(non_snake_case)]
 use clap::Parser;
 use core::panic;
-use obpmark_rust::{rayon_traits::RayonMatMul, BaseMatrix, MatMul, ParallelMatMul};
+use obpmark_rust::{
+    parallel_traits::ParallelMatMul, rayon_traits::RayonMatMul, BaseMatrix, MatMul,
+};
 use std::{path::Path, time::Instant};
 
 use obpmark_rust::benchmark_utils::{CommonArgs, Implementation, Matrix, Number};
