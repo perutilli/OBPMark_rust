@@ -1,22 +1,4 @@
-## Current tasks
-* [x] Probably move to num_traits (from num)
-* [x] Move seed to argument in clap
-* [ ] Add information to all errors
-* [ ] Improve wavelet transform both benchmark side and library side
-* [ ] size in cifar10 doesn't do anything, however it is required by the common arguments, I think we should change this
-    - Probably by having a separete macro that expands all the common arguments except size and then using that inside cifar10
-* [ ] Standardize position of result inside the calls to the benchmark functions (probaly first parameter)
-* [x] Fix formatting for f16 (it does not work with typical formatting)
-* [ ] Maybe move to workspace organization (https://doc.rust-lang.org/book/ch14-03-cargo-workspaces.html)
-* [ ] Use OpenMP implementations to test fft, fft windowed and maybe cifar 10
-* [x] Moving to generics for lib
-    - [x] Fixing problems with verify function (mod benchmark_utils)
-    - [x] Basic testing
-    - [x] Check all the code to see that it makes sense
-    - [ ] Make issue on funty, I think it makes sense to point this out
-* [x] Accept non common arguments: test clap(flatten)
-* [x] Improve benchmark template to reflect changes
-* [ ] Test --input and --export functionalities
+## Sequential benchmarks
 * [x] Implement all benchmarks in their naive (1d and 2d vector) form (original names):
     - [x] cifar_10
     - [x] cifar_10_multiple
@@ -30,20 +12,15 @@
     - [x] matrix_multiplication_bench
     - [x] matrix_multiplication_bench_fp16;
     - [x] max_pooling_bench
-    - [x] memory_bandwidth_bench; Does not apply (?)
+    - [ ] memory_bandwidth_bench; Do a memcpy (I think)
     - [x] relu_bench
     - [x] softmax_bench TODO: It does not make sense for int, should be enforced at compile time
     - [x] wavelet_transform
-* [x] Implement from_file and to_file for Matrix types
-* [ ] Test the performance against the original benchmarks
-* [ ] Rethink significantly the num traits stuff
-  - [ ] It might be good to move some of the more complicated stuff to macros where we cannot easily use traits, avoiding to much headaches in trying to make the traits work (like in fft)
-* [ ] Create unit tests for unit testable functions (this will need a list)
-* [ ] fft macro could be a single one for both 1d and 2d given that the the matrix always has 1 row
-* [x] understand how we should verify our output against matlab for fft
-* [x] remove ndarray probably
 
-## Parallel benchmarks tasks (rayon)
+## Parallel Benchmarks
+**Current parallelization is only good for square matrices, or at least with n_threads rows**. We should deal with this at least in the 1d version. It is not a priority though given that the benchmarks worked only on square matrices.
+
+### Parallel benchmarks tasks (rayon)
 * [x] Improve arguments, problem: -p necessary but value ignored
 * [ ] Implement all parallel benchmarks with rayon parallel:
     - [ ] cifar_10
@@ -53,7 +30,7 @@
     - [ ] NOT AVAILABLE IN SEQ: fast_fourier_transform_2D_bench
     - [ ] fast_fourier_transform_bench
     - [ ] fast_fourier_transform_window_bench
-    - [x] finite_impulse_response_bench => special case of convolution (1d) NOTE: it is expected that this implementation time is zero (copy-paste from convolution)
+    - [x] finite_impulse_response_bench => special case of convolution (1d) TODO: CHECK, not working as intended NOTE: it is expected that this implementation time is zero (copy-paste from convolution)
     - [x] LNR_bench
     - [x] matrix_multiplication_bench
     - [x] matrix_multiplication_bench_fp16; // Note that this did not take any additional development time
@@ -63,7 +40,7 @@
     - [x] softmax_bench TODO: It does not make sense for int, should be enforced at compile time
     - [ ] wavelet_transform
 
-## Parallel benchmarks tasks (naive)
+### Parallel benchmarks tasks (naive)
 * [x] Decide on a design: this could include some sort of macro that deals with the splitting of the data, maybe even arc cloning and thread scope 
 * [ ] Implement all parallel benchmarks in naive form:
     - [ ] cifar_10
@@ -82,6 +59,38 @@
     - [ ] relu_bench
     - [ ] softmax_bench TODO: It does not make sense for int, should be enforced at compile time
     - [ ] wavelet_transform
+
+## Bare metal rust
+- [ ] Show proof of concept program running on bare metal (no parallelism or data structures)
+
+## General tasks
+* [x] Probably move to num_traits (from num)
+* [x] Move seed to argument in clap
+* [ ] Add information to all errors
+* [ ] Improve wavelet transform both benchmark side and library side
+* [ ] size in cifar10 doesn't do anything, however it is required by the common arguments, I think we should change this
+    - Probably by having a separete macro that expands all the common arguments except size and then using that inside cifar10
+* [ ] Standardize position of result inside the calls to the benchmark functions (probaly first parameter)
+* [x] Fix formatting for f16 (it does not work with typical formatting)
+* [ ] Maybe move to workspace organization (https://doc.rust-lang.org/book/ch14-03-cargo-workspaces.html)
+* [ ] Use OpenMP implementations to test fft, fft windowed and maybe cifar 10
+* [x] Moving to generics for lib
+    - [x] Fixing problems with verify function (mod benchmark_utils)
+    - [x] Basic testing
+    - [x] Check all the code to see that it makes sense
+    - [ ] Make issue on funty, I think it makes sense to point this out
+* [x] Accept non common arguments: test clap(flatten)
+* [x] Improve benchmark template to reflect changes
+* [ ] Test --input and --export functionalities
+* [ ] * [x] Implement from_file and to_file for Matrix types
+* [ ] Test the performance against the original benchmarks
+* [ ] Rethink significantly the num traits stuff
+  - [ ] It might be good to move some of the more complicated stuff to macros where we cannot easily use traits, avoiding to much headaches in trying to make the traits work (like in fft)
+* [ ] Create unit tests for unit testable functions (this will need a list)
+* [ ] fft macro could be a single one for both 1d and 2d given that the the matrix always has 1 row
+* [x] understand how we should verify our output against matlab for fft
+* [x] remove ndarray probably
+
 
 ## Future improvements
 * Improve verification so that the benchmark contains only the code that is unique to it
