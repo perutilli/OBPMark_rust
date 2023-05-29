@@ -69,7 +69,7 @@ fn main() {
 
     match (args.common.nthreads, args.common.implementation) {
         (None, Implementation::Rayon) => {
-            A.rayon_multiply(&B, &mut C).unwrap();
+            //A.rayon_multiply(&B, &mut C).unwrap();
         }
         (Some(_), Implementation::Rayon) => {
             panic!("Cannot specify number of threads for Rayon implementation")
@@ -79,11 +79,11 @@ fn main() {
         }
         (_, Implementation::Sequential) => A.multiply(&B, &mut C).unwrap(),
         (Some(n_threads), Implementation::StdParallel) => {
-            A.parallel_multiply(&B, &mut C, n_threads).unwrap()
+            //A.parallel_multiply(&B, &mut C, n_threads).unwrap()
         }
         (None, Implementation::StdParallel) => {
             // TODO: change 8 to number of cores
-            A.parallel_multiply(&B, &mut C, 8).unwrap()
+            //A.parallel_multiply(&B, &mut C, 8).unwrap()
         }
     }
 

@@ -20,7 +20,9 @@ pub type Number = f32;
 pub type Matrix = crate::matrix_1d::Matrix1d<Number>;
 #[cfg(feature = "2d")]
 pub type Matrix = crate::matrix_2d::Matrix2d<Number>;
-#[cfg(not(any(feature = "1d", feature = "2d")))]
+#[cfg(feature = "nalgebra")]
+pub type Matrix = crate::matrix_nalgebra::MatrixNalgebra<Number>;
+#[cfg(not(any(feature = "1d", feature = "2d", feature = "nalgebra")))]
 pub type Matrix = crate::matrix_2d::Matrix2d<Number>;
 
 #[derive(clap::ValueEnum, Clone, Debug)]

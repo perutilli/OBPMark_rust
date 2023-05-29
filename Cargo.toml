@@ -13,6 +13,8 @@ half = {version = "2.2.1", features = ["num-traits"]}
 rayon = "1.7.0"
 libc = "0.2.144" # should be only for testing
 
+nalgebra = "0.32.2"
+
 [features]
 default = []
 
@@ -23,3 +25,4 @@ half = []
 
 1d = []
 2d = []
+nalgebra = []
