@@ -5,7 +5,7 @@ use crate::Error;
 
 use rayon::prelude::*;
 
-use crate::{MatMul, MaxPooling, Relu, Softmax};
+use crate::{Convolution, MatMul, MaxPooling, Relu, Softmax};
 
 impl<T: Number> RayonMatMul for Matrix2d<T> {
     fn rayon_multiply(&self, other: &Self, result: &mut Self) -> Result<(), Error> {
@@ -74,27 +74,11 @@ impl<T: Number> RayonConvolution for Matrix2d<T> {
             return Err(Error::InvalidKernelDimensions);
         }
 
-        let kernel_y_radius = (kernel.rows - 1) / 2;
-        let kernel_x_radius = (kernel.cols - 1) / 2;
-
-        //for i in 0..self.rows {
-        result.data.par_iter_mut().enumerate().for_each(|(i, row)| {
-            for j in 0..self.cols {
-                let mut sum = T::zero();
-                for k in 0..kernel.rows {
-                    for l in 0..kernel.cols {
-                        let y = (i + k) as isize - kernel_y_radius as isize;
-                        let x = (j + l) as isize - kernel_x_radius as isize;
-                        if (y > 0 && y < self.rows as isize) && (x > 0 && x < self.cols as isize) {
-                            let y = y as usize;
-                            let x = x as usize;
-                            sum += self.data[y][x] * kernel.data[k][l];
-                        }
-                    }
-                }
-                row[j] = sum;
-            }
-        });
+        result
+            .data
+            .par_iter_mut()
+            .enumerate()
+            .for_each(|(i, row)| self.convolute_row(kernel, row, i));
         Ok(())
     }
 }

@@ -160,7 +160,8 @@ pub trait Correlation {
     fn correlation(&self, other: &Self) -> Result<f64, Error>;
 }
 
-pub trait Convolution {
+pub trait Convolution<T> {
+    fn convolute_row(&self, kernel: &Self, result_row: &mut [T], row_idx: usize);
     fn convolute(&self, kernel: &Self, padding: Padding, result: &mut Self) -> Result<(), Error>;
 }
 

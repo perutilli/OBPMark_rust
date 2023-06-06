@@ -154,7 +154,27 @@ impl<T: Number> Correlation for Matrix1d<T> {
 }
 
 use crate::Padding;
-impl<T: Number> Convolution for Matrix1d<T> {
+impl<T: Number> Convolution<T> for Matrix1d<T> {
+    fn convolute_row(&self, kernel: &Self, result_row: &mut [T], row_idx: usize) {
+        let i = row_idx;
+        let kernel_y_radius = (kernel.rows - 1) / 2;
+        let kernel_x_radius = (kernel.cols - 1) / 2;
+        for j in 0..self.cols {
+            let mut sum = T::zero();
+            for k in 0..kernel.rows {
+                for l in 0..kernel.cols {
+                    let y = (i + k) as isize - kernel_y_radius as isize;
+                    let x = (j + l) as isize - kernel_x_radius as isize;
+                    if (y > 0 && y < self.rows as isize) && (x > 0 && x < self.cols as isize) {
+                        sum += self.data[y as usize * self.cols + x as usize]
+                            * kernel.data[k * kernel.cols + l];
+                    }
+                }
+            }
+            result_row[j] = sum;
+        }
+    }
+
     fn convolute(&self, kernel: &Self, padding: Padding, result: &mut Self) -> Result<(), Error> {
         match padding {
             Padding::Zeroes => (),
@@ -169,26 +189,11 @@ impl<T: Number> Convolution for Matrix1d<T> {
             return Err(Error::InvalidKernelDimensions);
         }
 
-        let kernel_y_radius = (kernel.rows - 1) / 2;
-        let kernel_x_radius = (kernel.cols - 1) / 2;
-
-        for i in 0..self.rows {
-            for j in 0..self.cols {
-                let mut sum = T::zero();
-                for k in 0..kernel.rows {
-                    for l in 0..kernel.cols {
-                        let y = (i + k) as isize - kernel_y_radius as isize;
-                        let x = (j + l) as isize - kernel_x_radius as isize;
-                        if (y > 0 && y < self.rows as isize) && (x > 0 && x < self.cols as isize) {
-                            let y = y as usize;
-                            let x = x as usize;
-                            sum += self.data[y * self.cols + x] * kernel.data[k * kernel.cols + l];
-                        }
-                    }
-                }
-                result.data[i * result.cols + j] = sum;
-            }
-        }
+        result
+            .data
+            .chunks_mut(result.cols)
+            .enumerate()
+            .for_each(|(i, result_row)| self.convolute_row(kernel, result_row, i));
         Ok(())
     }
 }

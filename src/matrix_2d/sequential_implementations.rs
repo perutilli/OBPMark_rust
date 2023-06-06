@@ -152,7 +152,28 @@ impl<T: Number> Correlation for Matrix2d<T> {
 }
 
 use crate::Padding;
-impl<T: Number> Convolution for Matrix2d<T> {
+impl<T: Number> Convolution<T> for Matrix2d<T> {
+    fn convolute_row(&self, kernel: &Self, result_row: &mut [T], row_idx: usize) {
+        let i = row_idx;
+        let kernel_y_radius = (kernel.rows - 1) / 2;
+        let kernel_x_radius = (kernel.cols - 1) / 2;
+
+        for j in 0..self.cols {
+            let mut sum = T::zero();
+            for k in 0..kernel.rows {
+                for l in 0..kernel.cols {
+                    let y = (i + k) as isize - kernel_y_radius as isize;
+                    let x = (j + l) as isize - kernel_x_radius as isize;
+                    if (y > 0 && y < self.rows as isize) && (x > 0 && x < self.cols as isize) {
+                        let y = y as usize;
+                        let x = x as usize;
+                        sum += self.data[y][x] * kernel.data[k][l];
+                    }
+                }
+            }
+            result_row[j] = sum;
+        }
+    }
     fn convolute(&self, kernel: &Self, padding: Padding, result: &mut Self) -> Result<(), Error> {
         match padding {
             Padding::Zeroes => (),
@@ -168,26 +189,12 @@ impl<T: Number> Convolution for Matrix2d<T> {
             return Err(Error::InvalidKernelDimensions);
         }
 
-        let kernel_y_radius = (kernel.rows - 1) / 2;
-        let kernel_x_radius = (kernel.cols - 1) / 2;
+        result
+            .data
+            .iter_mut()
+            .enumerate()
+            .for_each(|(i, result_row)| self.convolute_row(kernel, result_row, i));
 
-        for i in 0..self.rows {
-            for j in 0..self.cols {
-                let mut sum = T::zero();
-                for k in 0..kernel.rows {
-                    for l in 0..kernel.cols {
-                        let y = (i + k) as isize - kernel_y_radius as isize;
-                        let x = (j + l) as isize - kernel_x_radius as isize;
-                        if (y > 0 && y < self.rows as isize) && (x > 0 && x < self.cols as isize) {
-                            let y = y as usize;
-                            let x = x as usize;
-                            sum += self.data[y][x] * kernel.data[k][l];
-                        }
-                    }
-                }
-                result.data[i][j] = sum;
-            }
-        }
         Ok(())
     }
 }
