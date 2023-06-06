@@ -31,21 +31,26 @@ impl<T: Number> MatMul<T> for Matrix2d<T> {
     }
 }
 
-impl<T: Number> Relu for Matrix2d<T> {
+impl<T: Number> Relu<T> for Matrix2d<T> {
+    fn relu_row(&self, result_row: &mut [T], row_idx: usize) {
+        let i = row_idx;
+        for j in 0..self.cols {
+            if self.data[i][j] < T::zero() {
+                result_row[j] = T::zero();
+            } else {
+                result_row[j] = self.data[i][j];
+            }
+        }
+    }
     fn relu(&self, result: &mut Matrix2d<T>) -> Result<(), Error> {
         if self.rows != result.rows || self.cols != result.cols {
             return Err(Error::InvalidDimensions);
         }
-        for i in 0..self.rows {
-            for j in 0..self.cols {
-                if self.data[i][j] < T::zero() {
-                    result.data[i][j] = T::zero();
-                } else {
-                    result.data[i][j] = self.data[i][j];
-                }
-                // result.data[i][j] = self.data[i][j].max(T::default());
-            }
-        }
+        result
+            .data
+            .iter_mut()
+            .enumerate()
+            .for_each(|(i, result_row)| self.relu_row(result_row, i));
         Ok(())
     }
 }

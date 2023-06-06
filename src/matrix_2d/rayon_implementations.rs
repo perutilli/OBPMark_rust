@@ -5,7 +5,7 @@ use crate::Error;
 
 use rayon::prelude::*;
 
-use crate::MatMul;
+use crate::{MatMul, Relu};
 
 impl<T: Number> RayonMatMul for Matrix2d<T> {
     fn rayon_multiply(&self, other: &Self, result: &mut Self) -> Result<(), Error> {
@@ -122,15 +122,11 @@ impl<T: Number> RayonRelu for Matrix2d<T> {
         if self.rows != result.rows || self.cols != result.cols {
             return Err(Error::InvalidDimensions);
         }
-        result.data.par_iter_mut().enumerate().for_each(|(i, row)| {
-            for j in 0..self.cols {
-                if self.data[i][j] < T::zero() {
-                    row[j] = T::zero();
-                } else {
-                    row[j] = self.data[i][j];
-                }
-            }
-        });
+        result
+            .data
+            .par_iter_mut()
+            .enumerate()
+            .for_each(|(i, row)| self.relu_row(row, i));
         Ok(())
     }
 }

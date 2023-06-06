@@ -30,21 +30,27 @@ impl<T: Number> MatMul<T> for Matrix1d<T> {
     }
 }
 
-impl<T: Number> Relu for Matrix1d<T> {
+impl<T: Number> Relu<T> for Matrix1d<T> {
+    fn relu_row(&self, result_row: &mut [T], row_idx: usize) {
+        let i = row_idx;
+        for j in 0..self.cols {
+            if self.data[i * self.cols + j] > T::zero() {
+                result_row[j] = self.data[i * self.cols + j];
+            } else {
+                result_row[j] = T::zero();
+            }
+        }
+    }
+
     fn relu(&self, result: &mut Matrix1d<T>) -> Result<(), Error> {
         if self.rows != result.rows || self.cols != result.cols {
             return Err(Error::InvalidDimensions);
         }
-        for i in 0..self.rows {
-            for j in 0..self.cols {
-                if self.data[i * self.cols + j] > T::zero() {
-                    result.data[i * self.cols + j] = self.data[i * self.cols + j];
-                } else {
-                    result.data[i * self.cols + j] = T::zero();
-                }
-                // result.data[i * self.rows + j] = self.data[i * self.rows + j].max(T::default());
-            }
-        }
+        result
+            .data
+            .chunks_mut(self.cols)
+            .enumerate()
+            .for_each(|(i, result_row)| self.relu_row(result_row, i));
         Ok(())
     }
 }

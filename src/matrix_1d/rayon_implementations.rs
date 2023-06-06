@@ -3,7 +3,7 @@ use crate::number_traits::{Float, Number};
 use crate::rayon_traits::*;
 use crate::Error;
 
-use crate::MatMul;
+use crate::{MatMul, Relu};
 
 use rayon::prelude::*;
 
@@ -152,20 +152,11 @@ impl<T: Number> RayonRelu for Matrix1d<T> {
         if self.rows != result.rows || self.cols != result.cols {
             return Err(Error::InvalidDimensions);
         }
-        // for i in 0..self.rows {
         result
             .data
             .par_chunks_mut(self.cols)
             .enumerate()
-            .for_each(|(i, row)| {
-                for j in 0..self.cols {
-                    if self.data[i * self.cols + j] > T::zero() {
-                        row[j] = self.data[i * self.cols + j];
-                    } else {
-                        row[j] = T::zero();
-                    }
-                }
-            });
+            .for_each(|(i, row)| self.relu_row(row, i));
         Ok(())
     }
 }

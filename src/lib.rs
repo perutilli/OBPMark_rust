@@ -127,7 +127,8 @@ pub trait MatMul<T> {
     fn multiply(&self, other: &Self, result: &mut Self) -> Result<(), Error>;
 }
 
-pub trait Relu {
+pub trait Relu<T> {
+    fn relu_row(&self, result_row: &mut [T], row_idx: usize);
     fn relu(&self, result: &mut Self) -> Result<(), Error>;
 }
 
