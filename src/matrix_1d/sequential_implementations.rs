@@ -75,7 +75,31 @@ impl<T: Float> Softmax for Matrix1d<T> {
     }
 }
 
-impl<T: Number> MaxPooling for Matrix1d<T> {
+impl<T: Number> MaxPooling<T> for Matrix1d<T> {
+    fn max_pooling_row(
+        &self,
+        result_row: &mut [T],
+        row_idx: usize,
+        row_stride: usize,
+        col_stride: usize,
+    ) {
+        let i = row_idx;
+        for j in 0..result_row.len() {
+            let mut max = self.data[i * row_stride * self.cols + j * col_stride];
+            for k in 0..row_stride {
+                for l in 0..col_stride {
+                    if max
+                        < self.data[i * row_stride * self.cols + j * col_stride + k * self.cols + l]
+                    {
+                        max = self.data
+                            [i * row_stride * self.cols + j * col_stride + k * self.cols + l];
+                    }
+                }
+            }
+            result_row[j] = max;
+        }
+    }
+
     fn max_pooling(
         &self,
         result: &mut Matrix1d<T>,
@@ -85,29 +109,13 @@ impl<T: Number> MaxPooling for Matrix1d<T> {
         if self.rows != result.rows * row_stride || self.cols != result.cols * col_stride {
             return Err(Error::InvalidDimensions);
         }
-        for i in 0..result.rows {
-            for j in 0..result.cols {
-                let mut max = self.data[i * row_stride * self.cols + j * col_stride];
-                for k in 0..row_stride {
-                    for l in 0..col_stride {
-                        if max
-                            < self.data
-                                [i * row_stride * self.cols + j * col_stride + k * self.cols + l]
-                        {
-                            max = self.data
-                                [i * row_stride * self.cols + j * col_stride + k * self.cols + l];
-                        }
-                        /*
-                        max = max.max(
-                            self.data
-                                [i * row_stride * self.cols + j * col_stride + k * self.cols + l],
-                        );
-                         */
-                    }
-                }
-                result.data[i * result.cols + j] = max;
-            }
-        }
+        result
+            .data
+            .chunks_mut(result.cols)
+            .enumerate()
+            .for_each(|(i, result_row)| {
+                self.max_pooling_row(result_row, i, row_stride, col_stride)
+            });
         Ok(())
     }
 }

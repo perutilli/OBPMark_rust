@@ -136,7 +136,14 @@ pub trait Softmax {
     fn softmax(&self, result: &mut Self) -> Result<(), Error>;
 }
 
-pub trait MaxPooling {
+pub trait MaxPooling<T> {
+    fn max_pooling_row(
+        &self,
+        result_row: &mut [T],
+        row_idx: usize,
+        row_stride: usize,
+        col_stride: usize,
+    );
     fn max_pooling(
         &self,
         result: &mut Self,

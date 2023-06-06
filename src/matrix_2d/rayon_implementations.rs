@@ -5,7 +5,7 @@ use crate::Error;
 
 use rayon::prelude::*;
 
-use crate::{MatMul, Relu};
+use crate::{MatMul, MaxPooling, Relu};
 
 impl<T: Number> RayonMatMul for Matrix2d<T> {
     fn rayon_multiply(&self, other: &Self, result: &mut Self) -> Result<(), Error> {
@@ -34,18 +34,7 @@ impl<T: Number> RayonMaxPooling for Matrix2d<T> {
         }
         // for i in 0..result.rows {
         result.data.par_iter_mut().enumerate().for_each(|(i, row)| {
-            for j in 0..result.cols {
-                let mut max = self.data[i * row_stride][j * col_stride];
-                for k in 0..row_stride {
-                    for l in 0..col_stride {
-                        if max < self.data[i * row_stride + k][j * col_stride + l] {
-                            max = self.data[i * row_stride + k][j * col_stride + l];
-                        }
-                        // max = max.max(self.data[i * row_stride + k][j * col_stride + l]);
-                    }
-                }
-                row[j] = max;
-            }
+            self.max_pooling_row(row, i, row_stride, col_stride);
         });
         Ok(())
     }

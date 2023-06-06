@@ -3,7 +3,7 @@ use crate::number_traits::{Float, Number};
 use crate::rayon_traits::*;
 use crate::Error;
 
-use crate::{MatMul, Relu};
+use crate::{MatMul, MaxPooling, Relu};
 
 use rayon::prelude::*;
 
@@ -39,33 +39,8 @@ impl<T: Number> RayonMaxPooling for Matrix1d<T> {
             .data
             .par_chunks_mut(result.cols)
             .enumerate()
-            .for_each(|(i, row)| {
-                for j in 0..result.cols {
-                    let mut max = self.data[i * row_stride * self.cols + j * col_stride];
-                    for k in 0..row_stride {
-                        for l in 0..col_stride {
-                            if max
-                                < self.data[i * row_stride * self.cols
-                                    + j * col_stride
-                                    + k * self.cols
-                                    + l]
-                            {
-                                max = self.data[i * row_stride * self.cols
-                                    + j * col_stride
-                                    + k * self.cols
-                                    + l];
-                            }
-                            /* for some reason max requires T to be Ord even though it works on non generic f32 and f64
-                            max = max.max(
-                                self.data
-                                    [i * row_stride * self.cols + j * col_stride + k * self.cols + l],
-                            );
-                             */
-                        }
-                    }
-                    row[j] = max;
-                }
-            });
+            .for_each(|(i, row)| self.max_pooling_row(row, i, row_stride, col_stride));
+
         Ok(())
     }
 }
