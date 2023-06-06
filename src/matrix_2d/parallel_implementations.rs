@@ -6,6 +6,8 @@ use crate::{Error, Padding};
 use std::sync::Arc;
 use std::thread;
 
+use crate::MatMul;
+
 impl<T: Number> ParallelMatMul for Matrix2d<T> {
     fn parallel_multiply(
         &self,
@@ -16,33 +18,24 @@ impl<T: Number> ParallelMatMul for Matrix2d<T> {
         if self.cols != other.rows || self.rows != result.rows || other.cols != result.cols {
             return Err(Error::InvalidDimensions);
         }
-        if self.rows % n_threads != 0 {
-            return Err(Error::InvalidNumberOfThreads);
-        }
 
-        let rows_per_thread = self.rows / n_threads;
+        let rows_per_thread = (self.rows - 1) / n_threads + 1;
 
-        let self_data = Arc::new(self);
-        let other_data = Arc::new(other);
+        let shared_self = Arc::new(self);
+        let shared_other = Arc::new(other);
 
         thread::scope(|s| {
             result
                 .data
-                .chunks_exact_mut(rows_per_thread)
+                .chunks_mut(rows_per_thread)
                 .enumerate()
                 .for_each(|(chunk_idx, chunk)| {
-                    let self_data = self_data.clone();
-                    let other_data = other_data.clone();
+                    let shared_self = shared_self.clone();
+                    let shared_other = shared_other.clone();
                     let start_row = chunk_idx * rows_per_thread;
                     s.spawn(move || {
                         for (i, row) in chunk.iter_mut().enumerate() {
-                            for (j, el) in row.iter_mut().enumerate() {
-                                let mut sum = T::zero();
-                                for k in 0..self_data.cols {
-                                    sum += self_data.data[start_row + i][k] * other_data.data[k][j];
-                                }
-                                *el = sum;
-                            }
+                            shared_self.multiply_row(&shared_other, row, start_row + i);
                         }
                     });
                 });

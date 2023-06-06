@@ -122,7 +122,8 @@ macro_rules! impl_display {
     () => {};
 }
 
-pub trait MatMul {
+pub trait MatMul<T> {
+    fn multiply_row(&self, other: &Self, result_row: &mut [T], row_idx: usize);
     fn multiply(&self, other: &Self, result: &mut Self) -> Result<(), Error>;
 }
 

@@ -3,6 +3,8 @@ use crate::number_traits::{Float, Number};
 use crate::rayon_traits::*;
 use crate::Error;
 
+use crate::MatMul;
+
 use rayon::prelude::*;
 
 impl<T: Number> RayonMatMul for Matrix1d<T> {
@@ -15,13 +17,7 @@ impl<T: Number> RayonMatMul for Matrix1d<T> {
             .par_chunks_mut(other.cols)
             .enumerate()
             .for_each(|(i, chunk)| {
-                for (j, el) in chunk.iter_mut().enumerate() {
-                    let mut sum = T::zero();
-                    for k in 0..self.cols {
-                        sum += self.data[i * self.cols + k] * other.data[k * other.cols + j];
-                    }
-                    *el = sum;
-                }
+                self.multiply_row(other, chunk, i);
             });
 
         Ok(())

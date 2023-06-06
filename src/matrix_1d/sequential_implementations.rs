@@ -5,21 +5,27 @@ use crate::{
     LRN,
 };
 
-impl<T: Number> MatMul for Matrix1d<T> {
+impl<T: Number> MatMul<T> for Matrix1d<T> {
+    fn multiply_row(&self, other: &Matrix1d<T>, result_row: &mut [T], row_idx: usize) {
+        let i = row_idx;
+        for j in 0..other.cols {
+            let mut sum = T::zero();
+            for k in 0..self.cols {
+                sum += self.data[i * self.cols + k] * other.data[k * other.cols + j];
+            }
+            result_row[j] = sum; // note that j is already the position in the chunk
+        }
+    }
+
     fn multiply(&self, other: &Matrix1d<T>, result: &mut Matrix1d<T>) -> Result<(), Error> {
         if self.cols != other.rows || self.rows != result.rows || other.cols != result.cols {
             return Err(Error::InvalidDimensions);
         }
-        for i in 0..self.rows {
-            for j in 0..other.cols {
-                let mut sum = T::zero();
-                // NOTE: this allows result to not be all zeros
-                for k in 0..self.cols {
-                    sum += self.data[i * self.cols + k] * other.data[k * other.cols + j];
-                }
-                result.data[i * other.cols + j] = sum;
-            }
-        }
+        result
+            .data
+            .chunks_mut(self.cols)
+            .enumerate()
+            .for_each(|(i, result_row)| self.multiply_row(other, result_row, i));
         Ok(())
     }
 }
