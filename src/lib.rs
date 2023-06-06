@@ -166,6 +166,7 @@ pub trait Convolution<T> {
 }
 
 pub trait LRN<T: Float> {
+    fn lrn_row(&self, result_row: &mut [T], row_idx: usize, alpha: T, beta: T, k: T);
     fn lrn(&self, result: &mut Self, alpha: T, beta: T, k: T) -> Result<(), Error>;
 }
 

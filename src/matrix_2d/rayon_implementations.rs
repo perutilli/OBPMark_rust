@@ -5,7 +5,7 @@ use crate::Error;
 
 use rayon::prelude::*;
 
-use crate::{Convolution, MatMul, MaxPooling, Relu, Softmax};
+use crate::{Convolution, MatMul, MaxPooling, Relu, Softmax, LRN};
 
 impl<T: Number> RayonMatMul for Matrix2d<T> {
     fn rayon_multiply(&self, other: &Self, result: &mut Self) -> Result<(), Error> {
@@ -103,10 +103,7 @@ impl<T: Float> RayonLRN<T> for Matrix2d<T> {
             return Err(Error::InvalidDimensions);
         }
         result.data.par_iter_mut().enumerate().for_each(|(i, row)| {
-            for j in 0..self.cols {
-                row[j] =
-                    self.data[i][j] / (k + alpha * self.data[i][j] * self.data[i][j]).powf(beta);
-            }
+            self.lrn_row(row, i, alpha, beta, k);
         });
         Ok(())
     }

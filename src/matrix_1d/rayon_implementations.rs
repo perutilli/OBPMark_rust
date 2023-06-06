@@ -3,7 +3,7 @@ use crate::number_traits::{Float, Number};
 use crate::rayon_traits::*;
 use crate::Error;
 
-use crate::{Convolution, MatMul, MaxPooling, Relu, Softmax};
+use crate::{Convolution, MatMul, MaxPooling, Relu, Softmax, LRN};
 
 use rayon::prelude::*;
 
@@ -116,11 +116,7 @@ impl<T: Float> RayonLRN<T> for Matrix1d<T> {
             .par_chunks_mut(self.cols)
             .enumerate()
             .for_each(|(i, row)| {
-                for j in 0..self.cols {
-                    row[j] = self.data[i * self.cols + j]
-                        / (k + alpha * self.data[i * self.cols + j] * self.data[i * self.cols + j])
-                            .powf(beta);
-                }
+                self.lrn_row(row, i, alpha, beta, k);
             });
         Ok(())
     }

@@ -200,17 +200,23 @@ impl<T: Number> Convolution<T> for Matrix2d<T> {
 }
 
 impl<T: Float> LRN<T> for Matrix2d<T> {
+    fn lrn_row(&self, result_row: &mut [T], row_idx: usize, alpha: T, beta: T, k: T) {
+        let i = row_idx;
+        for j in 0..self.cols {
+            result_row[j] =
+                self.data[i][j] / (k + alpha * self.data[i][j] * self.data[i][j]).powf(beta);
+        }
+    }
     fn lrn(&self, result: &mut Self, alpha: T, beta: T, k: T) -> Result<(), Error> {
         // TODO: this is actually a special case where n = 1, ok for the benchmark but not general
         if self.rows != result.rows || self.cols != result.cols {
             return Err(Error::InvalidDimensions);
         }
-        for i in 0..self.rows {
-            for j in 0..self.cols {
-                result.data[i][j] =
-                    self.data[i][j] / (k + alpha * self.data[i][j] * self.data[i][j]).powf(beta);
-            }
-        }
+        result
+            .data
+            .iter_mut()
+            .enumerate()
+            .for_each(|(i, result_row)| self.lrn_row(result_row, i, alpha, beta, k));
         Ok(())
     }
 }
