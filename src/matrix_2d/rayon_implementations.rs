@@ -5,7 +5,7 @@ use crate::Error;
 
 use rayon::prelude::*;
 
-use crate::{MatMul, MaxPooling, Relu};
+use crate::{MatMul, MaxPooling, Relu, Softmax};
 
 impl<T: Number> RayonMatMul for Matrix2d<T> {
     fn rayon_multiply(&self, other: &Self, result: &mut Self) -> Result<(), Error> {
@@ -45,18 +45,11 @@ impl<T: Float> RayonSoftmax for Matrix2d<T> {
         if self.rows != result.rows || self.cols != result.cols {
             return Err(Error::InvalidDimensions);
         }
-        // for i in 0..self.rows {
-        result.data.par_iter_mut().enumerate().for_each(|(i, row)| {
-            let mut sum = T::zero();
-            for j in 0..self.cols {
-                let val = self.data[i][j].exp();
-                sum += val;
-                row[j] = val;
-            }
-            for j in 0..self.cols {
-                row[j] /= sum;
-            }
-        });
+        result
+            .data
+            .par_iter_mut()
+            .enumerate()
+            .for_each(|(i, row)| self.softmax_row(row, i));
         Ok(())
     }
 }

@@ -3,7 +3,7 @@ use crate::number_traits::{Float, Number};
 use crate::rayon_traits::*;
 use crate::Error;
 
-use crate::{MatMul, MaxPooling, Relu};
+use crate::{MatMul, MaxPooling, Relu, Softmax};
 
 use rayon::prelude::*;
 
@@ -50,21 +50,12 @@ impl<T: Float> RayonSoftmax for Matrix1d<T> {
         if self.rows != result.rows || self.cols != result.cols {
             return Err(Error::InvalidDimensions);
         }
-        // for i in 0..self.rows {
         result
             .data
             .par_chunks_mut(self.cols)
             .enumerate()
             .for_each(|(i, row)| {
-                let mut sum = T::zero();
-                for j in 0..self.cols {
-                    let val = self.data[i * self.cols + j].exp();
-                    sum += val;
-                    row[j] = val;
-                }
-                for j in 0..self.cols {
-                    row[j] /= sum;
-                }
+                self.softmax_row(row, i);
             });
         Ok(())
     }
