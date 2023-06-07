@@ -1,7 +1,7 @@
 #![allow(non_snake_case)]
 use clap::Parser;
 use core::panic;
-use obpmark_rust::{rayon_traits::RayonRelu, BaseMatrix, Relu};
+use obpmark_rust::{parallel_traits::ParallelRelu, rayon_traits::RayonRelu, BaseMatrix, Relu};
 use std::time::Instant;
 
 use obpmark_rust::benchmark_utils::{CommonArgs, Implementation, Matrix, Number};
@@ -64,12 +64,14 @@ fn main() {
         (Some(_), Implementation::Rayon) => {
             panic!("Cannot specify number of threads for Rayon implementation");
         }
-        (_n, Implementation::StdParallel) => {
-            unimplemented!("Naive parallel not yet implemented");
+        (Some(n), Implementation::StdParallel) => {
+            A.parallel_relu(&mut B, n).unwrap();
+        }
+        (None, Implementation::StdParallel) => {
+            // TODO: change n_threads
+            A.parallel_relu(&mut B, 8).unwrap();
         }
     }
-
-    // A.relu(&mut B).unwrap();
 
     let t1 = Instant::now();
 

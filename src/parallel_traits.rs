@@ -18,3 +18,7 @@ pub trait ParallelConvolution {
         n_threads: usize,
     ) -> Result<(), Error>;
 }
+
+pub trait ParallelRelu {
+    fn parallel_relu(&self, result: &mut Self, n_threads: usize) -> Result<(), Error>;
+}

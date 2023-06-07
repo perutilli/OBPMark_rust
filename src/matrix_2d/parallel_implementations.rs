@@ -6,7 +6,7 @@ use crate::{Error, Padding};
 use std::sync::Arc;
 use std::thread;
 
-use crate::{Convolution, MatMul};
+use crate::{Convolution, MatMul, Relu};
 
 impl<T: Number> ParallelMatMul for Matrix2d<T> {
     fn parallel_multiply(
@@ -84,6 +84,33 @@ impl<T: Number> ParallelConvolution for Matrix2d<T> {
                     s.spawn(move || {
                         for (i, row) in chunk.iter_mut().enumerate() {
                             self.convolute_row(&shared_kernel, row, start_row + i);
+                        }
+                    });
+                });
+        });
+
+        Ok(())
+    }
+}
+
+impl<T: Number> ParallelRelu for Matrix2d<T> {
+    fn parallel_relu(&self, result: &mut Self, n_threads: usize) -> Result<(), Error> {
+        if self.rows != result.rows || self.cols != result.cols {
+            return Err(Error::InvalidDimensions);
+        }
+
+        let rows_per_thread = (self.rows - 1) / n_threads + 1;
+
+        thread::scope(|s| {
+            result
+                .data
+                .chunks_mut(rows_per_thread)
+                .enumerate()
+                .for_each(|(chunk_idx, chunk)| {
+                    let start_row = chunk_idx * rows_per_thread;
+                    s.spawn(move || {
+                        for (i, row) in chunk.iter_mut().enumerate() {
+                            self.relu_row(row, start_row + i);
                         }
                     });
                 });
