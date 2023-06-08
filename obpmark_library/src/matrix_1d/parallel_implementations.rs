@@ -6,7 +6,7 @@ use crate::{Error, Padding};
 use std::sync::Arc;
 use std::thread;
 
-use crate::{Convolution, MatMul, Relu, Softmax};
+use crate::{Convolution, MatMul, MaxPooling, Relu, Softmax};
 
 impl<T: Number> ParallelMatMul for Matrix1d<T> {
     fn parallel_multiply(
@@ -147,6 +147,47 @@ impl<T: Float> ParallelSoftmax for Matrix1d<T> {
                             .enumerate()
                             .for_each(|(i, result_row)| {
                                 self.softmax_row(result_row, start_row + i);
+                            });
+                    });
+                });
+        });
+
+        Ok(())
+    }
+}
+
+impl<T: Number> ParallelMaxPooling for Matrix1d<T> {
+    fn parallel_max_pooling(
+        &self,
+        result: &mut Self,
+        row_stride: usize,
+        col_stride: usize,
+        n_threads: usize,
+    ) -> Result<(), Error> {
+        if self.rows != result.rows * row_stride || self.cols != result.cols * col_stride {
+            return Err(Error::InvalidDimensions);
+        }
+
+        let rows_per_thread = (self.rows - 1) / n_threads + 1;
+
+        thread::scope(|s| {
+            result
+                .data
+                .chunks_mut(result.cols * rows_per_thread)
+                .enumerate()
+                .for_each(|(chunk_idx, chunk)| {
+                    let start_row = chunk_idx * rows_per_thread;
+                    s.spawn(move || {
+                        chunk
+                            .chunks_mut(self.cols)
+                            .enumerate()
+                            .for_each(|(i, result_row)| {
+                                self.max_pooling_row(
+                                    result_row,
+                                    start_row + i,
+                                    row_stride,
+                                    col_stride,
+                                );
                             });
                     });
                 });

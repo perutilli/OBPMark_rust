@@ -58,7 +58,7 @@
     - [ ] max_pooling_bench
     - [ ] memory_bandwidth_bench; Does not apply (?)
     - [x] relu_bench
-    - [ ] softmax_bench TODO: It does not make sense for int, should be enforced at compile time
+    - [x] softmax_bench TODO: It does not make sense for int, should be enforced at compile time
     - [ ] wavelet_transform
 
 ## Bare metal rust
@@ -73,7 +73,7 @@
     - Probably by having a separete macro that expands all the common arguments except size and then using that inside cifar10
 * [ ] Standardize position of result inside the calls to the benchmark functions (probaly first parameter)
 * [x] Fix formatting for f16 (it does not work with typical formatting)
-* [ ] Maybe move to workspace organization (https://doc.rust-lang.org/book/ch14-03-cargo-workspaces.html)
+* [x] Maybe move to workspace organization (https://doc.rust-lang.org/book/ch14-03-cargo-workspaces.html)
 * [ ] Use OpenMP implementations to test fft, fft windowed and maybe cifar 10
 * [x] Moving to generics for lib
     - [x] Fixing problems with verify function (mod benchmark_utils)
@@ -83,7 +83,7 @@
 * [x] Accept non common arguments: test clap(flatten)
 * [x] Improve benchmark template to reflect changes
 * [ ] Test --input and --export functionalities
-* [ ] * [x] Implement from_file and to_file for Matrix types
+* [x] Implement from_file and to_file for Matrix types
 * [ ] Test the performance against the original benchmarks
 * [ ] Rethink significantly the num traits stuff
   - [ ] It might be good to move some of the more complicated stuff to macros where we cannot easily use traits, avoiding to much headaches in trying to make the traits work (like in fft)
@@ -116,7 +116,7 @@
 
 ### RNGs
 Each benchmark could potentially want a different rng, however I don't know that this is worth the effort.  
-For now the rng will generate random numbers between -100 and 100, regardless of the type of the matrix.  
+For now the rng will generate random numbers between -100 and 100, regardless of the type of the matrix. - NOT TRUE ANYMORE (the range is passed as an argument) 
 CHECK THIS: Using an offset to the seed to generate different matrices in the mat mul benchmark.
 
 ### Ndarray correcteness

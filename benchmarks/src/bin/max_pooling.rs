@@ -1,5 +1,7 @@
 #![allow(non_snake_case)]
-use obpmark_library::{rayon_traits::RayonMaxPooling, BaseMatrix, MaxPooling};
+use obpmark_library::{
+    parallel_traits::ParallelMaxPooling, rayon_traits::RayonMaxPooling, BaseMatrix, MaxPooling,
+};
 use std::time::Instant;
 
 use clap::Parser;
@@ -72,8 +74,13 @@ fn main() {
             panic!("Invalid parameter combination: sequential with nthreads != 1")
         }
         (_, Implementation::Sequential) => A.max_pooling(&mut B, args.stride, args.stride).unwrap(),
-        (_n, Implementation::StdParallel) => {
-            unimplemented!("Naive parallel not yet implemented")
+        (Some(n), Implementation::StdParallel) => A
+            .parallel_max_pooling(&mut B, args.stride, args.stride, n)
+            .unwrap(),
+        (None, Implementation::StdParallel) => {
+            // TODO: use number of cores
+            A.parallel_max_pooling(&mut B, args.stride, args.stride, 8)
+                .unwrap();
         }
     }
 
