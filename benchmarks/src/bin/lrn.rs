@@ -1,7 +1,7 @@
 #![allow(non_snake_case)]
 use clap::Parser;
 use core::panic;
-use obpmark_library::{rayon_traits::RayonLRN, BaseMatrix, LRN};
+use obpmark_library::{parallel_traits::ParallelLRN, rayon_traits::RayonLRN, BaseMatrix, LRN};
 use std::path::Path;
 use std::time::Instant;
 
@@ -65,7 +65,13 @@ fn main() {
             panic!("Invalid parameter combination: sequential with nthreads != 1")
         }
         (_, Implementation::Sequential) => A.lrn(&mut B, ALPHA, BETA, K).unwrap(),
-        (_n, Implementation::StdParallel) => unimplemented!("Naive parallel not yet implemented"),
+        (Some(n), Implementation::StdParallel) => {
+            A.parallel_lrn(&mut B, ALPHA, BETA, K, n).unwrap()
+        }
+        (None, Implementation::StdParallel) => {
+            // TODO: use number of cores
+            A.parallel_lrn(&mut B, ALPHA, BETA, K, 8).unwrap()
+        }
     }
 
     let t1 = Instant::now();

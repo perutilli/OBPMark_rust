@@ -1,3 +1,4 @@
+use crate::number_traits::Float;
 use crate::{Error, Padding};
 
 pub trait ParallelMatMul {
@@ -33,6 +34,17 @@ pub trait ParallelMaxPooling {
         result: &mut Self,
         row_stride: usize,
         col_stride: usize,
+        n_threads: usize,
+    ) -> Result<(), Error>;
+}
+
+pub trait ParallelLRN<T: Float> {
+    fn parallel_lrn(
+        &self,
+        result: &mut Self,
+        alpha: T,
+        beta: T,
+        k: T,
         n_threads: usize,
     ) -> Result<(), Error>;
 }

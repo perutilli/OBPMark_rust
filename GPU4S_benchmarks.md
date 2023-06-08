@@ -52,10 +52,10 @@
     - [ ] fast_fourier_transform_bench
     - [ ] fast_fourier_transform_window_bench
     - [ ] finite_impulse_response_bench => special case of convolution (1d)
-    - [ ] LNR_bench
+    - [x] LNR_bench
     - [x] matrix_multiplication_bench
     - [x] matrix_multiplication_bench_fp16;
-    - [ ] max_pooling_bench
+    - [x] max_pooling_bench
     - [ ] memory_bandwidth_bench; Does not apply (?)
     - [x] relu_bench
     - [x] softmax_bench TODO: It does not make sense for int, should be enforced at compile time
@@ -65,6 +65,7 @@
 - [ ] Show proof of concept program running on bare metal (no parallelism or data structures)
 
 ## General tasks
+* [ ] NEED TO WRITE DOCUMENTATION FOR ALL LIBRARY FUNCTIONS
 * [x] Probably move to num_traits (from num)
 * [x] Move seed to argument in clap
 * [ ] Add information to all errors

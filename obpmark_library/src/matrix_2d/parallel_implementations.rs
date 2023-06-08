@@ -6,7 +6,7 @@ use crate::{Error, Padding};
 use std::sync::Arc;
 use std::thread;
 
-use crate::{Convolution, MatMul, MaxPooling, Relu, Softmax};
+use crate::{Convolution, MatMul, MaxPooling, Relu, Softmax, LRN};
 
 impl<T: Number> ParallelMatMul for Matrix2d<T> {
     fn parallel_multiply(
@@ -171,6 +171,40 @@ impl<T: Number> ParallelMaxPooling for Matrix2d<T> {
                     s.spawn(move || {
                         for (i, row) in chunk.iter_mut().enumerate() {
                             self.max_pooling_row(row, start_row + i, row_stride, col_stride);
+                        }
+                    });
+                });
+        });
+
+        Ok(())
+    }
+}
+
+impl<T: Float> ParallelLRN<T> for Matrix2d<T> {
+    fn parallel_lrn(
+        &self,
+        result: &mut Self,
+        alpha: T,
+        beta: T,
+        k: T,
+        n_threads: usize,
+    ) -> Result<(), Error> {
+        if self.rows != result.rows || self.cols != result.cols {
+            return Err(Error::InvalidDimensions);
+        }
+
+        let rows_per_thread = (self.rows - 1) / n_threads + 1;
+
+        thread::scope(|s| {
+            result
+                .data
+                .chunks_mut(rows_per_thread)
+                .enumerate()
+                .for_each(|(chunk_idx, chunk)| {
+                    let start_row = chunk_idx * rows_per_thread;
+                    s.spawn(move || {
+                        for (i, row) in chunk.iter_mut().enumerate() {
+                            self.lrn_row(row, start_row + i, alpha, beta, k);
                         }
                     });
                 });
