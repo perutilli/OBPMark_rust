@@ -218,5 +218,4 @@ pub mod rayon_traits;
 pub mod matrix_1d;
 pub mod matrix_2d;
 
-pub mod benchmark_utils;
 pub mod number_traits;

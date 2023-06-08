@@ -1,23 +1,16 @@
-/***
- * Matrix multiplication benchmark
- * It multiplies two square matrices with side length `size`
- */
-
 #![allow(non_snake_case)]
 use clap::Parser;
 use core::panic;
-use obpmark_rust::{
-    parallel_traits::ParallelMatMul, rayon_traits::RayonMatMul, BaseMatrix, MatMul,
-};
+use obpmark_library::{BaseMatrix, Correlation};
 use std::{path::Path, time::Instant};
 
-use obpmark_rust::benchmark_utils::{CommonArgs, Implementation, Matrix, Number};
-use obpmark_rust::matrix_2d::Matrix2d as RefMatrix;
+use benchmarks::benchmark_utils::{CommonArgs, Matrix, Number};
+use obpmark_library::matrix_2d::Matrix2d as RefMatrix;
 
-use obpmark_rust::{number, verify};
+use benchmarks::{number, verify};
 
 #[derive(Parser, Debug)]
-#[command(about = "Matrix multiplication benchmark")]
+#[command(about = "2D correlation benchmark")]
 struct Args {
     #[clap(flatten)]
     common: CommonArgs,
@@ -28,7 +21,6 @@ fn main() {
 
     let A;
     let B;
-    let mut C;
 
     match args.common.input {
         Some(v) => {
@@ -63,29 +55,9 @@ fn main() {
         println!("{}", B);
     }
 
-    C = Matrix::zeroes(args.common.size, args.common.size);
-
     let t0 = Instant::now();
 
-    match (args.common.nthreads, args.common.implementation) {
-        (None, Implementation::Rayon) => {
-            A.rayon_multiply(&B, &mut C).unwrap();
-        }
-        (Some(_), Implementation::Rayon) => {
-            panic!("Cannot specify number of threads for Rayon implementation")
-        }
-        (Some(n), Implementation::Sequential) if n != 1 => {
-            panic!("Invalid parameter combination: sequential with nthreads != 1")
-        }
-        (_, Implementation::Sequential) => A.multiply(&B, &mut C).unwrap(),
-        (Some(n_threads), Implementation::StdParallel) => {
-            A.parallel_multiply(&B, &mut C, n_threads).unwrap()
-        }
-        (None, Implementation::StdParallel) => {
-            // TODO: change 8 to number of cores
-            A.parallel_multiply(&B, &mut C, 8).unwrap()
-        }
-    }
+    let res = A.correlation(&B).unwrap();
 
     let t1 = Instant::now();
 
@@ -95,20 +67,23 @@ fn main() {
 
     if args.common.output {
         println!("Output:");
-        println!("{}", C);
+        println!("Correlation = {}", res);
     }
 
     match args.common.export {
         Some(filename) => {
             // export output
-            C.to_file(Path::new(&filename)).unwrap();
+            // TODO: this is a very hacky way to do this, make it better
+            obpmark_library::matrix_1d::Matrix1d::<f64>::new(vec![vec![res; 1]; 1], 1, 1)
+                .to_file(Path::new(&filename))
+                .unwrap();
         }
         None => (),
     }
 
     match args.common.verify {
-        Some(Some(filename)) => {
-            // verify against file
+        Some(Some(_filename)) => {
+            /* verify against file TODO: how do we deal with this?
             let C_ref = Matrix::from_file(Path::new(&filename), args.common.size, args.common.size)
                 .unwrap();
             if C.get_data() == C_ref.get_data() {
@@ -116,23 +91,23 @@ fn main() {
             } else {
                 println!("Verification failed");
             }
+             */
         }
         Some(None) => {
             // verify against cpu implementation
-            let C_ref = get_ref_result(&A, &B, args.common.size);
-            verify!(C.get_data(), C_ref.get_data());
+            let res_ref = get_ref_result(&A, &B, args.common.size);
+            // verify(&C.get_data(), &C_ref.get_data());
+            verify!(&res, &res_ref);
         }
         None => (),
     }
 }
 
-fn get_ref_result(A: &Matrix, B: &Matrix, size: usize) -> RefMatrix<Number> {
+fn get_ref_result(A: &Matrix, B: &Matrix, size: usize) -> f64 {
     let A_ref = RefMatrix::new(A.get_data(), size, size);
     let B_ref = RefMatrix::new(B.get_data(), size, size);
 
-    let mut C_ref = RefMatrix::zeroes(size, size);
+    let res = A_ref.correlation(&B_ref).unwrap();
 
-    A_ref.multiply(&B_ref, &mut C_ref).unwrap();
-
-    C_ref
+    res
 }

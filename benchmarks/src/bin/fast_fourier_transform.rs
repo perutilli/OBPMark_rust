@@ -1,12 +1,12 @@
 #![allow(non_snake_case)]
 use clap::Parser;
 use core::panic;
-use obpmark_rust::{BaseMatrix, FastFourierTransform};
+use obpmark_library::{BaseMatrix, FastFourierTransform};
 use std::{path::Path, time::Instant};
 
-use obpmark_rust::benchmark_utils::{CommonArgs, Implementation, Matrix, Number};
+use benchmarks::benchmark_utils::{CommonArgs, Implementation, Matrix, Number};
 
-use obpmark_rust::number;
+use benchmarks::number;
 
 #[derive(Parser, Debug)]
 #[command(about = "FFT benchmark")]

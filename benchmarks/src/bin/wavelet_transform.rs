@@ -1,12 +1,12 @@
 #![allow(non_snake_case)]
 use clap::Parser;
 use core::panic;
-use obpmark_rust::BaseMatrix;
+use obpmark_library::BaseMatrix;
 #[cfg(not(feature = "int"))]
-use obpmark_rust::WaveletTransformFloating;
+use obpmark_library::WaveletTransformFloating;
 #[cfg(not(feature = "int"))]
 mod constants {
-    use obpmark_rust::benchmark_utils::Number;
+    use benchmarks::benchmark_utils::Number;
     pub const LOW_PASS_FILTER_SIZE: usize = 9;
     pub const HIGH_PASS_FILTER_SIZE: usize = 7;
     pub const LOW_PASS_FILTER: [Number; LOW_PASS_FILTER_SIZE] = [
@@ -34,8 +34,8 @@ mod constants {
 use obpmark_rust::WaveletTransformInteger;
 use std::{path::Path, time::Instant};
 
-use obpmark_rust::benchmark_utils::{CommonArgs, Matrix, Number};
-use obpmark_rust::number;
+use benchmarks::benchmark_utils::{CommonArgs, Matrix, Number};
+use benchmarks::number;
 // use obpmark_rust::matrix_2d::Matrix2d as RefMatrix;
 
 #[derive(Parser, Debug)]

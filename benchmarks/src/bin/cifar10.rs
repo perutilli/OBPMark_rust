@@ -2,10 +2,10 @@ use clap::Parser;
 use std::path::Path;
 use std::time::Instant;
 
-use obpmark_rust::{BaseMatrix, Convolution, MatMul, MaxPooling, Padding, Relu, Softmax, LRN};
+use obpmark_library::{BaseMatrix, Convolution, MatMul, MaxPooling, Padding, Relu, Softmax, LRN};
 
-use obpmark_rust::benchmark_utils::{CommonArgs, Matrix, Number};
-use obpmark_rust::number;
+use benchmarks::benchmark_utils::{CommonArgs, Matrix, Number};
+use benchmarks::number;
 
 const CIFAR_10_INPUT: usize = 32;
 const CIFAR_10_OUTPUT: usize = 10;

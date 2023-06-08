@@ -1,13 +1,12 @@
 #![allow(non_snake_case)]
 use clap::Parser;
 use core::panic;
-use obpmark_rust::{rayon_traits::RayonSoftmax, BaseMatrix, Softmax};
+use obpmark_library::{rayon_traits::RayonSoftmax, BaseMatrix, Softmax};
 use std::time::Instant;
 
-use obpmark_rust::benchmark_utils::{CommonArgs, Implementation, Matrix, Number};
-use obpmark_rust::matrix_2d::Matrix2d as RefMatrix;
-
-use obpmark_rust::{number, verify};
+use benchmarks::benchmark_utils::{CommonArgs, Implementation, Matrix, Number};
+use benchmarks::{number, verify};
+use obpmark_library::matrix_2d::Matrix2d as RefMatrix;
 
 #[derive(Parser, Debug)]
 #[command(about = "Softmax function benchmark")]

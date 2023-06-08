@@ -1,0 +1,13 @@
+[package]
+name = "obpmark_library"
+version = "0.1.0"
+edition = "2021"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+rand = "0.8.5"
+num-traits = "0.2.14"
+half = {version = "2.2.1", features = ["num-traits"]}
+rayon = "1.7.0"
+libc = "0.2.144" # should be only for testing

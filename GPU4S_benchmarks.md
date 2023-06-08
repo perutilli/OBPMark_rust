@@ -56,7 +56,7 @@
     - [x] matrix_multiplication_bench_fp16;
     - [ ] max_pooling_bench
     - [ ] memory_bandwidth_bench; Does not apply (?)
-    - [ ] relu_bench
+    - [x] relu_bench
     - [ ] softmax_bench TODO: It does not make sense for int, should be enforced at compile time
     - [ ] wavelet_transform
 
