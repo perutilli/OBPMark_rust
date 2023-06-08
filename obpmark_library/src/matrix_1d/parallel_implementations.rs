@@ -1,12 +1,12 @@
 use crate::matrix_1d::Matrix1d;
-use crate::number_traits::Number;
+use crate::number_traits::{Float, Number};
 use crate::parallel_traits::*;
 use crate::{Error, Padding};
 
 use std::sync::Arc;
 use std::thread;
 
-use crate::{Convolution, MatMul, Relu};
+use crate::{Convolution, MatMul, Relu, Softmax};
 
 impl<T: Number> ParallelMatMul for Matrix1d<T> {
     fn parallel_multiply(
@@ -117,6 +117,36 @@ impl<T: Number> ParallelRelu for Matrix1d<T> {
                             .enumerate()
                             .for_each(|(i, result_row)| {
                                 self.relu_row(result_row, start_row + i);
+                            });
+                    });
+                });
+        });
+
+        Ok(())
+    }
+}
+
+impl<T: Float> ParallelSoftmax for Matrix1d<T> {
+    fn parallel_softmax(&self, result: &mut Self, n_threads: usize) -> Result<(), Error> {
+        if self.rows != result.rows || self.cols != result.cols {
+            return Err(Error::InvalidDimensions);
+        }
+
+        let rows_per_thread = (self.rows - 1) / n_threads + 1;
+
+        thread::scope(|s| {
+            result
+                .data
+                .chunks_mut(result.cols * rows_per_thread)
+                .enumerate()
+                .for_each(|(chunk_idx, chunk)| {
+                    let start_row = chunk_idx * rows_per_thread;
+                    s.spawn(move || {
+                        chunk
+                            .chunks_mut(self.cols)
+                            .enumerate()
+                            .for_each(|(i, result_row)| {
+                                self.softmax_row(result_row, start_row + i);
                             });
                     });
                 });

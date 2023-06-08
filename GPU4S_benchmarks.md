@@ -1,4 +1,5 @@
 ## Sequential benchmarks
+* [ ] Fix problems with fft and fft windowed (they seem to not work anymore)
 * [x] Implement all benchmarks in their naive (1d and 2d vector) form (original names):
     - [x] cifar_10
     - [x] cifar_10_multiple
