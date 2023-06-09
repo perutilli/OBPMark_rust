@@ -51,7 +51,7 @@
     - [ ] NOT AVAILABLE IN SEQ: fast_fourier_transform_2D_bench
     - [ ] fast_fourier_transform_bench
     - [ ] fast_fourier_transform_window_bench
-    - [ ] finite_impulse_response_bench => special case of convolution (1d)
+    - [x] finite_impulse_response_bench => special case of convolution (1d)
     - [x] LNR_bench
     - [x] matrix_multiplication_bench
     - [x] matrix_multiplication_bench_fp16;

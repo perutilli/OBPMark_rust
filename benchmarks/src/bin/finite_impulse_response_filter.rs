@@ -5,7 +5,10 @@
 #![allow(non_snake_case)]
 use clap::Parser;
 use core::panic;
-use obpmark_library::{rayon_traits::RayonConvolution, BaseMatrix, Convolution, Padding};
+use obpmark_library::{
+    parallel_traits::ParallelFiniteImpulseResponseFilter, rayon_traits::RayonConvolution,
+    BaseMatrix, Convolution, Padding,
+};
 use std::path::Path;
 use std::time::Instant;
 
@@ -80,7 +83,13 @@ fn main() {
             panic!("Invalid parameter combination: sequential with nthreads != 1")
         }
         (_, Implementation::Sequential) => A.convolute(&kernel, Padding::Zeroes, &mut B).unwrap(),
-        (_n, Implementation::StdParallel) => unimplemented!("Naive parallel not yet implemented"),
+        (Some(n), Implementation::StdParallel) => {
+            A.parallel_fir_filter(&kernel, &mut B, n).unwrap()
+        }
+        (None, Implementation::StdParallel) => {
+            // TODO: use number of cores
+            A.parallel_fir_filter(&kernel, &mut B, 8).unwrap()
+        }
     }
 
     let t1 = Instant::now();

@@ -48,3 +48,12 @@ pub trait ParallelLRN<T: Float> {
         n_threads: usize,
     ) -> Result<(), Error>;
 }
+
+pub trait ParallelFiniteImpulseResponseFilter {
+    fn parallel_fir_filter(
+        &self,
+        kernel: &Self,
+        result: &mut Self,
+        n_threads: usize,
+    ) -> Result<(), Error>;
+}

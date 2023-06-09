@@ -233,3 +233,42 @@ impl<T: Float> ParallelLRN<T> for Matrix1d<T> {
         Ok(())
     }
 }
+
+impl<T: Number> ParallelFiniteImpulseResponseFilter for Matrix1d<T> {
+    fn parallel_fir_filter(
+        &self,
+        kernel: &Self,
+        result: &mut Self,
+        n_threads: usize,
+    ) -> Result<(), Error> {
+        if self.rows != result.rows || self.cols != result.cols || self.rows != 1 {
+            return Err(Error::InvalidDimensions);
+        }
+
+        if kernel.rows != 1 || kernel.cols % 2 == 0 {
+            return Err(Error::InvalidKernelDimensions);
+        }
+
+        // here the number of rows will always be one
+        let elements_per_thread = (self.cols - 1) / n_threads + 1;
+
+        let shared_kernel = Arc::new(kernel);
+
+        thread::scope(|s| {
+            result
+                .data
+                .chunks_mut(elements_per_thread)
+                .for_each(|chunk| {
+                    let shared_kernel = shared_kernel.clone();
+                    s.spawn(move || {
+                        // the chunk for us is the equivalent of a row
+                        // even though each chunk is on the same row
+                        // row_idx is always 0
+                        self.convolute_row(&shared_kernel, chunk, 0);
+                    });
+                });
+        });
+
+        Ok(())
+    }
+}

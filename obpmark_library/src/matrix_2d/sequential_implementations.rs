@@ -158,7 +158,7 @@ impl<T: Number> Convolution<T> for Matrix2d<T> {
         let kernel_y_radius = (kernel.rows - 1) / 2;
         let kernel_x_radius = (kernel.cols - 1) / 2;
 
-        for j in 0..self.cols {
+        for j in 0..result_row.len() {
             let mut sum = T::zero();
             for k in 0..kernel.rows {
                 for l in 0..kernel.cols {
