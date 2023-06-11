@@ -34,3 +34,7 @@ pub trait RayonRelu {
 pub trait RayonLRN<T: Float> {
     fn rayon_lrn(&self, result: &mut Self, alpha: T, beta: T, k: T) -> Result<(), Error>;
 }
+
+pub trait RayonFiniteImpulseResponseFilter {
+    fn rayon_fir_filter(&self, kernel: &Self, result: &mut Self) -> Result<(), Error>;
+}

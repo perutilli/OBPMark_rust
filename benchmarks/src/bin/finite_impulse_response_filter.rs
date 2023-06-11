@@ -6,8 +6,8 @@
 use clap::Parser;
 use core::panic;
 use obpmark_library::{
-    parallel_traits::ParallelFiniteImpulseResponseFilter, rayon_traits::RayonConvolution,
-    BaseMatrix, Convolution, Padding,
+    parallel_traits::ParallelFiniteImpulseResponseFilter,
+    rayon_traits::RayonFiniteImpulseResponseFilter, BaseMatrix, Convolution, Padding,
 };
 use std::path::Path;
 use std::time::Instant;
@@ -74,7 +74,7 @@ fn main() {
 
     match (args.common.nthreads, args.common.implementation) {
         (None, Implementation::Rayon) => {
-            A.rayon_convolute(&kernel, Padding::Zeroes, &mut B).unwrap();
+            A.rayon_fir_filter(&kernel, &mut B).unwrap();
         }
         (Some(_), Implementation::Rayon) => {
             panic!("Cannot specify number of threads for Rayon implementation")

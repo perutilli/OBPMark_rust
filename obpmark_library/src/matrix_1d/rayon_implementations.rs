@@ -121,3 +121,23 @@ impl<T: Float> RayonLRN<T> for Matrix1d<T> {
         Ok(())
     }
 }
+
+impl<T: Number> RayonFiniteImpulseResponseFilter for Matrix1d<T> {
+    fn rayon_fir_filter(&self, kernel: &Self, result: &mut Self) -> Result<(), Error> {
+        if self.rows != result.rows || self.cols != result.cols || self.rows != 1 {
+            return Err(Error::InvalidDimensions);
+        }
+        if kernel.rows != 1 || kernel.cols % 2 == 0 {
+            return Err(Error::InvalidKernelDimensions);
+        }
+
+        // chunk size is so that we can get 8 threads if the size of the vector is at least 1024
+        let chunk_size = 128;
+
+        result.data.par_chunks_mut(chunk_size).for_each(|row| {
+            // row_idx is always 0
+            self.convolute_row(kernel, row, 0);
+        });
+        Ok(())
+    }
+}
