@@ -23,7 +23,7 @@ impl<T: Number> MatMul<T> for Matrix1d<T> {
         }
         result
             .data
-            .chunks_mut(self.cols)
+            .chunks_exact_mut(self.cols)
             .enumerate()
             .for_each(|(i, result_row)| self.multiply_row(other, result_row, i));
         Ok(())
