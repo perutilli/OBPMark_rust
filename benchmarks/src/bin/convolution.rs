@@ -8,7 +8,10 @@ use obpmark_library::{
 use std::path::Path;
 use std::time::Instant;
 
-use benchmarks::benchmark_utils::{CommonArgs, Implementation, Matrix, Number};
+use benchmarks::{
+    benchmark_utils::{CommonArgs, Implementation, Matrix, Number},
+    reference_implementations::matrix_convolution,
+};
 use obpmark_library::matrix_2d::Matrix2d as RefMatrix;
 
 use benchmarks::{number, verify};
@@ -118,27 +121,33 @@ fn main() {
         }
         Some(None) => {
             // verify against cpu implementation
-            let B_ref = get_ref_result(&A, args.common.size, &kernel, args.kernel_size);
+            let B_ref = get_ref_result(A, args.common.size, kernel, args.kernel_size);
             verify!(B.get_data(), B_ref.get_data());
         }
         None => (),
     }
 }
 
-fn get_ref_result(
-    A: &Matrix,
-    size: usize,
-    kernel: &Matrix,
-    kernel_size: usize,
-) -> RefMatrix<Number> {
-    let A_ref = RefMatrix::new(A.get_data(), size, size);
-    let kernel_ref = RefMatrix::new(kernel.get_data(), kernel_size, kernel_size);
+fn get_ref_result(A: Matrix, size: usize, kernel: Matrix, kernel_size: usize) -> RefMatrix<Number> {
+    let A_ref = A.to_c_format();
+    let kernel_ref = kernel.to_c_format();
 
-    let mut B_ref = RefMatrix::zeroes(size, size);
+    let mut B_ref = vec![number!("0"); size * size];
 
-    A_ref
-        .convolute(&kernel_ref, Padding::Zeroes, &mut B_ref)
-        .unwrap();
+    // TODO: this is for testing, remove
+    let t = Instant::now();
+    unsafe {
+        matrix_convolution(
+            A_ref.as_ptr(),
+            kernel_ref.as_ptr(),
+            B_ref.as_mut_ptr(),
+            size,
+            kernel_size,
+        );
+    }
+    println!("C code: {:.2?}", t.elapsed());
 
-    B_ref
+    let B_ref = B_ref.chunks(size).map(|c| c.to_vec()).collect();
+
+    RefMatrix::new(B_ref, size, size)
 }

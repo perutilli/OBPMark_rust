@@ -13,8 +13,9 @@ use std::{path::Path, time::Instant};
 
 use benchmarks::benchmark_utils::{CommonArgs, Implementation, Matrix, Number};
 use benchmarks::{number, verify};
-use obpmark_library::matrix_2d::Matrix2d as RefMatrix;
 
+use benchmarks::reference_implementations::matrix_multiplication;
+use obpmark_library::matrix_1d::Matrix1d as RefMatrix;
 #[derive(Parser, Debug)]
 #[command(about = "Matrix multiplication benchmark")]
 struct Args {
@@ -118,20 +119,33 @@ fn main() {
         }
         Some(None) => {
             // verify against cpu implementation
-            let C_ref = get_ref_result(&A, &B, args.common.size);
+            let C_ref = get_ref_result(A, B, args.common.size);
             verify!(C.get_data(), C_ref.get_data());
         }
         None => (),
     }
 }
 
-fn get_ref_result(A: &Matrix, B: &Matrix, size: usize) -> RefMatrix<Number> {
-    let A_ref = RefMatrix::new(A.get_data(), size, size);
-    let B_ref = RefMatrix::new(B.get_data(), size, size);
+fn get_ref_result(A: Matrix, B: Matrix, size: usize) -> RefMatrix<Number> {
+    let A_ref = A.to_c_format();
+    let B_ref = B.to_c_format();
 
-    let mut C_ref = RefMatrix::zeroes(size, size);
+    let mut C_ref = vec![number!("0"); size * size];
 
-    A_ref.multiply(&B_ref, &mut C_ref).unwrap();
+    // TODO: this is for testing, remove
+    let t = Instant::now();
+    unsafe {
+        matrix_multiplication(
+            A_ref.as_ptr(),
+            B_ref.as_ptr(),
+            C_ref.as_mut_ptr(),
+            size,
+            size,
+            size,
+        );
+    }
+    println!("C code: {:.2?}", t.elapsed());
+    let C_ref = C_ref.chunks(size).map(|c| c.to_vec()).collect();
 
-    C_ref
+    RefMatrix::new(C_ref, size, size)
 }

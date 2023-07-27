@@ -102,6 +102,13 @@ pub trait BaseMatrix<T: Number> {
     }
 
     fn reshape(&mut self, new_rows: usize, new_cols: usize) -> Result<(), Error>;
+
+    fn to_c_format(self) -> Vec<T>
+    where
+        Self: Sized,
+    {
+        self.get_data().into_iter().flatten().collect::<Vec<T>>()
+    }
 }
 
 macro_rules! impl_display {

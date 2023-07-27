@@ -1,4 +1,5 @@
 #![allow(non_snake_case)]
+use benchmarks::reference_implementations::softmax;
 use clap::Parser;
 use core::panic;
 use obpmark_library::parallel_traits::ParallelSoftmax;
@@ -96,19 +97,26 @@ fn main() {
         }
         Some(None) => {
             // verify against cpu implementation
-            let B_ref = get_ref_result(&A, args.common.size);
+            let B_ref = get_ref_result(A, args.common.size);
             verify!(B.get_data(), B_ref.get_data());
         }
         None => (),
     }
 }
 
-fn get_ref_result(A: &Matrix, size: usize) -> RefMatrix<Number> {
-    let A_ref = RefMatrix::new(A.get_data(), size, size);
+fn get_ref_result(A: Matrix, size: usize) -> RefMatrix<Number> {
+    let A_ref = A.to_c_format();
 
-    let mut B_ref = RefMatrix::zeroes(size, size);
+    let mut B_ref = vec![number!("0"); size * size];
 
-    A_ref.softmax(&mut B_ref).unwrap();
+    // TODO: this is for testing, remove
+    let t = Instant::now();
+    unsafe {
+        softmax(A_ref.as_ptr(), B_ref.as_mut_ptr(), size);
+    }
+    println!("C code: {:.2?}", t.elapsed());
 
-    B_ref
+    let B_ref = B_ref.chunks(size).map(|c| c.to_vec()).collect();
+
+    RefMatrix::new(B_ref, size, size)
 }

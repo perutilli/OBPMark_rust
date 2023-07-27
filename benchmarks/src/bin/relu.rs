@@ -6,6 +6,8 @@ use std::time::Instant;
 
 use benchmarks::benchmark_utils::{CommonArgs, Implementation, Matrix, Number};
 use benchmarks::{number, verify};
+
+use benchmarks::reference_implementations::relu;
 use obpmark_library::matrix_2d::Matrix2d as RefMatrix;
 
 #[derive(Parser, Debug)]
@@ -105,18 +107,26 @@ fn main() {
         }
         Some(None) => {
             // verify against cpu implementation
-            let B_ref = get_ref_result(&A, args.common.size);
+            let B_ref = get_ref_result(A, args.common.size);
             verify!(B.get_data(), B_ref.get_data());
         }
         None => (),
     }
 }
 
-fn get_ref_result(A: &Matrix, size: usize) -> RefMatrix<Number> {
-    let A_ref = RefMatrix::new(A.get_data(), size, size);
-    let mut B_ref = RefMatrix::zeroes(size, size);
+fn get_ref_result(A: Matrix, size: usize) -> RefMatrix<Number> {
+    let A_ref = A.to_c_format();
 
-    A_ref.relu(&mut B_ref).unwrap();
+    let mut B_ref = vec![number!("0"); size * size];
 
-    B_ref
+    // TODO: this is for testing, remove
+    let t = Instant::now();
+    unsafe {
+        relu(A_ref.as_ptr(), B_ref.as_mut_ptr(), size);
+    }
+    println!("C code: {:.2?}", t.elapsed());
+
+    let B_ref = B_ref.chunks(size).map(|c| c.to_vec()).collect();
+
+    RefMatrix::new(B_ref, size, size)
 }

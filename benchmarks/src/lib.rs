@@ -92,3 +92,55 @@ pub mod benchmark_utils {
         };
     }
 }
+
+pub mod reference_implementations {
+    #[allow(unused_imports)]
+    use std::ffi::{c_double, c_float, c_int};
+
+    #[cfg(feature = "float")]
+    type CType = c_float;
+    #[cfg(feature = "double")]
+    type CType = c_double;
+    #[cfg(feature = "int")]
+    type CType = c_int;
+    #[cfg(feature = "half")]
+    compile_error!("Half precision validation not supported yet");
+    #[cfg(not(any(
+        feature = "float",
+        feature = "double",
+        feature = "int",
+        feature = "half"
+    )))]
+    type CType = f32;
+
+    extern "C" {
+        // void matrix_multiplication(const bench_t *A, const bench_t *B, bench_t *C, const unsigned int n, const unsigned int m, const unsigned int w)
+        pub fn matrix_multiplication(
+            a: *const CType,
+            b: *const CType,
+            c: *mut CType,
+            n: usize,
+            m: usize,
+            k: usize,
+        );
+
+        // void relu(const bench_t *A, bench_t *B, const unsigned int size)void relu(const bench_t *A, bench_t *B, const unsigned int size)
+        pub fn relu(a: *const CType, b: *mut CType, size: usize);
+
+        // void softmax(const bench_t *A, bench_t *B, const unsigned int size)
+        pub fn softmax(a: *const CType, b: *mut CType, size: usize);
+
+        // void matrix_convolution(const bench_t *A, bench_t *kernel, bench_t *B, const int size, const int kernel_size)
+        pub fn matrix_convolution(
+            a: *const CType,
+            kernel: *const CType,
+            b: *mut CType,
+            size: usize,
+            kernel_size: usize,
+        );
+
+        // need to fix my code before I can use this
+        // void correlation_2D(const bench_t *A, const bench_t *B, result_bench_t *R, const int size)
+        // pub fn correlation_2d(a: *const CType, b: *const CType, r: *mut CType, size: usize);
+    }
+}
