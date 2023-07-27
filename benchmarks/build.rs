@@ -12,7 +12,7 @@ const C_TYPE: &str = "FLOAT";
 fn main() {
     cc::Build::new()
         .file("reference_versions/cpu_functions.c")
-        .asm_flag(format!("DATATYPE={}", C_TYPE).as_str())
+        .define(C_TYPE, None)
         .warnings(false)
         .compile("reference_functions");
 
