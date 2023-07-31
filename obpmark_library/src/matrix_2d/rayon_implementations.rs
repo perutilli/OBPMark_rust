@@ -45,11 +45,19 @@ impl<T: Float> RayonSoftmax for Matrix2d<T> {
         if self.rows != result.rows || self.cols != result.cols {
             return Err(Error::InvalidDimensions);
         }
-        result
+
+        let sum = result
             .data
             .par_iter_mut()
             .enumerate()
-            .for_each(|(i, row)| self.softmax_row(row, i));
+            .map(|(i, row)| {
+                self.softmax_row(row, i) // SIDE EFFECT ON ROW
+            })
+            .reduce(|| T::zero(), |partial_sum, next_sum| partial_sum + next_sum);
+
+        result.data.par_iter_mut().flatten().for_each(|el| {
+            *el /= sum;
+        });
         Ok(())
     }
 }

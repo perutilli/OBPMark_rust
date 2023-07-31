@@ -56,7 +56,7 @@ impl<T: Number> Relu<T> for Matrix1d<T> {
 }
 
 impl<T: Float> Softmax<T> for Matrix1d<T> {
-    fn softmax_row(&self, result_row: &mut [T], row_idx: usize) {
+    fn softmax_row(&self, result_row: &mut [T], row_idx: usize) -> T {
         let i = row_idx;
         let mut sum = T::zero();
         for j in 0..self.cols {
@@ -64,20 +64,23 @@ impl<T: Float> Softmax<T> for Matrix1d<T> {
             sum += val;
             result_row[j] = val;
         }
-        for j in 0..self.cols {
-            result_row[j] /= sum;
-        }
+        sum
     }
 
     fn softmax(&self, result: &mut Matrix1d<T>) -> Result<(), Error> {
         if self.rows != result.rows || self.cols != result.cols {
             return Err(Error::InvalidDimensions);
         }
+
+        let mut sum = T::zero();
+
         result
             .data
             .chunks_mut(self.cols)
             .enumerate()
-            .for_each(|(i, result_row)| self.softmax_row(result_row, i));
+            .for_each(|(i, result_row)| sum += self.softmax_row(result_row, i));
+
+        result.data.iter_mut().for_each(|el| *el /= sum);
         Ok(())
     }
 }

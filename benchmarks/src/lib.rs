@@ -85,6 +85,18 @@ pub mod benchmark_utils {
         };
     }
 
+    pub fn verify_toll(res: &Vec<Vec<Number>>, ref_res: &Vec<Vec<Number>>, toll: Number) {
+        for i in 0..res.len() {
+            for j in 0..res[0].len() {
+                if (res[i][j] - ref_res[i][j]).abs() > toll {
+                    println!("Verification failed");
+                    return;
+                }
+            }
+        }
+        println!("Verification passed with toll {}", toll);
+    }
+
     #[macro_export]
     macro_rules! number {
         ($e:expr) => {

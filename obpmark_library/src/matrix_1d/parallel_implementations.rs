@@ -133,25 +133,42 @@ impl<T: Float> ParallelSoftmax for Matrix1d<T> {
         }
 
         let rows_per_thread = (self.rows - 1) / n_threads + 1;
+        let mut total_sum = T::zero();
 
+        // this scope is needed because the compiler does not know that the threads will be joined
         thread::scope(|s| {
             result
                 .data
                 .chunks_mut(result.cols * rows_per_thread)
                 .enumerate()
-                .for_each(|(chunk_idx, chunk)| {
+                .map(|(chunk_idx, chunk)| {
                     let start_row = chunk_idx * rows_per_thread;
                     s.spawn(move || {
+                        let mut sum = T::zero();
                         chunk
                             .chunks_mut(self.cols)
                             .enumerate()
                             .for_each(|(i, result_row)| {
-                                self.softmax_row(result_row, start_row + i);
+                                sum += self.softmax_row(result_row, start_row + i);
                             });
-                    });
-                });
+                        sum
+                    })
+                })
+                .for_each(|handle| total_sum += handle.join().unwrap());
         });
-
+        // total sum is available now
+        thread::scope(|s| {
+            result
+                .data
+                .chunks_exact_mut(result.cols * rows_per_thread)
+                .for_each(|chunk| {
+                    s.spawn(|| {
+                        chunk.iter_mut().for_each(|el| {
+                            *el /= total_sum;
+                        });
+                    });
+                })
+        });
         Ok(())
     }
 }

@@ -140,7 +140,7 @@ pub trait Relu<T> {
 }
 
 pub trait Softmax<T> {
-    fn softmax_row(&self, result_row: &mut [T], row_idx: usize);
+    fn softmax_row(&self, result_row: &mut [T], row_idx: usize) -> T;
     fn softmax(&self, result: &mut Self) -> Result<(), Error>;
 }
 

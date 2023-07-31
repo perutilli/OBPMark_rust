@@ -50,13 +50,19 @@ impl<T: Float> RayonSoftmax for Matrix1d<T> {
         if self.rows != result.rows || self.cols != result.cols {
             return Err(Error::InvalidDimensions);
         }
-        result
+
+        let sum = result
             .data
             .par_chunks_mut(self.cols)
             .enumerate()
-            .for_each(|(i, row)| {
-                self.softmax_row(row, i);
-            });
+            .map(|(i, row)| self.softmax_row(row, i)) // note that this map operation has side effects (i.e. calculating the exp of each element), not super pretty
+            .reduce(|| T::zero(), |partial_sum, next_sum| partial_sum + next_sum);
+
+        // here we do need for the whole sum to be computed, so we need to wait before normalizing
+        result.data.par_iter_mut().for_each(|el| {
+            *el /= sum;
+        });
+
         Ok(())
     }
 }

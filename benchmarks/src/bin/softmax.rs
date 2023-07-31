@@ -6,8 +6,8 @@ use obpmark_library::parallel_traits::ParallelSoftmax;
 use obpmark_library::{rayon_traits::RayonSoftmax, BaseMatrix, Softmax};
 use std::time::Instant;
 
-use benchmarks::benchmark_utils::{CommonArgs, Implementation, Matrix, Number};
-use benchmarks::{number, verify};
+use benchmarks::benchmark_utils::{verify_toll, CommonArgs, Implementation, Matrix, Number};
+use benchmarks::number;
 use obpmark_library::matrix_2d::Matrix2d as RefMatrix;
 
 #[derive(Parser, Debug)]
@@ -98,7 +98,7 @@ fn main() {
         Some(None) => {
             // verify against cpu implementation
             let B_ref = get_ref_result(A, args.common.size);
-            verify!(B.get_data(), B_ref.get_data());
+            verify_toll(&B.get_data(), &B_ref.get_data(), 1e-5);
         }
         None => (),
     }

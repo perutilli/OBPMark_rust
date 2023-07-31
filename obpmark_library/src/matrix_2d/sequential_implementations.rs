@@ -56,7 +56,7 @@ impl<T: Number> Relu<T> for Matrix2d<T> {
 }
 
 impl<T: Number + num_traits::Float> Softmax<T> for Matrix2d<T> {
-    fn softmax_row(&self, result_row: &mut [T], row_idx: usize) {
+    fn softmax_row(&self, result_row: &mut [T], row_idx: usize) -> T {
         let i = row_idx;
         let mut sum = T::zero();
         for j in 0..self.cols {
@@ -64,20 +64,26 @@ impl<T: Number + num_traits::Float> Softmax<T> for Matrix2d<T> {
             sum += val;
             result_row[j] = val;
         }
-        for j in 0..self.cols {
-            result_row[j] /= sum;
-        }
+        sum
     }
 
     fn softmax(&self, result: &mut Matrix2d<T>) -> Result<(), Error> {
         if self.rows != result.rows || self.cols != result.cols {
             return Err(Error::InvalidDimensions);
         }
+        let mut sum = T::zero();
+
         result
             .data
             .iter_mut()
             .enumerate()
-            .for_each(|(i, result_row)| self.softmax_row(result_row, i));
+            .for_each(|(i, result_row)| sum += self.softmax_row(result_row, i));
+
+        result
+            .data
+            .iter_mut()
+            .flatten()
+            .for_each(|el| *el = *el / sum);
         Ok(())
     }
 }
