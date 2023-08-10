@@ -26,9 +26,9 @@ benchmark_specific = {
         '-w 8',
         '-w 128'
     ],
-
 }
 
+verifiable_benchmarks = ['relu', 'softmax', 'convolution', 'matrix_multiplication']
 
 size = [1024, 2048, 4096]
 iterations = 5
@@ -51,10 +51,13 @@ def main():
     if benchmark_name == 'matrix_multiplication':
         print('matrix_multiplication is not supported')
         return
+    
+    if benchmark_name not in verifiable_benchmarks:
+        print('benchmark results might be incorrect')
 
     for s in size:
         execution_times = []
-        command = 'cargo run --release --features 1d --features float --bin ' + benchmark_name + ' -- -s ' + str(s) + ' -t'
+        command = 'cargo run --release --features 1d --features float --bin ' + benchmark_name + ' -- -s ' + str(s) + ' -t -v'
         args = ['']
         if benchmark_name in benchmark_specific:
             args = benchmark_specific[benchmark_name]
@@ -63,7 +66,11 @@ def main():
             print(command)
             for _ in range(iterations):
                 res = subprocess.run(command, stdout=subprocess.PIPE, shell=True, stderr = subprocess.DEVNULL)
-                time = time_regex.search(res.stdout.decode('utf-8')).group(1)
+                output = res.stdout.decode('utf-8')
+                if benchmark_name in verifiable_benchmarks and 'passed' not in output:
+                    print('benchmark failed')
+                    return
+                time = time_regex.search(output).group(1)
                 time, unit = unit_regex.search(time).groups()
                 if unit not in time_conversions:
                     print('unit not supported')
