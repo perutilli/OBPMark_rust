@@ -30,11 +30,18 @@ impl From<std::io::Error> for FileError {
     }
 }
 
-/// Trait that all matrix structs should implement
-/// It contains basic methods such as `new`, `get_data`, `zeroes`
+/// Trait that all matrix structs should implement  
+/// It contains basic methods such as `new`, `get_data`, `zeroes`  
 pub trait BaseMatrix<T: Number> {
+    /// Creates a new matrix from a 2d vector of data  
+    /// The number of rows and columns are passed as arguments  
+    /// The function does not return a Result, instead it panics if the dimensions are not correct  
     fn new(data: Vec<Vec<T>>, rows: usize, cols: usize) -> Self;
+
+    /// Returns the data of the matrix as a 2d vector    
     fn get_data(&self) -> Vec<Vec<T>>;
+
+    /// Creates a new matrix filled with zeroes  
     fn zeroes(rows: usize, cols: usize) -> Self
     where
         Self: Sized,
@@ -42,6 +49,9 @@ pub trait BaseMatrix<T: Number> {
         Self::new(vec![vec![T::zero(); cols]; rows], rows, cols)
     }
 
+    /// Creates a new randomly filled matrix  
+    /// The seed is used to initialize the random number generator  
+    /// The same seed can generate different matrices on different machines  
     fn from_random_seed(seed: u64, rows: usize, cols: usize, min: T, max: T) -> Self
     where
         Self: Sized,
@@ -50,6 +60,13 @@ pub trait BaseMatrix<T: Number> {
         Self::new(data, rows, cols)
     }
 
+    /// Creates a new matrix from a file  
+    /// The file contains a value for each line  
+    /// The format of the value is a big endian representation  
+    /// of the bytes of the value  
+    ///  
+    /// # Example  
+    /// 234 -> 000000EA  
     fn from_file(path: &Path, rows: usize, cols: usize) -> Result<Self, FileError>
     where
         Self: Sized,
@@ -82,6 +99,8 @@ pub trait BaseMatrix<T: Number> {
         Ok(Self::new(data, rows, cols))
     }
 
+    /// Writes the matrix to a file  
+    /// The format is the one described in `from_file` method  
     fn to_file(&self, path: &Path) -> Result<(), std::io::Error>
     where
         <T as Serialize>::Bytes: IntoIterator<Item = u8>,
@@ -101,8 +120,13 @@ pub trait BaseMatrix<T: Number> {
         Ok(())
     }
 
+    /// Reshapes the matrix so that it has `new_rows` rows and `new_cols` columns  
+    /// Returns an error if the new dimensions are not compatible with the old ones  
+    /// i.e. `new_rows * new_cols != rows * cols`  
     fn reshape(&mut self, new_rows: usize, new_cols: usize) -> Result<(), Error>;
 
+    /// Returns a one dimensional representation of the matrix  
+    /// To be used when passing the matrix to C functions  
     fn to_c_format(self) -> Vec<T>
     where
         Self: Sized,
