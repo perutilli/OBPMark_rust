@@ -168,7 +168,7 @@ impl<T: Number> Convolution<T> for Matrix1d<T> {
                 for l in 0..kernel.cols {
                     let y = (i + k) as isize - kernel_y_radius as isize;
                     let x = (j + l) as isize - kernel_x_radius as isize;
-                    if (y > 0 && y < self.rows as isize) && (x > 0 && x < self.cols as isize) {
+                    if (y >= 0 && y < self.rows as isize) && (x >= 0 && x < self.cols as isize) {
                         sum += self.data[y as usize * self.cols + x as usize]
                             * kernel.data[k * kernel.cols + l];
                     }
