@@ -1,4 +1,5 @@
 #![allow(non_snake_case)]
+use benchmarks::reference_implementations::max_pooling;
 use obpmark_library::{
     parallel_traits::ParallelMaxPooling, rayon_traits::RayonMaxPooling, BaseMatrix, MaxPooling,
 };
@@ -112,18 +113,29 @@ fn main() {
         }
         Some(None) => {
             // verify against cpu implementation
-            let B_ref = get_ref_result(&A, args.common.size, args.stride, B_size);
+            let B_ref = get_ref_result(A, args.common.size, args.stride, B_size);
             verify!(B.get_data(), B_ref.get_data());
         }
         None => (),
     }
 }
 
-fn get_ref_result(A: &Matrix, size: usize, stride: usize, B_size: usize) -> RefMatrix<Number> {
-    let A_ref = RefMatrix::new(A.get_data(), size, size);
-    let mut B_ref = RefMatrix::zeroes(B_size, B_size);
+fn get_ref_result(A: Matrix, size: usize, stride: usize, B_size: usize) -> RefMatrix<Number> {
+    let A_ref = A.to_c_format();
+    let mut B_ref = vec![number!("0"); B_size * B_size];
 
-    A_ref.max_pooling(&mut B_ref, stride, stride).unwrap();
+    let t = Instant::now();
+    unsafe {
+        max_pooling(
+            A_ref.as_ptr(),
+            B_ref.as_mut_ptr(),
+            size,
+            stride,
+            size / stride,
+        )
+    }
+    println!("C code: {:.2?}", t.elapsed());
+    let B_ref = B_ref.chunks(B_size).map(|c| c.to_vec()).collect();
 
-    B_ref
+    RefMatrix::new(B_ref, B_size, B_size)
 }

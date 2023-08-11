@@ -13,8 +13,10 @@ fn main() {
     cc::Build::new()
         .file("reference_versions/cpu_functions.c")
         .define(C_TYPE, None)
+        .flag("-O3")
         .warnings(false)
         .compile("reference_functions");
 
     println!("cargo:rerun-if-changed=build.rs");
+    println!("cargo:rerun-if-changed=cpu_functions.c");
 }

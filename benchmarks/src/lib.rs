@@ -151,6 +151,15 @@ pub mod reference_implementations {
             kernel_size: usize,
         );
 
+        // void max_pooling(const bench_t* A, bench_t* B,const unsigned int size,const unsigned int stride,  const unsigned int lateral_stride)
+        pub fn max_pooling(
+            a: *const CType,
+            b: *mut CType,
+            size: usize,
+            stride: usize,
+            lateral_stride: usize, // lateral_stride should be size/stride
+        );
+
         // need to fix my code before I can use this
         // void correlation_2D(const bench_t *A, const bench_t *B, result_bench_t *R, const int size)
         // pub fn correlation_2d(a: *const CType, b: *const CType, r: *mut CType, size: usize);
