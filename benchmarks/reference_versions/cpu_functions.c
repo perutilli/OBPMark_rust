@@ -112,6 +112,37 @@ void matrix_convolution(const bench_t *A, bench_t *kernel, bench_t *B, const int
     }
 }
 
+// helper for max pooling
+bench_t max(bench_t a, bench_t b)
+{
+    return (a >= b) ? a : b;
+}
+
+void max_pooling(const bench_t *A, bench_t *B, const unsigned int size, const unsigned int stride, const unsigned int lateral_stride)
+{
+    unsigned int stride_size = stride * stride;
+    bench_t max_value = 0;
+    for (unsigned int i = 0; i < size; i += stride)
+    {
+        for (unsigned int j = 0; j < size; j += stride)
+        {
+            max_value = A[i * size + j]; // init value
+            // printf("init %f pos i %d, pos j %d\n", max_value, i, j);
+            for (unsigned int x = 0; x < stride; ++x)
+            {
+                for (unsigned int y = 0; y < stride; ++y)
+                {
+                    // printf("max %f, value %f, pos x %d, pos y %d \n", max_value, A[(i + x) * size + (j +y)],i + x , j +y);
+                    max_value = max(max_value, A[(i + x) * size + (j + y)]);
+                }
+            }
+
+            B[(i / stride) * lateral_stride + (j / stride)] = max_value;
+            // printf("value %f, posB x %d, posB y %d \n", B[(i / stride)* lateral_stride + (j/stride)], (i / stride) , (j/stride));
+        }
+    }
+}
+
 /*
 void correlation_2D(const bench_t *A, const bench_t *B, result_bench_t *R, const int size)
 {
