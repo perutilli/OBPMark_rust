@@ -5,11 +5,11 @@ import sys
 CONFIG_FILE = 'benchmarks_configurations.json'
 
 time_regex = re.compile(r'Elapsed: (.*)\n')
-unit_regex = re.compile(r'(.*\.[0-9][0-9])(ns|μs|ms|s)')
+unit_regex = re.compile(r'(.*\.[0-9][0-9])(ns|µs|ms|s)')
 
 time_conversions = {
     'ns': 1e-6,
-    'μs': 1e-3,
+    'µs': 1e-3,
     'ms': 1,
     's': 1e3
 }
