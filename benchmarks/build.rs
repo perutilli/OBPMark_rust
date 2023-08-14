@@ -18,5 +18,5 @@ fn main() {
         .compile("reference_functions");
 
     println!("cargo:rerun-if-changed=build.rs");
-    println!("cargo:rerun-if-changed=cpu_functions.c");
+    println!("cargo:rerun-if-changed=reference_versions/cpu_functions.c");
 }
