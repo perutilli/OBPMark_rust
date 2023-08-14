@@ -28,7 +28,7 @@ benchmark_specific = {
     ],
 }
 
-verifiable_benchmarks = ['relu', 'softmax', 'convolution', 'matrix_multiplication', 'max_pooling']
+verifiable_benchmarks = ['relu', 'softmax', 'convolution', 'matrix_multiplication', 'max_pooling', 'wavelet_transform']
 
 size = [1024, 2048, 4096]
 iterations = 5
