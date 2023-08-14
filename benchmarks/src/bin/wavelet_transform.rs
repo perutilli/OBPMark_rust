@@ -1,4 +1,5 @@
 #![allow(non_snake_case)]
+use benchmarks::reference_implementations::ccsds_wavelet_transform;
 use clap::Parser;
 use core::panic;
 use obpmark_library::BaseMatrix;
@@ -35,8 +36,8 @@ use obpmark_rust::WaveletTransformInteger;
 use std::{path::Path, time::Instant};
 
 use benchmarks::benchmark_utils::{CommonArgs, Matrix, Number};
-use benchmarks::number;
-// use obpmark_rust::matrix_2d::Matrix2d as RefMatrix;
+use benchmarks::{number, verify};
+use obpmark_library::matrix_1d::Matrix1d as RefMatrix;
 
 #[derive(Parser, Debug)]
 #[command(about = "Wavelet transform benchmark")]
@@ -108,13 +109,13 @@ fn main() {
         }
         None => (),
     }
-    /*
+
     match args.common.verify {
         Some(Some(filename)) => {
             // verify against file
-            let C_ref = Matrix::from_file(Path::new(&filename), args.common.size, args.common.size)
+            let B_ref = Matrix::from_file(Path::new(&filename), args.common.size, args.common.size)
                 .unwrap();
-            if C.get_data() == C_ref.get_data() {
+            if B.get_data() == B_ref.get_data() {
                 println!("Verification passed");
             } else {
                 println!("Verification failed");
@@ -122,10 +123,22 @@ fn main() {
         }
         Some(None) => {
             // verify against cpu implementation
-            let C_ref = get_ref_result(&A, &B, args.common.size);
-            verify!(C.get_data(), C_ref.get_data());
+            let B_ref = get_ref_result(A, args.common.size);
+            verify!(B.get_data(), B_ref.get_data());
         }
         None => (),
     }
-    */
+}
+
+fn get_ref_result(A: Matrix, size: usize) -> RefMatrix<Number> {
+    let A_ref = A.to_c_format();
+
+    let mut B_ref = vec![number!("0"); 1 * size];
+
+    // TODO: this is for testing, remove
+    let t = Instant::now();
+    unsafe { ccsds_wavelet_transform(A_ref.as_ptr(), B_ref.as_mut_ptr(), size / 2) }
+    println!("C code: {:.2?}", t.elapsed());
+
+    RefMatrix::new(vec![B_ref], 1, size)
 }

@@ -16,6 +16,21 @@ typedef float result_bench_t;
 
 #define M_PI 3.14159265358979323846
 
+#define HIGHPASSFILTERSIZE 7
+#define LOWPASSFILTERSIZE 9
+
+#ifdef INT
+typedef int bench_t;
+#elif FLOAT
+typedef float bench_t;
+static const bench_t lowpass_filter_cpu[LOWPASSFILTERSIZE] = {0.037828455507, -0.023849465020, -0.110624404418, 0.377402855613, 0.852698679009, 0.377402855613, -0.110624404418, -0.023849465020, 0.037828455507};
+static const bench_t highpass_filter_cpu[HIGHPASSFILTERSIZE] = {-0.064538882629, 0.040689417609, 0.418092273222, -0.788485616406, 0.418092273222, 0.040689417609, -0.064538882629};
+#else
+typedef double bench_t;
+static const bench_t lowpass_filter_cpu[LOWPASSFILTERSIZE] = {0.037828455507, -0.023849465020, -0.110624404418, 0.377402855613, 0.852698679009, 0.377402855613, -0.110624404418, -0.023849465020, 0.037828455507};
+static const bench_t highpass_filter_cpu[HIGHPASSFILTERSIZE] = {-0.064538882629, 0.040689417609, 0.418092273222, -0.788485616406, 0.418092273222, 0.040689417609, -0.064538882629};
+#endif
+
 void matrix_multiplication(const bench_t *A, const bench_t *B, bench_t *C, const unsigned int n, const unsigned int m, const unsigned int w)
 {
     for (unsigned int i = 0; i < n; ++i)
@@ -141,6 +156,108 @@ void max_pooling(const bench_t *A, bench_t *B, const unsigned int size, const un
             // printf("value %f, posB x %d, posB y %d \n", B[(i / stride)* lateral_stride + (j/stride)], (i / stride) , (j/stride));
         }
     }
+}
+
+void ccsds_wavelet_transform(const bench_t *A, bench_t *B, const int size)
+{
+// the output will be in the B array the lower half will be the lowpass filter and the half_up will be the high pass filter
+#ifdef INT
+    unsigned int full_size = size * 2;
+    // integer computation
+    // high part
+    for (unsigned int i = 0; i < size; ++i)
+    {
+        bench_t sum_value_high = 0;
+        // specific cases
+        if (i == 0)
+        {
+            sum_value_high = A[1] - (int)(((9.0 / 16.0) * (A[0] + A[2])) - ((1.0 / 16.0) * (A[2] + A[4])) + (1.0 / 2.0));
+        }
+        else if (i == size - 2)
+        {
+            sum_value_high = A[2 * size - 3] - (int)(((9.0 / 16.0) * (A[2 * size - 4] + A[2 * size - 2])) - ((1.0 / 16.0) * (A[2 * size - 6] + A[2 * size - 2])) + (1.0 / 2.0));
+        }
+        else if (i == size - 1)
+        {
+            sum_value_high = A[2 * size - 1] - (int)(((9.0 / 8.0) * (A[2 * size - 2])) - ((1.0 / 8.0) * (A[2 * size - 4])) + (1.0 / 2.0));
+        }
+        else
+        {
+            // generic case
+            sum_value_high = A[2 * i + 1] - (int)(((9.0 / 16.0) * (A[2 * i] + A[2 * i + 2])) - ((1.0 / 16.0) * (A[2 * i - 2] + A[2 * i + 4])) + (1.0 / 2.0));
+        }
+
+        // store
+        B[i + size] = sum_value_high;
+    }
+    // low_part
+    for (unsigned int i = 0; i < size; ++i)
+    {
+        bench_t sum_value_low = 0;
+        if (i == 0)
+        {
+            sum_value_low = A[0] - (int)(-(B[size] / 2.0) + (1.0 / 2.0));
+        }
+        else
+        {
+            sum_value_low = A[2 * i] - (int)(-((B[i + size - 1] + B[i + size]) / 4.0) + (1.0 / 2.0));
+        }
+
+        B[i] = sum_value_low;
+    }
+
+#else
+    // flotating part
+    unsigned int full_size = size * 2;
+    int hi_start = -(LOWPASSFILTERSIZE / 2);
+    int hi_end = LOWPASSFILTERSIZE / 2;
+    int gi_start = -(HIGHPASSFILTERSIZE / 2);
+    int gi_end = HIGHPASSFILTERSIZE / 2;
+
+    for (unsigned int i = 0; i < size; ++i)
+    {
+        // loop over N elements of the input vector.
+        bench_t sum_value_low = 0;
+        // first process the lowpass filter
+        for (int hi = hi_start; hi < hi_end + 1; ++hi)
+        {
+            int x_position = (2 * i) + hi;
+            if (x_position < 0)
+            {
+                // turn negative to positive
+                x_position = x_position * -1;
+            }
+            else if (x_position > full_size - 1)
+            {
+                x_position = full_size - 1 - (x_position - (full_size - 1));
+                ;
+            }
+            // now I need to restore the hi value to work with the array
+            sum_value_low += lowpass_filter_cpu[hi + hi_end] * A[x_position];
+        }
+        // store the value
+        B[i] = sum_value_low;
+        bench_t sum_value_high = 0;
+        // second process the Highpass filter
+        for (int gi = gi_start; gi < gi_end + 1; ++gi)
+        {
+            int x_position = (2 * i) + gi + 1;
+            if (x_position < 0)
+            {
+                // turn negative to positive
+                x_position = x_position * -1;
+            }
+            else if (x_position > full_size - 1)
+            {
+                x_position = full_size - 1 - (x_position - (full_size - 1));
+            }
+            sum_value_high += highpass_filter_cpu[gi + gi_end] * A[x_position];
+        }
+        // store the value
+        B[i + size] = sum_value_high;
+    }
+
+#endif
 }
 
 /*

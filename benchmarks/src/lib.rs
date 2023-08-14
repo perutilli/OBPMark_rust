@@ -160,6 +160,10 @@ pub mod reference_implementations {
             lateral_stride: usize, // lateral_stride should be size/stride
         );
 
+        /// Note that half_size is half of the size of the output array.
+        // void ccsds_wavelet_transform(const bench_t* A, bench_t* B, const int size)
+        pub fn ccsds_wavelet_transform(a: *const CType, b: *mut CType, half_size: usize);
+
         // need to fix my code before I can use this
         // void correlation_2D(const bench_t *A, const bench_t *B, result_bench_t *R, const int size)
         // pub fn correlation_2d(a: *const CType, b: *const CType, r: *mut CType, size: usize);
