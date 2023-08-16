@@ -196,7 +196,7 @@ impl<T: Number> ParallelMaxPooling for Matrix1d<T> {
                     let start_row = chunk_idx * rows_per_thread;
                     s.spawn(move || {
                         chunk
-                            .chunks_mut(self.cols)
+                            .chunks_mut(self.cols / col_stride) // = result.cols
                             .enumerate()
                             .for_each(|(i, result_row)| {
                                 self.max_pooling_row(
