@@ -123,7 +123,7 @@ impl<T: Number> RayonFiniteImpulseResponseFilter for Matrix2d<T> {
         {
             return Err(Error::InvalidDimensions);
         }
-        if kernel.rows != 1 || kernel.cols % 2 == 0 {
+        if kernel.rows != 1 {
             return Err(Error::InvalidKernelDimensions);
         }
 

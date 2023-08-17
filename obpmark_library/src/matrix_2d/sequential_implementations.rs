@@ -449,7 +449,6 @@ impl<T: Number> FirFilter<T> for Matrix2d<T> {
             || self.rows != 1
             || result.rows != 1
             || result.cols != self.cols + kernel.cols - 1
-            || kernel.cols % 2 == 0
         {
             return Err(Error::InvalidDimensions);
         }

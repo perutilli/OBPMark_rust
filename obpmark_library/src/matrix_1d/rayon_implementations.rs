@@ -133,7 +133,7 @@ impl<T: Number> RayonFiniteImpulseResponseFilter for Matrix1d<T> {
         if result.cols != self.cols + kernel.cols - 1 || self.rows != 1 || result.rows != 1 {
             return Err(Error::InvalidDimensions);
         }
-        if kernel.rows != 1 || kernel.cols % 2 == 0 {
+        if kernel.rows != 1 {
             return Err(Error::InvalidKernelDimensions);
         }
 
