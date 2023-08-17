@@ -243,6 +243,11 @@ pub fn random_matrix_data<T: Number>(
     data
 }
 
+pub trait FirFilter<T> {
+    fn fir_filter_element(&self, kernel: &Self, element_idx: usize) -> T;
+    fn fir_filter(&self, kernel: &Self, result: &mut Self) -> Result<(), Error>;
+}
+
 pub mod parallel_traits;
 pub mod rayon_traits;
 

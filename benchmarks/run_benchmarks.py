@@ -28,7 +28,7 @@ benchmark_specific = {
     ],
 }
 
-verifiable_benchmarks = ['relu', 'softmax', 'convolution', 'matrix_multiplication', 'max_pooling', 'wavelet_transform']
+verifiable_benchmarks = ['relu', 'softmax', 'convolution', 'matrix_multiplication', 'max_pooling', 'wavelet_transform', 'finite_impulse_response_filter']
 
 size = [1024, 2048, 4096]
 iterations = 5
@@ -48,16 +48,29 @@ def main():
     # get the name of the benchmark from the command line
     benchmark_name = sys.argv[1]
 
-    if benchmark_name == 'matrix_multiplication':
-        print('matrix_multiplication is not supported')
-        return
-    
     if benchmark_name not in verifiable_benchmarks:
         print('benchmark results might be incorrect')
+    
+    if benchmark_name == 'matrix_multiplication':
+        print('matrix multiplication not supported')
+        return
+        """
+        for feature in ['float', 'int', 'char']:
+            base_command = 'cargo run --release --features 1d --features ' + feature + ' --bin '
+            print(feature)
+            run_benchmark(base_command, benchmark_name)
+        """
+    else:
+        base_command = 'cargo run --release --features 1d --features float --bin '
+        run_benchmark(base_command, benchmark_name)
+    
+if __name__ == "__main__":
+    main()
 
+def run_benchmark(base_command, benchmark_name):
     for s in size:
         execution_times = []
-        command = 'cargo run --release --features 1d --features float --bin ' + benchmark_name + ' -- -s ' + str(s) + ' -t -v'
+        command = base_command + benchmark_name + ' -- -s ' + str(s) + ' -t -v'
         args = ['']
         if benchmark_name in benchmark_specific:
             args = benchmark_specific[benchmark_name]
@@ -81,11 +94,7 @@ def main():
         execution_times.sort()
         print(execution_times)
         execution_times = execution_times[1:-1]
-        print(str(s) + ': ' + str(sum(execution_times) / len(execution_times)))        
-
-if __name__ == "__main__":
-    main()
-
+        print(str(s) + ': ' + str(sum(execution_times) / len(execution_times)))
 
 
 """

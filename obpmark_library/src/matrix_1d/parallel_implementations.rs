@@ -6,7 +6,7 @@ use crate::{Error, Padding};
 use std::sync::Arc;
 use std::thread;
 
-use crate::{Convolution, MatMul, MaxPooling, Relu, Softmax, LRN};
+use crate::{Convolution, FirFilter, MatMul, MaxPooling, Relu, Softmax, LRN};
 
 impl<T: Number> ParallelMatMul for Matrix1d<T> {
     fn parallel_multiply(
@@ -258,16 +258,16 @@ impl<T: Number> ParallelFiniteImpulseResponseFilter for Matrix1d<T> {
         result: &mut Self,
         n_threads: usize,
     ) -> Result<(), Error> {
-        if self.rows != result.rows || self.cols != result.cols || self.rows != 1 {
+        if self.rows != result.rows || result.cols != self.cols + kernel.cols - 1 || self.rows != 1
+        {
             return Err(Error::InvalidDimensions);
         }
-
         if kernel.rows != 1 || kernel.cols % 2 == 0 {
             return Err(Error::InvalidKernelDimensions);
         }
 
         // here the number of rows will always be one
-        let elements_per_thread = (self.cols - 1) / n_threads + 1;
+        let elements_per_thread = (result.cols - 1) / n_threads + 1;
 
         let shared_kernel = Arc::new(kernel);
 
@@ -275,13 +275,14 @@ impl<T: Number> ParallelFiniteImpulseResponseFilter for Matrix1d<T> {
             result
                 .data
                 .chunks_mut(elements_per_thread)
-                .for_each(|chunk| {
+                .enumerate()
+                .for_each(|(chunk_idx, chunk)| {
                     let shared_kernel = shared_kernel.clone();
+                    let start_idx = chunk_idx * elements_per_thread;
                     s.spawn(move || {
-                        // the chunk for us is the equivalent of a row
-                        // even though each chunk is on the same row
-                        // row_idx is always 0
-                        self.convolute_row(&shared_kernel, chunk, 0);
+                        chunk.iter_mut().enumerate().for_each(|(i, result_el)| {
+                            *result_el = self.fir_filter_element(&shared_kernel, i + start_idx);
+                        });
                     });
                 });
         });

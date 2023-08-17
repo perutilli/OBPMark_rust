@@ -1,6 +1,6 @@
 use crate::matrix_2d::Matrix2d;
 use crate::number_traits::{Float, Number};
-use crate::parallel_traits::*;
+use crate::{parallel_traits::*, FirFilter};
 use crate::{Error, Padding};
 
 use std::sync::Arc;
@@ -237,29 +237,30 @@ impl<T: Number> ParallelFiniteImpulseResponseFilter for Matrix2d<T> {
         result: &mut Self,
         n_threads: usize,
     ) -> Result<(), Error> {
-        if self.rows != result.rows || self.cols != result.cols || self.rows != 1 {
+        if self.rows != result.rows || result.cols != self.cols + kernel.cols - 1 || self.rows != 1
+        {
             return Err(Error::InvalidDimensions);
         }
-
         if kernel.rows != 1 || kernel.cols % 2 == 0 {
             return Err(Error::InvalidKernelDimensions);
         }
 
         // here the number of rows will always be one
-        let elements_per_thread = (self.cols - 1) / n_threads + 1;
+        let elements_per_thread = (result.cols - 1) / n_threads + 1;
 
         let shared_kernel = Arc::new(kernel);
 
         thread::scope(|s| {
             result.data[0] // we only have one row, so this is all the data
                 .chunks_mut(elements_per_thread)
-                .for_each(|chunk| {
+                .enumerate()
+                .for_each(|(chunk_idx, chunk)| {
                     let shared_kernel = shared_kernel.clone();
+                    let start_idx = chunk_idx * elements_per_thread;
                     s.spawn(move || {
-                        // the chunk for us is the equivalent of a row
-                        // even though each chunk is on the same row
-                        // row_idx is always 0
-                        self.convolute_row(&shared_kernel, chunk, 0);
+                        chunk.iter_mut().enumerate().for_each(|(i, result_el)| {
+                            *result_el = self.fir_filter_element(&shared_kernel, i + start_idx);
+                        });
                     });
                 });
         });

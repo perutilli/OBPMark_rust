@@ -7,12 +7,15 @@ use clap::Parser;
 use core::panic;
 use obpmark_library::{
     parallel_traits::ParallelFiniteImpulseResponseFilter,
-    rayon_traits::RayonFiniteImpulseResponseFilter, BaseMatrix, Convolution, Padding,
+    rayon_traits::RayonFiniteImpulseResponseFilter, BaseMatrix, FirFilter,
 };
 use std::path::Path;
 use std::time::Instant;
 
-use benchmarks::benchmark_utils::{CommonArgs, Implementation, Matrix, Number};
+use benchmarks::{
+    benchmark_utils::{CommonArgs, Implementation, Matrix, Number},
+    reference_implementations::vector_convolution,
+};
 use obpmark_library::matrix_2d::Matrix2d as RefMatrix;
 
 use benchmarks::{number, verify};
@@ -68,7 +71,8 @@ fn main() {
         println!("{}", kernel);
     }
 
-    B = Matrix::zeroes(1, args.common.size);
+    // B size = A size + kernel size - 1
+    B = Matrix::zeroes(1, args.common.size + args.kernel_size - 1);
 
     let t0 = Instant::now();
 
@@ -82,7 +86,7 @@ fn main() {
         (Some(n), Implementation::Sequential) if n != 1 => {
             panic!("Invalid parameter combination: sequential with nthreads != 1")
         }
-        (_, Implementation::Sequential) => A.convolute(&kernel, Padding::Zeroes, &mut B).unwrap(),
+        (_, Implementation::Sequential) => A.fir_filter(&kernel, &mut B).unwrap(),
         (Some(n), Implementation::StdParallel) => {
             A.parallel_fir_filter(&kernel, &mut B, n).unwrap()
         }
@@ -119,27 +123,28 @@ fn main() {
         }
         Some(None) => {
             // verify against cpu implementation
-            let B_ref = get_ref_result(&A, args.common.size, &kernel, args.kernel_size);
+            let B_ref = get_ref_result(A, args.common.size, kernel, args.kernel_size);
             verify!(B.get_data(), B_ref.get_data());
         }
         None => (),
     }
 }
 
-fn get_ref_result(
-    A: &Matrix,
-    size: usize,
-    kernel: &Matrix,
-    kernel_size: usize,
-) -> RefMatrix<Number> {
-    let A_ref = RefMatrix::new(A.get_data(), 1, size);
-    let kernel_ref = RefMatrix::new(kernel.get_data(), 1, kernel_size);
+fn get_ref_result(A: Matrix, size: usize, kernel: Matrix, kernel_size: usize) -> RefMatrix<Number> {
+    let A_ref = A.to_c_format();
+    let kernel_ref = kernel.to_c_format();
 
-    let mut B_ref = RefMatrix::zeroes(1, size);
+    let mut B_ref = vec![number!("0"); 1 * (size + kernel_size - 1)];
 
-    A_ref
-        .convolute(&kernel_ref, Padding::Zeroes, &mut B_ref)
-        .unwrap();
+    unsafe {
+        vector_convolution(
+            A_ref.as_ptr(),
+            kernel_ref.as_ptr(),
+            B_ref.as_mut_ptr(),
+            size,
+            kernel_size,
+        );
+    }
 
-    B_ref
+    RefMatrix::new(vec![B_ref], 1, size)
 }

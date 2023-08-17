@@ -1,8 +1,8 @@
 use super::Matrix1d;
 use crate::{
-    Convolution, Correlation, Error, FastFourierTransform, FastFourierTransformWindowed, Float,
-    MatMul, MaxPooling, Number, Relu, Softmax, WaveletTransformFloating, WaveletTransformInteger,
-    LRN,
+    Convolution, Correlation, Error, FastFourierTransform, FastFourierTransformWindowed, FirFilter,
+    Float, MatMul, MaxPooling, Number, Relu, Softmax, WaveletTransformFloating,
+    WaveletTransformInteger, LRN,
 };
 
 impl<T: Number> MatMul<T> for Matrix1d<T> {
@@ -424,6 +424,38 @@ impl<T: Float> WaveletTransformFloating<T> for Matrix1d<T> {
             }
             result.data[i + size] = sum_value_high;
         }
+        Ok(())
+    }
+}
+
+impl<T: Number> FirFilter<T> for Matrix1d<T> {
+    fn fir_filter_element(&self, kernel: &Self, element_idx: usize) -> T {
+        let mut sum = T::zero();
+        for j in 0..kernel.cols {
+            let idx = element_idx as isize + (j as isize - kernel.cols as isize + 1);
+            if idx >= 0 && idx < self.cols as isize {
+                sum += kernel.data[kernel.cols - j - 1] * self.data[idx as usize];
+            }
+        }
+        sum
+    }
+
+    /// Does vector convolution using the kernel passed  
+    /// kernel.cols needs to be odd and result.cols = self.cols + kernel.cols - 1
+    fn fir_filter(&self, kernel: &Self, result: &mut Self) -> Result<(), Error> {
+        // this is just a wrapper for the fir_filter_section
+        // separation is there for the parallel versions
+        if kernel.rows != 1
+            || self.rows != 1
+            || result.rows != 1
+            || result.cols != self.cols + kernel.cols - 1
+            || kernel.cols % 2 == 0
+        {
+            return Err(Error::InvalidDimensions);
+        }
+        result.data.iter_mut().enumerate().for_each(|(idx, el)| {
+            *el = self.fir_filter_element(kernel, idx);
+        });
         Ok(())
     }
 }

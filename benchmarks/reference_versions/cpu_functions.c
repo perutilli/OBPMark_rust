@@ -260,6 +260,22 @@ void ccsds_wavelet_transform(const bench_t *A, bench_t *B, const int size)
 #endif
 }
 
+void vector_convolution(const bench_t *A, bench_t *kernel, bench_t *B, const int size, const int kernel_size)
+{
+    const unsigned int kernel_rad = kernel_size / 2;
+    const unsigned int output_size = size + kernel_size - 1;
+    for (unsigned int i = 0; i < output_size; ++i)
+    {
+        for (unsigned int j = 0; j < kernel_size; ++j)
+        {
+            if (i + (j - kernel_size + 1) >= 0 && i + (j - kernel_size + 1) < size)
+            {
+                B[i] += kernel[kernel_size - j - 1] * A[i + (j - kernel_size + 1)];
+            }
+        }
+    }
+}
+
 /*
 void correlation_2D(const bench_t *A, const bench_t *B, result_bench_t *R, const int size)
 {
