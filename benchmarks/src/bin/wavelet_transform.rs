@@ -32,7 +32,7 @@ mod constants {
     ];
 }
 #[cfg(feature = "int")]
-use obpmark_rust::WaveletTransformInteger;
+use obpmark_library::WaveletTransformInteger;
 use std::{path::Path, time::Instant};
 
 use benchmarks::benchmark_utils::{CommonArgs, Matrix, Number};

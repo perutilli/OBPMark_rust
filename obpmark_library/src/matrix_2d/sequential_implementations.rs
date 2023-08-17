@@ -362,9 +362,11 @@ impl WaveletTransformInteger<i32> for Matrix2d<i32> {
         // low part
         for i in 0..size {
             result.data[0][i] = if i == 0 {
-                data[0] - (-result.data[0][size] / 2 + 1)
+                data[0] - (-(result.data[0][size] as f32 / 2.0) + 0.5) as i32
             } else {
-                data[2 * i] - (-((result.data[0][i + size - 1] + result.data[0][i + size]) / 4) + 1)
+                data[2 * i]
+                    - (-((result.data[0][i + size - 1] + result.data[0][i + size]) as f32 / 4.0)
+                        + 0.5) as i32
             };
         }
 
