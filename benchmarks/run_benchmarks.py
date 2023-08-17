@@ -33,6 +33,35 @@ verifiable_benchmarks = ['relu', 'softmax', 'convolution', 'matrix_multiplicatio
 size = [1024, 2048, 4096]
 iterations = 5
 
+def run_benchmark(base_command, benchmark_name):
+    for s in size:
+        execution_times = []
+        command = base_command + benchmark_name + ' -- -s ' + str(s) + ' -t -v'
+        args = ['']
+        if benchmark_name in benchmark_specific:
+            args = benchmark_specific[benchmark_name]
+        for arg in args:
+            size_command = command + ' ' + arg
+            print(size_command)
+            for _ in range(iterations):
+                res = subprocess.run(size_command, stdout=subprocess.PIPE, shell=True, stderr = subprocess.DEVNULL)
+                output = res.stdout.decode('utf-8')
+                if benchmark_name in verifiable_benchmarks and 'passed' not in output:
+                    print('benchmark failed')
+                    return
+                time = time_regex.search(output).group(1)
+                time, unit = unit_regex.search(time).groups()
+                if unit not in time_conversions:
+                    print('unit not supported')
+                    return
+                execution_times.append(float(time) * time_conversions[unit])
+
+            
+        execution_times.sort()
+        print(execution_times)
+        execution_times = execution_times[1:-1]
+        print(str(s) + ': ' + str(sum(execution_times) / len(execution_times)))
+
 
 def main():
     """
@@ -67,34 +96,7 @@ def main():
 if __name__ == "__main__":
     main()
 
-def run_benchmark(base_command, benchmark_name):
-    for s in size:
-        execution_times = []
-        command = base_command + benchmark_name + ' -- -s ' + str(s) + ' -t -v'
-        args = ['']
-        if benchmark_name in benchmark_specific:
-            args = benchmark_specific[benchmark_name]
-        for arg in args:
-            command += ' ' + arg
-            print(command)
-            for _ in range(iterations):
-                res = subprocess.run(command, stdout=subprocess.PIPE, shell=True, stderr = subprocess.DEVNULL)
-                output = res.stdout.decode('utf-8')
-                if benchmark_name in verifiable_benchmarks and 'passed' not in output:
-                    print('benchmark failed')
-                    return
-                time = time_regex.search(output).group(1)
-                time, unit = unit_regex.search(time).groups()
-                if unit not in time_conversions:
-                    print('unit not supported')
-                    return
-                execution_times.append(float(time) * time_conversions[unit])
 
-            
-        execution_times.sort()
-        print(execution_times)
-        execution_times = execution_times[1:-1]
-        print(str(s) + ': ' + str(sum(execution_times) / len(execution_times)))
 
 
 """
