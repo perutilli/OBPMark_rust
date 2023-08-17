@@ -35,12 +35,12 @@ iterations = 5
 
 def run_benchmark(base_command, benchmark_name):
     for s in size:
-        execution_times = []
         command = base_command + benchmark_name + ' -- -s ' + str(s) + ' -t -v'
         args = ['']
         if benchmark_name in benchmark_specific:
             args = benchmark_specific[benchmark_name]
         for arg in args:
+            execution_times = []
             size_command = command + ' ' + arg
             print(size_command)
             for _ in range(iterations):
@@ -55,12 +55,10 @@ def run_benchmark(base_command, benchmark_name):
                     print('unit not supported')
                     return
                 execution_times.append(float(time) * time_conversions[unit])
-
-            
-        execution_times.sort()
-        print(execution_times)
-        execution_times = execution_times[1:-1]
-        print(str(s) + ': ' + str(sum(execution_times) / len(execution_times)))
+            execution_times.sort()
+            print(execution_times)
+            execution_times = execution_times[1:-1]
+            print(str(s) + ' ' + arg + ': ' + str(sum(execution_times) / len(execution_times)))
 
 
 def main():
