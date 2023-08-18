@@ -324,49 +324,77 @@ impl FastFourierTransformWindowed for Matrix1d<f64> {
 // TODO: note that right now the data has a minimum size for the algorithm to work
 //       should at least document this in the error
 impl WaveletTransformInteger<i32> for Matrix1d<i32> {
+    fn wavelet_transform_bottom_half_element(
+        &self,
+        result_top_half: &[i32],
+        element_idx: usize,
+    ) -> i32 {
+        let i = element_idx;
+        let data = &self.data;
+
+        if i == 0 {
+            data[0] - (-(result_top_half[0] as f32 / 2.0) + 0.5) as i32
+        } else {
+            data[2 * i]
+                - (-((result_top_half[i - 1] + result_top_half[i]) as f32 / 4.0) + 0.5) as i32
+        }
+    }
+
+    fn wavelet_transform_top_half_element(&self, element_idx: usize, size: usize) -> i32 {
+        let i = element_idx;
+        let data = &self.data;
+
+        if i == 0 {
+            data[1]
+                - (((9.0 / 16.0) * (data[0] + data[2]) as f32)
+                    - ((1.0 / 16.0) * (data[2] + data[4]) as f32)
+                    + 0.5) as i32
+        } else if i == size - 2 {
+            data[2 * size - 3]
+                - (((9.0 / 16.0) * (data[2 * size - 4] + data[2 * size - 2]) as f32)
+                    - ((1.0 / 16.0) * (data[2 * size - 6] + data[2 * size - 2]) as f32)
+                    + (1.0 / 2.0)) as i32
+        } else if i == size - 1 {
+            data[2 * size - 1]
+                - (((9.0 / 8.0) * (data[2 * size - 2]) as f32)
+                    - ((1.0 / 8.0) * (data[2 * size - 4]) as f32)
+                    + 0.5) as i32
+        } else {
+            data[2 * i + 1]
+                - (((9.0 / 16.0) * (data[2 * i] + data[2 * i + 2]) as f32)
+                    - ((1.0 / 16.0) * (data[2 * i - 2] + data[2 * i + 4]) as f32)
+                    + (1.0 / 2.0)) as i32
+        }
+    }
+
     fn wavelet_transform(&self, result: &mut Self, size: usize) -> Result<(), Error> {
         let full_size = size * 2;
         if self.rows != 1 || self.cols != full_size {
             return Err(Error::InvalidDimensions);
         }
 
-        let data = &self.data;
+        // top half
+        result
+            .data
+            .iter_mut()
+            .skip(size) // skips the first half of the vector
+            .enumerate()
+            .for_each(|(idx, el)| {
+                *el = self.wavelet_transform_top_half_element(idx, size);
+            });
 
-        // high part
-        for i in 0..size {
-            result.data[i + size] = if i == 0 {
-                data[1]
-                    - (((9.0 / 16.0) * (data[0] + data[2]) as f32)
-                        - ((1.0 / 16.0) * (data[2] + data[4]) as f32)
-                        + (1.0 / 2.0)) as i32
-            } else if i == size - 2 {
-                data[2 * size - 3]
-                    - (((9.0 / 16.0) * (data[2 * size - 4] + data[2 * size - 2]) as f32)
-                        - ((1.0 / 16.0) * (data[2 * size - 6] + data[2 * size - 2]) as f32)
-                        + (1.0 / 2.0)) as i32
-            } else if i == size - 1 {
-                data[2 * size - 1]
-                    - (((9.0 / 8.0) * (data[2 * size - 2]) as f32)
-                        - ((1.0 / 8.0) * (data[2 * size - 4]) as f32)
-                        + (1.0 / 2.0)) as i32
-            } else {
-                data[2 * i + 1]
-                    - (((9.0 / 16.0) * (data[2 * i] + data[2 * i + 2]) as f32)
-                        - ((1.0 / 16.0) * (data[2 * i - 2] + data[2 * i + 4]) as f32)
-                        + (1.0 / 2.0)) as i32
-            };
-        }
+        let binding = result.data[size..].to_owned(); // does the copy
+        let top_half = binding.as_slice();
 
-        // low part
-        for i in 0..size {
-            result.data[i] = if i == 0 {
-                data[0] - (-(result.data[size] as f32 / 2.0) + 0.5) as i32
-            } else {
-                data[2 * i]
-                    - (-((result.data[i + size - 1] + result.data[i + size]) as f32 / 4.0) + 0.5)
-                        as i32
-            };
-        }
+        // bottom half
+        result
+            .data
+            .iter_mut()
+            .take(size) // takes the first half of the vector
+            .enumerate()
+            .for_each(|(idx, el)| {
+                *el = self.wavelet_transform_bottom_half_element(top_half, idx);
+            });
 
         Ok(())
     }

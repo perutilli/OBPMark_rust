@@ -210,6 +210,9 @@ pub trait FastFourierTransformWindowed: FastFourierTransform {
 }
 
 pub trait WaveletTransformInteger<T: Integer> {
+    fn wavelet_transform_bottom_half_element(&self, result_top_half: &[T], element_idx: usize)
+        -> T;
+    fn wavelet_transform_top_half_element(&self, element_idx: usize, size: usize) -> T;
     fn wavelet_transform(&self, result: &mut Self, size: usize) -> Result<(), Error>;
 }
 
