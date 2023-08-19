@@ -170,7 +170,7 @@ impl<T: Number> Convolution<T> for Matrix2d<T> {
                 for l in 0..kernel.cols {
                     let y = (i + k) as isize - kernel_y_radius as isize;
                     let x = (j + l) as isize - kernel_x_radius as isize;
-                    if (y > 0 && y < self.rows as isize) && (x > 0 && x < self.cols as isize) {
+                    if (y >= 0 && y < self.rows as isize) && (x >= 0 && x < self.cols as isize) {
                         let y = y as usize;
                         let x = x as usize;
                         sum += self.data[y][x] * kernel.data[k][l];
