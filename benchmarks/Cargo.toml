@@ -20,6 +20,3 @@ half = ["reference_algorithms/half"]
 
 1d = []
 2d = []
-
-[build-dependencies]
-cc = "1.0"

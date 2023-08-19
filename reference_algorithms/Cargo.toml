@@ -12,3 +12,6 @@ float = []
 double = []
 int = []
 half = []
+
+[build-dependencies]
+cc = "1.0"

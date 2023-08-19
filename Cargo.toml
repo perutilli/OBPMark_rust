@@ -4,4 +4,5 @@ members = [
     "benchmarks",
     "obpmark_library",
     "reference_algorithms",
+    "bare_metal",
 ]
