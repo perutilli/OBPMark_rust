@@ -1,10 +1,10 @@
 #![allow(non_snake_case)]
-use benchmarks::reference_implementations::ccsds_wavelet_transform;
 use clap::Parser;
 use core::panic;
 use obpmark_library::BaseMatrix;
 #[cfg(not(feature = "int"))]
 use obpmark_library::WaveletTransformFloating;
+use reference_algorithms::ccsds_wavelet_transform;
 #[cfg(not(feature = "int"))]
 mod constants {
     use benchmarks::benchmark_utils::Number;

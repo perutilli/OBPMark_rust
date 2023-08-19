@@ -7,8 +7,8 @@ use std::time::Instant;
 use benchmarks::benchmark_utils::{CommonArgs, Implementation, Matrix, Number};
 use benchmarks::{number, verify};
 
-use benchmarks::reference_implementations::relu;
 use obpmark_library::matrix_2d::Matrix2d as RefMatrix;
+use reference_algorithms::relu;
 
 #[derive(Parser, Debug)]
 #[command(about = "Rectified Linear Unit benchmark")]

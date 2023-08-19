@@ -1,9 +1,9 @@
 #![allow(non_snake_case)]
-use benchmarks::reference_implementations::softmax;
 use clap::Parser;
 use core::panic;
 use obpmark_library::parallel_traits::ParallelSoftmax;
 use obpmark_library::{rayon_traits::RayonSoftmax, BaseMatrix, Softmax};
+use reference_algorithms::softmax;
 use std::time::Instant;
 
 use benchmarks::benchmark_utils::{verify_toll, CommonArgs, Implementation, Matrix, Number};

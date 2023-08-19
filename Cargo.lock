@@ -15,6 +15,7 @@ dependencies = [
  "cc",
  "clap",
  "obpmark_library",
+ "reference_algorithms",
 ]
 
 [[package]]
@@ -382,6 +383,10 @@ dependencies = [
  "crossbeam-utils",
  "num_cpus",
 ]
+
+[[package]]
+name = "reference_algorithms"
+version = "0.1.0"
 
 [[package]]
 name = "rustix"

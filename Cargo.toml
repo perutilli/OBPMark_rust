@@ -2,5 +2,6 @@
 
 members = [
     "benchmarks",
-    "obpmark_library"
+    "obpmark_library",
+    "reference_algorithms",
 ]

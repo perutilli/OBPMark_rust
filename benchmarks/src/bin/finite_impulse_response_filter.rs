@@ -12,10 +12,9 @@ use obpmark_library::{
 use std::path::Path;
 use std::time::Instant;
 
-use benchmarks::{
-    benchmark_utils::{CommonArgs, Implementation, Matrix, Number},
-    reference_implementations::vector_convolution,
-};
+use benchmarks::benchmark_utils::{CommonArgs, Implementation, Matrix, Number};
+use reference_algorithms::vector_convolution;
+
 use obpmark_library::matrix_2d::Matrix2d as RefMatrix;
 
 use benchmarks::{number, verify};

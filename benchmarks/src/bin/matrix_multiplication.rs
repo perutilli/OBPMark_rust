@@ -14,8 +14,8 @@ use std::{path::Path, time::Instant};
 use benchmarks::benchmark_utils::{CommonArgs, Implementation, Matrix, Number};
 use benchmarks::{number, verify};
 
-use benchmarks::reference_implementations::matrix_multiplication;
 use obpmark_library::matrix_1d::Matrix1d as RefMatrix;
+use reference_algorithms::matrix_multiplication;
 #[derive(Parser, Debug)]
 #[command(about = "Matrix multiplication benchmark")]
 struct Args {

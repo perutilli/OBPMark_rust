@@ -8,14 +8,15 @@ edition = "2021"
 [dependencies]
 clap = { version = "4.1.8", features = ["derive"] }
 obpmark_library = { path = "../obpmark_library" }
+reference_algorithms = { path = "../reference_algorithms" }
 
 [features]
 default = []
 
-int = []
-float = []
-double = []
-half = []
+int = ["reference_algorithms/int"]
+float = ["reference_algorithms/float"]
+double = ["reference_algorithms/double"]
+half = ["reference_algorithms/half"]
 
 1d = []
 2d = []

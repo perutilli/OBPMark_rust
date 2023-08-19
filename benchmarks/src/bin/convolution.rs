@@ -8,11 +8,9 @@ use obpmark_library::{
 use std::path::Path;
 use std::time::Instant;
 
-use benchmarks::{
-    benchmark_utils::{CommonArgs, Implementation, Matrix, Number},
-    reference_implementations::matrix_convolution,
-};
+use benchmarks::benchmark_utils::{CommonArgs, Implementation, Matrix, Number};
 use obpmark_library::matrix_2d::Matrix2d as RefMatrix;
+use reference_algorithms::matrix_convolution;
 
 use benchmarks::{number, verify};
 

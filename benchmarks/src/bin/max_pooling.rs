@@ -1,8 +1,8 @@
 #![allow(non_snake_case)]
-use benchmarks::reference_implementations::max_pooling;
 use obpmark_library::{
     parallel_traits::ParallelMaxPooling, rayon_traits::RayonMaxPooling, BaseMatrix, MaxPooling,
 };
+use reference_algorithms::max_pooling;
 use std::time::Instant;
 
 use clap::Parser;
