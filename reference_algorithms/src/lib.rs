@@ -1,9 +1,11 @@
+#![no_std]
+
 #[cfg(feature = "float")]
-type CType = std::ffi::c_float;
+type CType = core::ffi::c_float;
 #[cfg(feature = "double")]
-type CType = std::ffi::c_double;
+type CType = core::ffi::c_double;
 #[cfg(feature = "int")]
-type CType = std::ffi::c_int;
+type CType = core::ffi::c_int;
 #[cfg(feature = "half")]
 compile_error!("Half precision validation not supported yet");
 #[cfg(not(any(
@@ -12,7 +14,7 @@ compile_error!("Half precision validation not supported yet");
     feature = "int",
     feature = "half"
 )))]
-type CType = f32;
+type CType = core::ffi::c_float;
 
 extern "C" {
     // void matrix_multiplication(const bench_t *A, const bench_t *B, bench_t *C, const unsigned int n, const unsigned int m, const unsigned int w)

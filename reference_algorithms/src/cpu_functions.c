@@ -12,7 +12,9 @@ typedef float bench_t;
 typedef float result_bench_t;
 #endif
 
+#ifdef STD
 #include <math.h>
+#endif
 
 #define M_PI 3.14159265358979323846
 

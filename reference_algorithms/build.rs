@@ -16,13 +16,29 @@ compile_error!("Half precision is not supported yet");
 )))]
 const C_TYPE: &str = "FLOAT";
 
+#[cfg(all(feature = "std", feature = "riscv_hard_float"))]
+compile_error!("Specifying floating point ABI is not supported with standard library enabled");
+
 fn main() {
-    cc::Build::new()
-        .file("src/cpu_functions.c")
-        .define(C_TYPE, None)
-        .flag("-O3")
-        .warnings(false)
-        .compile("reference_algorithms");
+    let mut base_config = cc::Build::new();
+    let compiler_config = if cfg!(feature = "riscv_hard_float") {
+        base_config
+            .file("src/cpu_functions.c")
+            .define(C_TYPE, None)
+            .opt_level(3)
+            .warnings(false)
+            .flag("-mabi=lp64d")
+    } else if cfg!(feature = "std") {
+        base_config
+            .file("src/cpu_functions.c")
+            .define(C_TYPE, None)
+            .opt_level(3)
+            .warnings(false)
+            .define("STD", None)
+    } else {
+        unreachable!("No valid configuration found")
+    };
+    compiler_config.compile("reference_algorithms");
 
     println!("cargo:rerun-if-changed=build.rs");
     println!("cargo:rerun-if-changed=src/cpu_functions.c");
