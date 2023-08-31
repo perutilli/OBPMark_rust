@@ -85,6 +85,7 @@ pub mod benchmark_utils {
         };
     }
 
+    #[cfg(not(feature = "half"))]
     pub fn verify_toll(res: &Vec<Vec<Number>>, ref_res: &Vec<Vec<Number>>, toll: Number) {
         for i in 0..res.len() {
             for j in 0..res[0].len() {

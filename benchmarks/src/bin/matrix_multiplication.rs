@@ -106,6 +106,7 @@ fn main() {
         None => (),
     }
 
+    #[cfg(not(feature = "half"))]
     match args.common.verify {
         Some(Some(filename)) => {
             // verify against file
@@ -126,6 +127,7 @@ fn main() {
     }
 }
 
+#[cfg(not(feature = "half"))]
 fn get_ref_result(A: Matrix, B: Matrix, size: usize) -> RefMatrix<Number> {
     let A_ref = A.to_c_format();
     let B_ref = B.to_c_format();

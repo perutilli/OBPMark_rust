@@ -9,6 +9,7 @@ edition = "2021"
 clap = { version = "4.1.8", features = ["derive"] }
 obpmark_library = { path = "../obpmark_library" }
 reference_algorithms = { path = "../reference_algorithms" }
+half = {version = "2.2.1", features = ["num-traits"]}
 
 [features]
 default = []
