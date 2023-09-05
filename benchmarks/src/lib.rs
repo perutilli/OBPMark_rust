@@ -65,11 +65,11 @@ pub mod benchmark_utils {
         #[arg(short, long)]
         pub nthreads: Option<usize>,
 
-        /// Random seed to use (default: 3894283)
+        /// Random seed to use
         #[arg(long, default_value_t = 3894283)]
         pub seed: u64,
 
-        /// Parallel implementation to use (default: Naive)
+        /// Parallel implementation to use
         #[arg(value_enum, long, default_value_t = Implementation::Sequential)]
         pub implementation: Implementation,
     }
