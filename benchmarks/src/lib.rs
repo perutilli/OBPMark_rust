@@ -22,7 +22,7 @@ pub mod benchmark_utils {
     #[cfg(feature = "2d")]
     pub type Matrix = obpmark_library::matrix_2d::Matrix2d<Number>;
     #[cfg(not(any(feature = "1d", feature = "2d")))]
-    pub type Matrix = obpmark_library::matrix_2d::Matrix2d<Number>;
+    pub type Matrix = obpmark_library::matrix_1d::Matrix1d<Number>;
 
     #[derive(clap::ValueEnum, Clone, Debug)]
     pub enum Implementation {
