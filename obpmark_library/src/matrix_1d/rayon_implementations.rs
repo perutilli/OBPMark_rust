@@ -3,7 +3,7 @@ use crate::number_traits::{Float, Number};
 use crate::Error;
 use crate::{rayon_traits::*, FirFilter};
 
-use crate::{Convolution, MatMul, MaxPooling, Relu, Softmax, LRN};
+use crate::{Convolution, FastFourierTransformHelper, MatMul, MaxPooling, Relu, Softmax, LRN};
 
 use rayon::prelude::*;
 
@@ -147,3 +147,30 @@ impl<T: Number> RayonFiniteImpulseResponseFilter for Matrix1d<T> {
         Ok(())
     }
 }
+
+macro_rules! impl_rayon_fft_windowed {
+    ($t: tt) => {
+        impl RayonFastFourierTransformWindowed<$t> for Matrix1d<$t> {
+            fn rayon_fft_windowed(&self, window: usize, result: &mut Self) -> Result<(), Error> {
+                if self.rows != 1 || result.rows != 1 {
+                    return Err(Error::InvalidDimensions);
+                }
+
+                result
+                    .data
+                    .par_chunks_mut(window * 2)
+                    .enumerate()
+                    .for_each(|(i, result_chunk)| {
+                        for j in 0..window {
+                            result_chunk[j] = self.data[i * 2 + j];
+                        }
+                        Self::fft_helper(result_chunk, window >> 1);
+                    });
+                Ok(())
+            }
+        }
+    };
+}
+
+impl_rayon_fft_windowed!(f32);
+impl_rayon_fft_windowed!(f64);

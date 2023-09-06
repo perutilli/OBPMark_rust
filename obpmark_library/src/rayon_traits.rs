@@ -1,5 +1,5 @@
 use crate::number_traits::Float;
-use crate::{Error, Padding};
+use crate::{Error, FastFourierTransformHelper, Padding};
 
 pub trait RayonMatMul {
     fn rayon_multiply(&self, other: &Self, result: &mut Self) -> Result<(), Error>;
@@ -37,4 +37,8 @@ pub trait RayonLRN<T: Float> {
 
 pub trait RayonFiniteImpulseResponseFilter {
     fn rayon_fir_filter(&self, kernel: &Self, result: &mut Self) -> Result<(), Error>;
+}
+
+pub trait RayonFastFourierTransformWindowed<T>: FastFourierTransformHelper<T> {
+    fn rayon_fft_windowed(&self, window: usize, result: &mut Self) -> Result<(), Error>;
 }

@@ -1,6 +1,7 @@
 #![allow(non_snake_case)]
 use clap::Parser;
 use core::panic;
+use obpmark_library::rayon_traits::RayonFastFourierTransformWindowed;
 use obpmark_library::BaseMatrix;
 use std::{path::Path, time::Instant};
 
@@ -63,10 +64,16 @@ fn main() {
 
     let t0 = Instant::now();
 
-    match args.common.implementation {
+    match (args.common.nthreads, args.common.implementation) {
         // Note that this call will modify A as well as B
-        Implementation::Sequential => A.fftw(args.window, &mut B).unwrap(),
-        _ => unimplemented!("Parallel versions not yet implemented"),
+        (_, Implementation::Sequential) => A.fftw(args.window, &mut B).unwrap(),
+        (None, Implementation::Rayon) => {
+            A.rayon_fft_windowed(args.window, &mut B).unwrap();
+        }
+        (Some(_), Implementation::Rayon) => {
+            panic!("Cannot specify number of threads for Rayon implementation")
+        }
+        _ => unimplemented!("Version not yet implemented"),
     }
 
     let t1 = Instant::now();
