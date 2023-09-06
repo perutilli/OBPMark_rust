@@ -21,6 +21,11 @@ struct Args {
 fn main() {
     let args = Args::parse();
 
+    if args.common.size.count_ones() != 1 {
+        // checks that size is power of 2
+        panic!("Size must be a power of 2");
+    }
+
     let mut A;
 
     match args.common.input {
