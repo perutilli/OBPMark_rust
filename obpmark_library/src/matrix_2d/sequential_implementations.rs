@@ -1,8 +1,7 @@
 use super::Matrix2d;
 use crate::{
-    Convolution, Correlation, Error, FastFourierTransform, FastFourierTransformWindowed, FirFilter,
-    Float, MatMul, MaxPooling, Number, Relu, Softmax, WaveletTransformFloating,
-    WaveletTransformInteger, LRN,
+    Convolution, Correlation, Error, FirFilter, Float, MatMul, MaxPooling, Number, Relu, Softmax,
+    WaveletTransformFloating, WaveletTransformInteger, LRN,
 };
 
 impl<T: Number> MatMul<T> for Matrix2d<T> {
@@ -223,102 +222,6 @@ impl<T: Float> LRN<T> for Matrix2d<T> {
             .iter_mut()
             .enumerate()
             .for_each(|(i, result_row)| self.lrn_row(result_row, i, alpha, beta, k));
-        Ok(())
-    }
-}
-
-macro_rules! impl_fft {
-    ($t:tt) => {
-        impl FastFourierTransform for Matrix2d<$t> {
-            fn fft(&mut self, nn: usize, start_pos: usize) -> Result<(), Error> {
-                if self.rows != 1 {
-                    return Err(Error::InvalidDimensions);
-                }
-
-                let data = &mut self.data[0];
-
-                let window = nn << 1;
-
-                let n = nn << 1;
-                let mut j = 1;
-                for i in (1..n).step_by(2) {
-                    if j > i {
-                        data.swap(window * start_pos + j - 1, window * start_pos + i - 1);
-                        data.swap(window * start_pos + j, window * start_pos + i);
-                    }
-                    let mut m = nn;
-                    while m >= 2 && j > m {
-                        j -= m;
-                        m >>= 1;
-                    }
-                    j += m;
-                }
-
-                let mut mmax = 2;
-                while n > mmax {
-                    let istep = mmax << 1;
-                    let theta = -(2.0 * std::$t::consts::PI / mmax as $t);
-                    let wtemp = (theta / 2.0).sin();
-                    let wpr = -2.0 * wtemp * wtemp;
-                    let wpi = (theta).sin();
-                    let mut wr = 1.0;
-                    let mut wi = 0.0;
-                    for m in (1..mmax).step_by(2) {
-                        for i in (m..=n).step_by(istep) {
-                            let j = i + mmax;
-                            let tempr = wr * data[window * start_pos + j - 1]
-                                - wi * data[window * start_pos + j];
-                            let tempi = wr * data[window * start_pos + j]
-                                + wi * data[window * start_pos + j - 1];
-                            data[window * start_pos + j - 1] =
-                                data[window * start_pos + i - 1] - tempr;
-                            data[window * start_pos + j] = data[window * start_pos + i] - tempi;
-                            data[window * start_pos + i - 1] += tempr;
-                            data[window * start_pos + i] += tempi;
-                        }
-                        let wtemp = wr;
-                        wr += wr * wpr - wi * wpi;
-                        wi += wi * wpr + wtemp * wpi;
-                    }
-                    mmax = istep;
-                }
-                Ok(())
-            }
-        }
-    };
-    () => {};
-}
-
-impl_fft!(f32);
-impl_fft!(f64);
-
-impl FastFourierTransformWindowed for Matrix2d<f32> {
-    fn fftw(&mut self, nn: usize, window: usize, result: &mut Self) -> Result<(), Error> {
-        if self.rows != 1 {
-            return Err(Error::InvalidDimensions);
-        }
-        for i in (0..(nn * 2 - window + 1)).step_by(2) {
-            for j in 0..window {
-                result.data[0][i * window + j] = self.data[0][i + j];
-            }
-            result.fft(window >> 1, i)?;
-        }
-        Ok(())
-    }
-}
-
-// TODO: code duplication, should turn into a macro
-impl FastFourierTransformWindowed for Matrix2d<f64> {
-    fn fftw(&mut self, nn: usize, window: usize, result: &mut Self) -> Result<(), Error> {
-        if self.rows != 1 {
-            return Err(Error::InvalidDimensions);
-        }
-        for i in (0..(nn * 2 - window + 1)).step_by(2) {
-            for j in 0..window {
-                result.data[0][i * window + j] = self.data[0][i + j];
-            }
-            result.fft(window >> 1, i)?;
-        }
         Ok(())
     }
 }

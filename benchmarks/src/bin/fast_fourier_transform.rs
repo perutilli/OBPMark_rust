@@ -1,7 +1,7 @@
 #![allow(non_snake_case)]
 use clap::Parser;
 use core::panic;
-use obpmark_library::{BaseMatrix, FastFourierTransform};
+use obpmark_library::BaseMatrix;
 use std::{path::Path, time::Instant};
 
 use obpmark_library::matrix_1d::Matrix1d as RefMatrix;
@@ -10,6 +10,13 @@ use reference_algorithms::fft_function;
 use benchmarks::benchmark_utils::{CommonArgs, Implementation, Matrix, Number};
 
 use benchmarks::number;
+
+#[cfg(feature = "2d")]
+compile_error!(
+    "This benchmark is not supported for 2d matrices, since the underlying data is always 1d"
+);
+#[cfg(not(feature = "2d"))]
+use obpmark_library::FastFourierTransform;
 
 #[derive(Parser, Debug)]
 #[command(about = "FFT benchmark")]
@@ -57,7 +64,7 @@ fn main() {
     let t0 = Instant::now();
 
     match args.common.implementation {
-        Implementation::Sequential => A.fft(args.common.size >> 1, 0).unwrap(), // the >> 1 is to keep it consistent with the reference implementation
+        Implementation::Sequential => A.fft(args.common.size >> 1).unwrap(), // the >> 1 is to keep it consistent with the reference implementation
         _ => unimplemented!("Parallel versions not yet implemented"),
     }
 

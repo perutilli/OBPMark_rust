@@ -201,12 +201,16 @@ pub trait LRN<T: Float> {
     fn lrn(&self, result: &mut Self, alpha: T, beta: T, k: T) -> Result<(), Error>;
 }
 
-pub trait FastFourierTransform {
-    fn fft(&mut self, nn: usize, start_pos: usize) -> Result<(), Error>;
+pub trait FastFourierTransformHelper<T> {
+    fn fft_helper(result: &mut [T], nn: usize);
 }
 
-pub trait FastFourierTransformWindowed: FastFourierTransform {
-    fn fftw(&mut self, nn: usize, window: usize, result: &mut Self) -> Result<(), Error>;
+pub trait FastFourierTransform<T>: FastFourierTransformHelper<T> {
+    fn fft(&mut self, nn: usize) -> Result<(), Error>;
+}
+
+pub trait FastFourierTransformWindowed<T>: FastFourierTransformHelper<T> {
+    fn fftw(&mut self, window: usize, result: &mut Self) -> Result<(), Error>;
 }
 
 pub trait WaveletTransformInteger<T: Integer> {

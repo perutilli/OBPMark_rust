@@ -1,12 +1,22 @@
 #![allow(non_snake_case)]
 use clap::Parser;
 use core::panic;
-use obpmark_library::{BaseMatrix, FastFourierTransformWindowed};
+use obpmark_library::BaseMatrix;
 use std::{path::Path, time::Instant};
+
+use obpmark_library::matrix_1d::Matrix1d as RefMatrix;
+use reference_algorithms::fft_windowed_function;
 
 use benchmarks::benchmark_utils::{CommonArgs, Implementation, Matrix, Number};
 
 use benchmarks::number;
+
+#[cfg(feature = "2d")]
+compile_error!(
+    "This benchmark is not supported for 2d matrices, since the underlying data is always 1d"
+);
+#[cfg(not(feature = "2d"))]
+use obpmark_library::FastFourierTransformWindowed;
 
 #[derive(Parser, Debug)]
 #[command(about = "FFT windowed benchmark")]
@@ -55,7 +65,7 @@ fn main() {
 
     match args.common.implementation {
         // Note that this call will modify A as well as B
-        Implementation::Sequential => A.fftw(args.common.size >> 1, args.window, &mut B).unwrap(),
+        Implementation::Sequential => A.fftw(args.window, &mut B).unwrap(),
         _ => unimplemented!("Parallel versions not yet implemented"),
     }
 
@@ -90,8 +100,28 @@ fn main() {
         }
         Some(None) => {
             // verify against cpu implementation
-            todo!("Need to consider what should be the reference implementation/if this even makes sense");
+            let B_ref = get_ref_result(A, args.common.size, args.window, n_elements_B);
+            if B.get_data() == B_ref.get_data() {
+                println!("Verification passed");
+            } else {
+                println!("Verification failed");
+                println!("{}", B_ref);
+            }
         }
         None => (),
     }
+}
+
+fn get_ref_result(A: Matrix, size: usize, window: usize, B_size: usize) -> RefMatrix<Number> {
+    let A_ref = A.to_c_format();
+    let mut B_ref = vec![number!("0"); B_size];
+
+    // TODO: this is for testing, remove
+    let t = Instant::now();
+    unsafe {
+        fft_windowed_function(A_ref.as_ptr(), B_ref.as_mut_ptr(), window, size >> 1);
+    }
+    println!("C code: {:.2?}", t.elapsed());
+
+    RefMatrix::new(vec![B_ref], 1, B_size)
 }

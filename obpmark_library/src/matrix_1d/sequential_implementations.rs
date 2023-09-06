@@ -1,8 +1,8 @@
 use super::Matrix1d;
 use crate::{
-    Convolution, Correlation, Error, FastFourierTransform, FastFourierTransformWindowed, FirFilter,
-    Float, MatMul, MaxPooling, Number, Relu, Softmax, WaveletTransformFloating,
-    WaveletTransformInteger, LRN,
+    Convolution, Correlation, Error, FastFourierTransform, FastFourierTransformHelper,
+    FastFourierTransformWindowed, FirFilter, Float, MatMul, MaxPooling, Number, Relu, Softmax,
+    WaveletTransformFloating, WaveletTransformInteger, LRN,
 };
 
 impl<T: Number> MatMul<T> for Matrix1d<T> {
@@ -226,22 +226,14 @@ impl<T: Float> LRN<T> for Matrix1d<T> {
 
 macro_rules! impl_fft {
     ($t:tt) => {
-        impl FastFourierTransform for Matrix1d<$t> {
-            fn fft(&mut self, nn: usize, start_pos: usize) -> Result<(), Error> {
-                if self.rows != 1 {
-                    return Err(Error::InvalidDimensions);
-                }
-
-                let window = nn << 1;
-
+        impl FastFourierTransformHelper<$t> for Matrix1d<$t> {
+            fn fft_helper(result: &mut [$t], nn: usize) {
                 let n = nn << 1;
                 let mut j = 1;
                 for i in (1..n).step_by(2) {
                     if j > i {
-                        self.data
-                            .swap(window * start_pos + j - 1, window * start_pos + i - 1);
-                        self.data
-                            .swap(window * start_pos + j, window * start_pos + i);
+                        result.swap(j - 1, i - 1);
+                        result.swap(j, i);
                     }
                     let mut m = nn;
                     while m >= 2 && j > m {
@@ -263,16 +255,12 @@ macro_rules! impl_fft {
                     for m in (1..mmax).step_by(2) {
                         for i in (m..=n).step_by(istep) {
                             let j = i + mmax;
-                            let tempr = wr * self.data[window * start_pos + j - 1]
-                                - wi * self.data[window * start_pos + j];
-                            let tempi = wr * self.data[window * start_pos + j]
-                                + wi * self.data[window * start_pos + j - 1];
-                            self.data[window * start_pos + j - 1] =
-                                self.data[window * start_pos + i - 1] - tempr;
-                            self.data[window * start_pos + j] =
-                                self.data[window * start_pos + i] - tempi;
-                            self.data[window * start_pos + i - 1] += tempr;
-                            self.data[window * start_pos + i] += tempi;
+                            let tempr = wr * result[j - 1] - wi * result[j];
+                            let tempi = wr * result[j] + wi * result[j - 1];
+                            result[j - 1] = result[i - 1] - tempr;
+                            result[j] = result[i] - tempi;
+                            result[i - 1] += tempr;
+                            result[i] += tempi;
                         }
                         let wtemp = wr;
                         wr += wr * wpr - wi * wpi;
@@ -280,46 +268,54 @@ macro_rules! impl_fft {
                     }
                     mmax = istep;
                 }
+            }
+        }
+
+        impl FastFourierTransform<$t> for Matrix1d<$t> {
+            fn fft(&mut self, nn: usize) -> Result<(), Error> {
+                if self.rows != 1 {
+                    return Err(Error::InvalidDimensions);
+                }
+                Self::fft_helper(self.data.as_mut_slice(), nn);
                 Ok(())
             }
         }
     };
-    () => {};
 }
 
 impl_fft!(f32);
 impl_fft!(f64);
 
-impl FastFourierTransformWindowed for Matrix1d<f32> {
-    fn fftw(&mut self, nn: usize, window: usize, result: &mut Self) -> Result<(), Error> {
-        if self.rows != 1 {
-            return Err(Error::InvalidDimensions);
-        }
-        for i in (0..(nn * 2 - window + 1)).step_by(2) {
-            for j in 0..window {
-                result.data[i * window + j] = self.data[i + j];
+macro_rules! impl_fft_windowed {
+    ($t: tt) => {
+        impl FastFourierTransformWindowed<$t> for Matrix1d<$t> {
+            fn fftw(&mut self, window: usize, result: &mut Self) -> Result<(), Error> {
+                if self.rows != 1 {
+                    return Err(Error::InvalidDimensions);
+                }
+                // the actual size of the result chunk is window * 2 (window complex numbers)
+                // this is the reason for the step_by(2) in the outer loop
+                // so for each "actual" window, it looks like only the bottom half is copied to the result
+                // before the fft call
+                result
+                    .data
+                    .chunks_mut(window * 2)
+                    .enumerate()
+                    .for_each(|(i, result_chunk)| {
+                        for j in 0..window {
+                            result_chunk[j] = self.data[i * 2 + j];
+                        }
+                        Self::fft_helper(result_chunk, window >> 1);
+                    });
+
+                Ok(())
             }
-            result.fft(window >> 1, i)?;
         }
-        Ok(())
-    }
+    };
 }
 
-// TODO: code duplication, turn into a macro
-impl FastFourierTransformWindowed for Matrix1d<f64> {
-    fn fftw(&mut self, nn: usize, window: usize, result: &mut Self) -> Result<(), Error> {
-        if self.rows != 1 {
-            return Err(Error::InvalidDimensions);
-        }
-        for i in (0..(nn * 2 - window + 1)).step_by(2) {
-            for j in 0..window {
-                result.data[i * window + j] = self.data[i + j];
-            }
-            result.fft(window >> 1, i)?;
-        }
-        Ok(())
-    }
-}
+impl_fft_windowed!(f32);
+impl_fft_windowed!(f64);
 
 // TODO: note that right now the data has a minimum size for the algorithm to work
 //       should at least document this in the error
