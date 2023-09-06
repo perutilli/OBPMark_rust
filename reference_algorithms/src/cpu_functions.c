@@ -422,6 +422,27 @@ void fft_windowed_function(bench_t* data ,bench_t* output,const long window,cons
     }	
 }
 
+void lrn(const bench_t* A, bench_t* B, const unsigned int size)
+{
+	#ifdef FLOAT
+	const float K = 2;
+	const float ALPHA = 10e-4;
+	const float BETA = 0.75;
+	#else 
+	const double K = 2;
+	const double ALPHA = 10e-4;
+	const double BETA = 0.75;
+	#endif
+
+	for (unsigned int i = 0; i < size; ++i)
+	{
+		for (unsigned int j = 0; j < size; ++j)
+		{
+			B[i*size+j] = A[i*size+j]/pow((K+ALPHA*pow(A[i*size+j],2)),BETA);
+		}
+	}
+
+}
 /*
 void correlation_2D(const bench_t *A, const bench_t *B, result_bench_t *R, const int size)
 {

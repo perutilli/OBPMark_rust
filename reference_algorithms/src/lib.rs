@@ -63,6 +63,9 @@ extern "C" {
     // void fft_windowed_function(bench_t* data ,bench_t* output,const long window,const long nn)
     pub fn fft_windowed_function(data: *const CType, output: *mut CType, window: usize, nn: usize);
 
+    // void lrn(const bench_t* A, bench_t* B, const unsigned int size)
+    pub fn lrn(a: *const CType, b: *mut CType, size: usize);
+
     // need to fix my code before I can use this
     // void correlation_2D(const bench_t *A, const bench_t *B, result_bench_t *R, const int size)
     // pub fn correlation_2d(a: *const CType, b: *const CType, r: *mut CType, size: usize);
