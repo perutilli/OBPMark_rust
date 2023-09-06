@@ -4,6 +4,9 @@ use core::panic;
 use obpmark_library::{BaseMatrix, FastFourierTransform};
 use std::{path::Path, time::Instant};
 
+use obpmark_library::matrix_1d::Matrix1d as RefMatrix;
+use reference_algorithms::fft_function;
+
 use benchmarks::benchmark_utils::{CommonArgs, Implementation, Matrix, Number};
 
 use benchmarks::number;
@@ -37,6 +40,9 @@ fn main() {
             );
         }
     }
+
+    // this is for validation, since in this case the original matrix is not preserved
+    let A_ref = Matrix::new(A.get_data(), 1, args.common.size);
 
     if args.common.print_input {
         println!("A:");
@@ -80,9 +86,27 @@ fn main() {
             }
         }
         Some(None) => {
-            // verify against cpu implementation
-            todo!("Need to consider what should be the reference implementation/if this even makes sense");
+            // verify against reference implementation
+            let A_ref = get_ref_result(A_ref, args.common.size);
+            if A.get_data() == A_ref.get_data() {
+                println!("Verification passed");
+            } else {
+                println!("Verification failed");
+            }
         }
         None => (),
     }
+}
+
+fn get_ref_result(A: Matrix, size: usize) -> RefMatrix<Number> {
+    let mut A_ref = A.to_c_format();
+
+    // TODO: this is for testing, remove
+    let t = Instant::now();
+    unsafe {
+        fft_function(A_ref.as_mut_ptr(), size >> 1);
+    }
+    println!("C code: {:.2?}", t.elapsed());
+
+    RefMatrix::new(vec![A_ref], 1, size)
 }

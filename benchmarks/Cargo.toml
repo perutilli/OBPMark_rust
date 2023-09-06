@@ -17,7 +17,7 @@ default = []
 int = ["reference_algorithms/int"]
 float = ["reference_algorithms/float"]
 double = ["reference_algorithms/double"]
-half = ["reference_algorithms/half"]
+half = ["reference_algorithms/float"] # should deal in code with half verification
 
 1d = []
 2d = []

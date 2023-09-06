@@ -6,13 +6,10 @@ type CType = core::ffi::c_float;
 type CType = core::ffi::c_double;
 #[cfg(feature = "int")]
 type CType = core::ffi::c_int;
-#[cfg(feature = "half")]
-compile_error!("Half precision validation not supported yet");
 #[cfg(not(any(
     feature = "float",
     feature = "double",
     feature = "int",
-    feature = "half"
 )))]
 type CType = core::ffi::c_float;
 
@@ -63,6 +60,9 @@ extern "C" {
         size: usize,
         kernel_size: usize,
     );
+
+    // void fft_function(bench_t *data, int64_t nn)
+    pub fn fft_function(data: *mut CType, nn: usize);
 
     // need to fix my code before I can use this
     // void correlation_2D(const bench_t *A, const bench_t *B, result_bench_t *R, const int size)

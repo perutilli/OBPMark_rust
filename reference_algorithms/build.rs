@@ -6,13 +6,10 @@ const C_TYPE: &str = "FLOAT";
 const C_TYPE: &str = "DOUBLE";
 #[cfg(feature = "int")]
 const C_TYPE: &str = "INT";
-#[cfg(feature = "half")]
-compile_error!("Half precision is not supported yet");
 #[cfg(not(any(
     feature = "float",
     feature = "double",
     feature = "int",
-    feature = "half"
 )))]
 const C_TYPE: &str = "FLOAT";
 
