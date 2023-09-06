@@ -6,11 +6,7 @@ type CType = core::ffi::c_float;
 type CType = core::ffi::c_double;
 #[cfg(feature = "int")]
 type CType = core::ffi::c_int;
-#[cfg(not(any(
-    feature = "float",
-    feature = "double",
-    feature = "int",
-)))]
+#[cfg(not(any(feature = "float", feature = "double", feature = "int",)))]
 type CType = core::ffi::c_float;
 
 extern "C" {
@@ -63,6 +59,9 @@ extern "C" {
 
     // void fft_function(bench_t *data, int64_t nn)
     pub fn fft_function(data: *mut CType, nn: usize);
+
+    // void fft_windowed_function(bench_t* data ,bench_t* output,const long window,const long nn)
+    pub fn fft_windowed_function(data: *const CType, output: *mut CType, window: usize, nn: usize);
 
     // need to fix my code before I can use this
     // void correlation_2D(const bench_t *A, const bench_t *B, result_bench_t *R, const int size)
