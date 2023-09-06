@@ -32,7 +32,7 @@ struct Args {
 fn main() {
     let args = Args::parse();
 
-    let mut A;
+    let A;
     let mut B;
 
     match args.common.input {
@@ -105,7 +105,6 @@ fn main() {
                 println!("Verification passed");
             } else {
                 println!("Verification failed");
-                println!("{}", B_ref);
             }
         }
         None => (),

@@ -289,7 +289,7 @@ impl_fft!(f64);
 macro_rules! impl_fft_windowed {
     ($t: tt) => {
         impl FastFourierTransformWindowed<$t> for Matrix1d<$t> {
-            fn fftw(&mut self, window: usize, result: &mut Self) -> Result<(), Error> {
+            fn fftw(&self, window: usize, result: &mut Self) -> Result<(), Error> {
                 if self.rows != 1 {
                     return Err(Error::InvalidDimensions);
                 }

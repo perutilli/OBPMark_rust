@@ -210,7 +210,7 @@ pub trait FastFourierTransform<T>: FastFourierTransformHelper<T> {
 }
 
 pub trait FastFourierTransformWindowed<T>: FastFourierTransformHelper<T> {
-    fn fftw(&mut self, window: usize, result: &mut Self) -> Result<(), Error>;
+    fn fftw(&self, window: usize, result: &mut Self) -> Result<(), Error>;
 }
 
 pub trait WaveletTransformInteger<T: Integer> {
