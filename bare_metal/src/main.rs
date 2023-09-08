@@ -32,6 +32,12 @@ mod benchmark;
 
 pub mod assembly;
 pub mod console;
+#[cfg_attr(feature = "virt", path = "uart/virt_uart.rs")]
+#[cfg_attr(feature = "metasat", path = "uart/apbuart.rs")]
+#[cfg_attr(
+    not(any(feature = "virt", feature = "metasat")),
+    path = "uart/virt_uart.rs"
+)]
 pub mod uart;
 
 pub mod matrix;

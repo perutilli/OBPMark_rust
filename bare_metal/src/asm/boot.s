@@ -41,7 +41,9 @@ _start:
     csrr	a0, mhartid
 	la		t1, main
 	csrw	mepc, t1
-	la		t2, asm_trap_vector
+	# la		t2, asm_trap_vector
+	# csrw	mtvec, t2
+    la		t2, 5f
 	csrw	mtvec, t2
 	li		t3, (1 << 3) | (1 << 7) | (1 << 11)
 	csrw	mie, t3
@@ -82,6 +84,8 @@ _start:
 	# between each hart by looking at the trap frame.
 	# la		t2, m_trap_vector
 	# csrw	mtvec, t2
+    la		t2, 5f
+	csrw	mtvec, t2
 	# Whenever our hart is done initializing, we want it to return to the waiting
 	# loop, which is just below mret.
 	la		ra, 4f
@@ -90,3 +94,5 @@ _start:
 4:
 	wfi
 	j		4b
+5:
+    mret

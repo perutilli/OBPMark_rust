@@ -1,9 +1,7 @@
-// uart.rs
-// UART routines and driver
-
 use core::convert::TryInto;
 use core::fmt::Error;
 use core::fmt::Write;
+use core::ops::Add;
 
 pub struct Uart {
     base_address: usize,
@@ -57,6 +55,8 @@ impl Uart {
             // divisor = ceil( 22_729_000 / 38_400 )
             // divisor = ceil( 591.901 ) = 592
 
+            // 100 MHz 38343
+
             // The divisor register is two bytes (16 bits), so we need to split the value
             // 592 into two bytes. Typically, we would calculate this based on measuring
             // the clock rate, but again, for our purposes [qemu], this doesn't really do
@@ -91,7 +91,7 @@ impl Uart {
     pub fn put(&mut self, c: u8) {
         let ptr = self.base_address as *mut u8;
         unsafe {
-            ptr.add(0).write_volatile(c);
+            ptr.write_volatile(c);
         }
     }
 

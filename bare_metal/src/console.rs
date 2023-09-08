@@ -9,6 +9,11 @@ use core::fmt::Error;
 use core::fmt::Write;
 use core::sync::atomic::{AtomicBool, Ordering};
 
+#[cfg(any(feature = "virt", not(any(feature = "virt", feature = "metasat"))))]
+const BASE_ADDRESS: usize = 0x1000_0000;
+#[cfg(feature = "metasat")]
+const BASE_ADDRESS: usize = 0xfc00_1000;
+
 pub struct Console {
     uart: Option<uart::Uart>,
     locked: AtomicBool,
@@ -61,8 +66,7 @@ impl Console {
             );
             // check again since we read without aquiring the lock
             if CONSOLE.uart.is_none() {
-                let mut uart = uart::Uart::new(0x1000_0000);
-                // need to understand what init does
+                let mut uart = uart::Uart::new(BASE_ADDRESS);
                 uart.init();
                 CONSOLE.uart = Some(uart);
             }

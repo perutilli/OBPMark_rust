@@ -17,4 +17,3 @@ global_asm!(include_str!("asm/boot_single_hart.s"));
 global_asm!(include_str!("asm/boot.s"));
 
 global_asm!(include_str!("asm/mem.s"));
-global_asm!(include_str!("asm/trap.s"));

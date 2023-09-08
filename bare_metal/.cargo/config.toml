@@ -1,3 +1,9 @@
+[alias]
+run-virt = "run --target riscv64gc-unknown-none-elf --config build.rustflags=['-Clink-arg=-Tbare_metal/src/lds/virt.lds'] --features virt"
+run-metasat = "run --target riscv64gc-unknown-none-elf --config build.rustflags=['-Clink-arg=-Tbare_metal/src/lds/metasat.lds'] --features metasat"
+build-virt = "build --target riscv64gc-unknown-none-elf --config build.rustflags=['-Clink-arg=-Tbare_metal/src/lds/virt.lds'] --features virt"
+build-metasat = "build --target riscv64gc-unknown-none-elf --config build.rustflags=['-Clink-arg=-Tbare_metal/src/lds/metasat.lds'] --features metasat"
+
 [build]
 target = "riscv64gc-unknown-none-elf"
 rustflags = ['-Clink-arg=-Tbare_metal/src/lds/virt.lds']

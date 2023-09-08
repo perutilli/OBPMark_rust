@@ -41,8 +41,10 @@ _start:
     csrr	a0, mhartid
 	la		t1, main
 	csrw	mepc, t1
-	la		t2, asm_trap_vector
+	la		t2, 5f
 	csrw	mtvec, t2
+	# la		t2, main
+	# csrw	mtvec, t2
 	li		t3, (1 << 3) | (1 << 7) | (1 << 11)
 	csrw	mie, t3
 	la		ra, 4f
@@ -53,5 +55,9 @@ _start:
     # they will never be woken up.
 
 4:
-	wfi
-	j		4b
+	# wfi
+	# j		4b
+    ebreak
+
+5:
+    mret
