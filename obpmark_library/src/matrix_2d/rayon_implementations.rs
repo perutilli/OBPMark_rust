@@ -5,18 +5,21 @@ use crate::{rayon_traits::*, FirFilter};
 
 use rayon::prelude::*;
 
-use crate::{Convolution, MatMul, MaxPooling, Relu, Softmax, LRN};
+use crate::{BaseMatrix, Convolution, MatMul, MaxPooling, Relu, Softmax, LRN};
 
 impl<T: Number> RayonMatMul for Matrix2d<T> {
     fn rayon_multiply(&self, other: &Self, result: &mut Self) -> Result<(), Error> {
         if self.cols != other.rows || self.rows != result.rows || other.cols != result.cols {
             return Err(Error::InvalidDimensions);
         }
+
+        let other_transposed = other.transpose();
+
         result
             .data
             .par_iter_mut()
             .enumerate()
-            .for_each(|(i, row)| self.multiply_row(other, row, i));
+            .for_each(|(i, row)| self.multiply_row(&other_transposed, row, i));
 
         Ok(())
     }

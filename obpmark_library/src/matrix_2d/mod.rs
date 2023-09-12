@@ -30,6 +30,20 @@ impl<T: Number> BaseMatrix<T> for Matrix2d<T> {
         self.cols = new_cols;
         Ok(())
     }
+
+    fn transpose(&self) -> Self {
+        let mut data = vec![vec![T::zero(); self.rows]; self.cols];
+        for i in 0..self.rows {
+            for j in 0..self.cols {
+                data[j][i] = self.data[i][j];
+            }
+        }
+        Matrix2d {
+            data,
+            rows: self.cols,
+            cols: self.rows,
+        }
+    }
 }
 
 impl_display!(Matrix2d);

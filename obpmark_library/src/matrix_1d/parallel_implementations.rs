@@ -7,7 +7,8 @@ use std::sync::Arc;
 use std::thread;
 
 use crate::{
-    Convolution, FastFourierTransformHelper, FirFilter, MatMul, MaxPooling, Relu, Softmax, LRN,
+    BaseMatrix, Convolution, FastFourierTransformHelper, FirFilter, MatMul, MaxPooling, Relu,
+    Softmax, LRN,
 };
 
 impl<T: Number> ParallelMatMul for Matrix1d<T> {
@@ -24,7 +25,7 @@ impl<T: Number> ParallelMatMul for Matrix1d<T> {
         let rows_per_thread = (self.rows - 1) / n_threads + 1;
 
         let shared_self = Arc::new(self);
-        let shared_other = Arc::new(other);
+        let shared_other_transposed = Arc::new(other.transpose());
 
         thread::scope(|s| {
             result
@@ -33,7 +34,7 @@ impl<T: Number> ParallelMatMul for Matrix1d<T> {
                 .enumerate()
                 .for_each(|(chunk_idx, chunk)| {
                     let shared_self = shared_self.clone();
-                    let shared_other = shared_other.clone();
+                    let shared_other = shared_other_transposed.clone();
                     let start_row = chunk_idx * rows_per_thread;
                     s.spawn(move || {
                         chunk

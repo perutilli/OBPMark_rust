@@ -3,7 +3,9 @@ use crate::number_traits::{Float, Number};
 use crate::Error;
 use crate::{rayon_traits::*, FirFilter};
 
-use crate::{Convolution, FastFourierTransformHelper, MatMul, MaxPooling, Relu, Softmax, LRN};
+use crate::{
+    BaseMatrix, Convolution, FastFourierTransformHelper, MatMul, MaxPooling, Relu, Softmax, LRN,
+};
 
 use rayon::prelude::*;
 
@@ -12,12 +14,15 @@ impl<T: Number> RayonMatMul for Matrix1d<T> {
         if self.cols != other.rows || self.rows != result.rows || other.cols != result.cols {
             return Err(Error::InvalidDimensions);
         }
+
+        let other_transposed = other.transpose();
+
         result
             .data
             .par_chunks_mut(other.cols)
             .enumerate()
             .for_each(|(i, chunk)| {
-                self.multiply_row(other, chunk, i);
+                self.multiply_row(&other_transposed, chunk, i);
             });
 
         Ok(())

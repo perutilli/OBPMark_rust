@@ -1,4 +1,5 @@
 use super::Matrix1d;
+use crate::BaseMatrix;
 use crate::{
     Convolution, Correlation, Error, FastFourierTransform, FastFourierTransformHelper,
     FastFourierTransformWindowed, FirFilter, Float, MatMul, MaxPooling, Number, Relu, Softmax,
@@ -11,7 +12,7 @@ impl<T: Number> MatMul<T> for Matrix1d<T> {
         for j in 0..other.cols {
             let mut sum = T::zero();
             for k in 0..self.cols {
-                sum += self.data[i * self.cols + k] * other.data[k * other.cols + j];
+                sum += self.data[i * self.cols + k] * other.data[other.cols * j + k];
             }
             result_row[j] = sum; // note that j is already the position in the chunk
         }
@@ -21,11 +22,14 @@ impl<T: Number> MatMul<T> for Matrix1d<T> {
         if self.cols != other.rows || self.rows != result.rows || other.cols != result.cols {
             return Err(Error::InvalidDimensions);
         }
+
+        let other_transposed = other.transpose();
+
         result
             .data
             .chunks_exact_mut(self.cols)
             .enumerate()
-            .for_each(|(i, result_row)| self.multiply_row(other, result_row, i));
+            .for_each(|(i, result_row)| self.multiply_row(&other_transposed, result_row, i));
         Ok(())
     }
 }

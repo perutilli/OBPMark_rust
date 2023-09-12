@@ -1,7 +1,7 @@
 use super::Matrix2d;
 use crate::{
-    Convolution, Correlation, Error, FirFilter, Float, MatMul, MaxPooling, Number, Relu, Softmax,
-    WaveletTransformFloating, WaveletTransformInteger, LRN,
+    BaseMatrix, Convolution, Correlation, Error, FirFilter, Float, MatMul, MaxPooling, Number,
+    Relu, Softmax, WaveletTransformFloating, WaveletTransformInteger, LRN,
 };
 
 impl<T: Number> MatMul<T> for Matrix2d<T> {
@@ -10,7 +10,7 @@ impl<T: Number> MatMul<T> for Matrix2d<T> {
         for j in 0..other.cols {
             let mut sum = T::zero();
             for k in 0..self.cols {
-                sum += self.data[i][k] * other.data[k][j];
+                sum += self.data[i][k] * other.data[j][k];
             }
             result_row[j] = sum; // note that j is already the position in the chunk
         }
@@ -21,11 +21,13 @@ impl<T: Number> MatMul<T> for Matrix2d<T> {
             return Err(Error::InvalidDimensions);
         }
 
+        let other_transposed = other.transpose();
+
         result
             .data
             .iter_mut()
             .enumerate()
-            .for_each(|(i, result_row)| self.multiply_row(other, result_row, i));
+            .for_each(|(i, result_row)| self.multiply_row(&other_transposed, result_row, i));
         Ok(())
     }
 }

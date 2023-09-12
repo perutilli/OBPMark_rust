@@ -133,6 +133,9 @@ pub trait BaseMatrix<T: Number> {
     {
         self.get_data().into_iter().flatten().collect::<Vec<T>>()
     }
+
+    /// Create a transposed version of the matrix
+    fn transpose(&self) -> Self;
 }
 
 macro_rules! impl_display {
