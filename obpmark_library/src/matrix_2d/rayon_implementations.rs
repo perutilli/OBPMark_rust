@@ -5,7 +5,7 @@ use crate::{rayon_traits::*, FirFilter};
 
 use rayon::prelude::*;
 
-use crate::{BaseMatrix, Convolution, MatMul, MaxPooling, Relu, Softmax, LRN};
+use crate::{BaseMatrix, Convolution, Correlation, MatMul, MaxPooling, Relu, Softmax, LRN};
 
 impl<T: Number> RayonMatMul for Matrix2d<T> {
     fn rayon_multiply(&self, other: &Self, result: &mut Self) -> Result<(), Error> {
@@ -139,3 +139,42 @@ impl<T: Number> RayonFiniteImpulseResponseFilter for Matrix2d<T> {
         Ok(())
     }
 }
+
+macro_rules! impl_rayon_corr {
+    ($self_type: tt, $output_type: tt) => {
+        impl RayonCorrelation for Matrix2d<$self_type> {
+            type Output = $output_type;
+            fn rayon_correlate(&self, other: &Self) -> Result<Self::Output, Error> {
+                if self.rows != other.rows || self.cols != other.cols {
+                    return Err(Error::InvalidDimensions);
+                }
+
+                let self_mean = self.data.par_iter().flatten().sum::<$self_type>() as Self::Output
+                    / (self.rows * self.cols) as Self::Output;
+                let other_mean = other.data.par_iter().flatten().sum::<$self_type>()
+                    as Self::Output
+                    / (other.rows * other.cols) as Self::Output;
+
+                let (acc_self_sq, acc_other_sq, acc_self_other) = (0..self.rows)
+                    .into_par_iter()
+                    .map(|i| self.accumulate_row(&other, self_mean, other_mean, i))
+                    .reduce(
+                        || (0.0, 0.0, 0.0),
+                        |(acc_self_sq, acc_other_sq, acc_self_other),
+                         (row_self_sq, row_other_sq, row_self_other)| {
+                            (
+                                acc_self_sq + row_self_sq,
+                                acc_other_sq + row_other_sq,
+                                acc_self_other + row_self_other,
+                            )
+                        },
+                    );
+                Ok(acc_self_other / (acc_self_sq * acc_other_sq).sqrt())
+            }
+        }
+    };
+}
+
+impl_rayon_corr!(i32, f32);
+impl_rayon_corr!(f32, f32);
+impl_rayon_corr!(f64, f64);

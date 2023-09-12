@@ -42,3 +42,8 @@ pub trait RayonFiniteImpulseResponseFilter {
 pub trait RayonFastFourierTransformWindowed<T>: FastFourierTransformHelper<T> {
     fn rayon_fft_windowed(&self, window: usize, result: &mut Self) -> Result<(), Error>;
 }
+
+pub trait RayonCorrelation {
+    type Output;
+    fn rayon_correlate(&self, other: &Self) -> Result<Self::Output, Error>;
+}

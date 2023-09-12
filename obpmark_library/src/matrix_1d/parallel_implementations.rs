@@ -294,7 +294,7 @@ impl<T: Number> ParallelFiniteImpulseResponseFilter for Matrix1d<T> {
     }
 }
 
-macro_rules! impl_rayon_fft_windowed {
+macro_rules! impl_parallel_fft_windowed {
     ($t: tt) => {
         impl ParallelFastFourierTransformWindowed<$t> for Matrix1d<$t> {
             fn parallel_fft_windowed(
@@ -335,5 +335,5 @@ macro_rules! impl_rayon_fft_windowed {
     };
 }
 
-impl_rayon_fft_windowed!(f32);
-impl_rayon_fft_windowed!(f64);
+impl_parallel_fft_windowed!(f32);
+impl_parallel_fft_windowed!(f64);
