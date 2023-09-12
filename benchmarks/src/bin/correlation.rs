@@ -5,9 +5,19 @@ use obpmark_library::{BaseMatrix, Correlation};
 use std::{path::Path, time::Instant};
 
 use benchmarks::benchmark_utils::{CommonArgs, Matrix, Number};
-use obpmark_library::matrix_2d::Matrix2d as RefMatrix;
 
-use benchmarks::{number, verify};
+use reference_algorithms::correlation;
+
+use benchmarks::number;
+
+#[cfg(feature = "float")]
+type Output = f32;
+#[cfg(feature = "double")]
+type Output = f64;
+#[cfg(feature = "int")]
+type Output = f32;
+#[cfg(not(any(feature = "float", feature = "double", feature = "int",)))]
+type Output = f32;
 
 #[derive(Parser, Debug)]
 #[command(about = "2D correlation benchmark")]
@@ -66,7 +76,6 @@ fn main() {
     }
 
     if args.common.output {
-        println!("Output:");
         println!("Correlation = {}", res);
     }
 
@@ -74,7 +83,7 @@ fn main() {
         Some(filename) => {
             // export output
             // TODO: this is a very hacky way to do this, make it better
-            obpmark_library::matrix_1d::Matrix1d::<f64>::new(vec![vec![res; 1]; 1], 1, 1)
+            obpmark_library::matrix_1d::Matrix1d::<Output>::new(vec![vec![res; 1]; 1], 1, 1)
                 .to_file(Path::new(&filename))
                 .unwrap();
         }
@@ -95,19 +104,31 @@ fn main() {
         }
         Some(None) => {
             // verify against cpu implementation
-            let res_ref = get_ref_result(&A, &B, args.common.size);
-            // verify(&C.get_data(), &C_ref.get_data());
-            verify!(&res, &res_ref);
+            let res_ref = get_ref_result(A, B, args.common.size);
+            if res - res_ref > 1e-4 || res_ref - res > 1e-4 {
+                println!("Verification failed");
+            } else {
+                println!("Verification passed");
+            }
         }
         None => (),
     }
 }
 
-fn get_ref_result(A: &Matrix, B: &Matrix, size: usize) -> f64 {
-    let A_ref = RefMatrix::new(A.get_data(), size, size);
-    let B_ref = RefMatrix::new(B.get_data(), size, size);
-
-    let res = A_ref.correlation(&B_ref).unwrap();
-
-    res
+fn get_ref_result(A: Matrix, B: Matrix, size: usize) -> Output {
+    let A_ref = A.to_c_format();
+    let B_ref = B.to_c_format();
+    let mut res_ref = 0.0;
+    let t0 = Instant::now();
+    unsafe {
+        correlation(
+            A_ref.as_ptr(),
+            B_ref.as_ptr(),
+            &mut res_ref as *mut Output,
+            size,
+        );
+    }
+    let t1 = Instant::now();
+    println!("Elapsed: {:.2?}", t1 - t0);
+    res_ref
 }
