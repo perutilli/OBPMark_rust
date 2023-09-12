@@ -6,7 +6,9 @@ use crate::{Error, Padding};
 use std::sync::Arc;
 use std::thread;
 
-use crate::{Convolution, FirFilter, MatMul, MaxPooling, Relu, Softmax, LRN};
+use crate::{
+    Convolution, FastFourierTransformHelper, FirFilter, MatMul, MaxPooling, Relu, Softmax, LRN,
+};
 
 impl<T: Number> ParallelMatMul for Matrix1d<T> {
     fn parallel_multiply(
@@ -290,3 +292,47 @@ impl<T: Number> ParallelFiniteImpulseResponseFilter for Matrix1d<T> {
         Ok(())
     }
 }
+
+macro_rules! impl_rayon_fft_windowed {
+    ($t: tt) => {
+        impl ParallelFastFourierTransformWindowed<$t> for Matrix1d<$t> {
+            fn parallel_fft_windowed(
+                &self,
+                window: usize,
+                result: &mut Self,
+                n_threads: usize,
+            ) -> Result<(), Error> {
+                if self.rows != 1 || result.rows != 1 {
+                    return Err(Error::InvalidDimensions);
+                }
+
+                // here the number of rows will always be one
+                let elements_per_thread = (result.cols - 1) / n_threads + 1;
+
+                thread::scope(|s| {
+                    result
+                        .data
+                        .chunks_mut(window * 2 * elements_per_thread)
+                        .enumerate()
+                        .for_each(|(i, result_chunk)| {
+                            s.spawn(move || {
+                                let start_idx = i * elements_per_thread;
+                                result_chunk.chunks_mut(window * 2).enumerate().for_each(
+                                    |(i, result_chunk)| {
+                                        for j in 0..window {
+                                            result_chunk[j] = self.data[(start_idx + i) * 2 + j];
+                                        }
+                                        Self::fft_helper(result_chunk, window >> 1);
+                                    },
+                                );
+                            });
+                        });
+                });
+                Ok(())
+            }
+        }
+    };
+}
+
+impl_rayon_fft_windowed!(f32);
+impl_rayon_fft_windowed!(f64);

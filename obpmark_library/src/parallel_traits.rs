@@ -1,5 +1,5 @@
 use crate::number_traits::Float;
-use crate::{Error, Padding};
+use crate::{Error, FastFourierTransformHelper, Padding};
 
 pub trait ParallelMatMul {
     fn parallel_multiply(
@@ -53,6 +53,15 @@ pub trait ParallelFiniteImpulseResponseFilter {
     fn parallel_fir_filter(
         &self,
         kernel: &Self,
+        result: &mut Self,
+        n_threads: usize,
+    ) -> Result<(), Error>;
+}
+
+pub trait ParallelFastFourierTransformWindowed<T>: FastFourierTransformHelper<T> {
+    fn parallel_fft_windowed(
+        &self,
+        window: usize,
         result: &mut Self,
         n_threads: usize,
     ) -> Result<(), Error>;

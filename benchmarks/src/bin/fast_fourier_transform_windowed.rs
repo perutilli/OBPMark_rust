@@ -1,6 +1,7 @@
 #![allow(non_snake_case)]
 use clap::Parser;
 use core::panic;
+use obpmark_library::parallel_traits::ParallelFastFourierTransformWindowed;
 use obpmark_library::rayon_traits::RayonFastFourierTransformWindowed;
 use obpmark_library::BaseMatrix;
 use std::{path::Path, time::Instant};
@@ -73,7 +74,13 @@ fn main() {
         (Some(_), Implementation::Rayon) => {
             panic!("Cannot specify number of threads for Rayon implementation")
         }
-        _ => unimplemented!("Version not yet implemented"),
+        (Some(n_threads), Implementation::StdParallel) => A
+            .parallel_fft_windowed(args.window, &mut B, n_threads)
+            .unwrap(),
+        (None, Implementation::StdParallel) => {
+            // TODO: change 8 to number of cores
+            A.parallel_fft_windowed(args.window, &mut B, 8).unwrap()
+        }
     }
 
     let t1 = Instant::now();
