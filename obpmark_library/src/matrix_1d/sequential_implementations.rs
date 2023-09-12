@@ -130,31 +130,61 @@ impl<T: Number> MaxPooling<T> for Matrix1d<T> {
     }
 }
 
-impl<T: Number> Correlation for Matrix1d<T> {
-    fn correlation(&self, other: &Matrix1d<T>) -> Result<f64, Error> {
-        if self.rows != other.rows || self.cols != other.cols {
-            return Err(Error::InvalidDimensions);
-        }
+macro_rules! impl_correlation {
+    ($self_type: tt, $output_type: tt) => {
+        impl Correlation for Matrix1d<$self_type> {
+            type Output = $output_type;
+            fn accumulate_row(
+                &self,
+                other: &Self,
+                self_mean: Self::Output,
+                other_mean: Self::Output,
+                row_idx: usize,
+            ) -> (Self::Output, Self::Output, Self::Output) {
+                let i = row_idx;
+                let mut acc_self_sq = 0.0;
+                let mut acc_other_sq = 0.0;
+                let mut acc_self_other = 0.0;
+                for j in 0..self.cols {
+                    let self_diff = self.data[i * self.cols + j] as Self::Output - self_mean;
+                    let other_diff = other.data[i * other.cols + j] as Self::Output - other_mean;
+                    acc_self_sq += self_diff * self_diff;
+                    acc_other_sq += other_diff * other_diff;
+                    acc_self_other += self_diff * other_diff;
+                }
+                (acc_self_sq, acc_other_sq, acc_self_other)
+            }
 
-        let mut acc_self_sq = 0_f64;
-        let mut acc_other_sq = 0_f64;
-        let mut acc_self_other = 0_f64;
+            fn correlation(&self, other: &Self) -> Result<Self::Output, Error> {
+                if self.rows != other.rows || self.cols != other.cols {
+                    return Err(Error::InvalidDimensions);
+                }
 
-        let self_mean = self.data.iter().sum::<T>().as_() / (self.rows * self.cols) as f64;
-        let other_mean = other.data.iter().sum::<T>().as_() / (other.rows * other.cols) as f64;
+                let mut acc_self_sq = 0.0;
+                let mut acc_other_sq = 0.0;
+                let mut acc_self_other = 0.0;
 
-        for i in 0..self.rows {
-            for j in 0..self.cols {
-                let self_delta = self.data[i * self.cols + j].as_() - self_mean;
-                let other_delta = other.data[i * self.cols + j].as_() - other_mean;
-                acc_self_sq += self_delta * self_delta;
-                acc_other_sq += other_delta * other_delta;
-                acc_self_other += self_delta * other_delta;
+                let self_mean = self.data.iter().sum::<$self_type>() as Self::Output
+                    / (self.rows * self.cols) as Self::Output;
+                let other_mean = other.data.iter().sum::<$self_type>() as Self::Output
+                    / (other.rows * other.cols) as Self::Output;
+
+                for i in 0..self.rows {
+                    let (row_self_sq, row_other_sq, row_self_other) =
+                        self.accumulate_row(&other, self_mean, other_mean, i);
+                    acc_self_sq += row_self_sq;
+                    acc_other_sq += row_other_sq;
+                    acc_self_other += row_self_other;
+                }
+                Ok(acc_self_other / (acc_self_sq * acc_other_sq).sqrt())
             }
         }
-        Ok(acc_self_other / (acc_self_sq * acc_other_sq).sqrt())
-    }
+    };
 }
+
+impl_correlation!(i32, f32);
+impl_correlation!(f32, f32);
+impl_correlation!(f64, f64);
 
 use crate::Padding;
 impl<T: Number> Convolution<T> for Matrix1d<T> {

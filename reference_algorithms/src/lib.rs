@@ -9,6 +9,15 @@ type CType = core::ffi::c_int;
 #[cfg(not(any(feature = "float", feature = "double", feature = "int",)))]
 type CType = core::ffi::c_float;
 
+#[cfg(feature = "float")]
+type CorrOutput = core::ffi::c_float;
+#[cfg(feature = "double")]
+type CorrOutput = core::ffi::c_double;
+#[cfg(feature = "int")]
+type CorrOutput = core::ffi::c_float;
+#[cfg(not(any(feature = "float", feature = "double", feature = "int",)))]
+type CorrOutput = core::ffi::c_float;
+
 extern "C" {
     // void matrix_multiplication(const bench_t *A, const bench_t *B, bench_t *C, const unsigned int n, const unsigned int m, const unsigned int w)
     pub fn matrix_multiplication(
@@ -66,7 +75,6 @@ extern "C" {
     // void lrn(const bench_t* A, bench_t* B, const unsigned int size)
     pub fn lrn(a: *const CType, b: *mut CType, size: usize);
 
-    // need to fix my code before I can use this
-    // void correlation_2D(const bench_t *A, const bench_t *B, result_bench_t *R, const int size)
-    // pub fn correlation_2d(a: *const CType, b: *const CType, r: *mut CType, size: usize);
+    // void correlation(const bench_t *A, const bench_t *B, result_bench_t *R, const int size)
+    pub fn correlation(a: *const CType, b: *const CType, r: *mut CorrOutput, size: usize);
 }

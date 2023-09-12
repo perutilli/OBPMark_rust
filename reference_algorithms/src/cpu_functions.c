@@ -443,8 +443,24 @@ void lrn(const bench_t* A, bench_t* B, const unsigned int size)
 	}
 
 }
-/*
-void correlation_2D(const bench_t *A, const bench_t *B, result_bench_t *R, const int size)
+
+result_bench_t get_mean_value_matrix(const bench_t* A,const int size) {
+    bench_t suma_valores = 0;
+    result_bench_t final_value = 0;
+        
+    // Be aware of precision errors.
+
+    for (int i=0; i<size; i++){
+        for (int j=0; j<size; j++){
+            suma_valores += A[i*size+j];
+        }
+    }
+
+    final_value = (result_bench_t) suma_valores / (result_bench_t) (size*size);
+    return final_value;
+}
+
+void correlation(const bench_t *A, const bench_t *B, result_bench_t *R, const int size)
 {
     result_bench_t mean_a_matrix = get_mean_value_matrix(A, size);
     result_bench_t mean_b_matrix = get_mean_value_matrix(B, size);
@@ -460,8 +476,8 @@ void correlation_2D(const bench_t *A, const bench_t *B, result_bench_t *R, const
     {
         for (int j = 0; j < size; j++)
         {
-            result_mean_a = A[i * size + j] - mean_a_matrix;
-            result_mean_b = B[i * size + j] - mean_b_matrix;
+            result_mean_a = (result_bench_t) A[i * size + j] - mean_a_matrix;
+            result_mean_b = (result_bench_t) B[i * size + j] - mean_b_matrix;
             acumulate_value_a_b += result_mean_a * result_mean_b;
             acumulate_value_a_a += result_mean_a * result_mean_a;
             acumulate_value_b_b += result_mean_b * result_mean_b;
@@ -470,5 +486,3 @@ void correlation_2D(const bench_t *A, const bench_t *B, result_bench_t *R, const
     // final calculation
     *R = (result_bench_t)(acumulate_value_a_b / (result_bench_t)(sqrt(acumulate_value_a_a * acumulate_value_b_b)));
 }
-
-*/

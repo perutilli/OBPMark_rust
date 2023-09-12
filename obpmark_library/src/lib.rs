@@ -188,7 +188,15 @@ pub trait MaxPooling<T> {
 // in the C version it is Num: i32 -> f32, Num: f32 -> f32, Num: f64 -> f64
 // for semplicity I am going to use f64 for all for now
 pub trait Correlation {
-    fn correlation(&self, other: &Self) -> Result<f64, Error>;
+    type Output;
+    fn accumulate_row(
+        &self,
+        other: &Self,
+        self_mean: Self::Output,
+        other_mean: Self::Output,
+        row_idx: usize,
+    ) -> (Self::Output, Self::Output, Self::Output);
+    fn correlation(&self, other: &Self) -> Result<Self::Output, Error>;
 }
 
 pub trait Convolution<T> {
