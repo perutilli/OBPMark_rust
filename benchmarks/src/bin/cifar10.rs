@@ -1,10 +1,17 @@
 use clap::Parser;
+use obpmark_library::parallel_traits::{
+    ParallelConvolution, ParallelLRN, ParallelMatMul, ParallelMaxPooling, ParallelRelu,
+    ParallelSoftmax,
+};
+use obpmark_library::rayon_traits::{
+    RayonConvolution, RayonLRN, RayonMatMul, RayonMaxPooling, RayonRelu, RayonSoftmax,
+};
 use std::path::Path;
 use std::time::Instant;
 
 use obpmark_library::{BaseMatrix, Convolution, MatMul, MaxPooling, Padding, Relu, Softmax, LRN};
 
-use benchmarks::benchmark_utils::{CommonArgs, Matrix, Number};
+use benchmarks::benchmark_utils::{CommonArgs, Implementation, Matrix, Number};
 use benchmarks::number;
 
 const CIFAR_10_INPUT: usize = 32;
@@ -176,6 +183,8 @@ fn main() {
         &mut relu_4_out,
         STRIDE_1,
         STRIDE_2,
+        args.common.implementation,
+        args.common.nthreads.unwrap_or(4),
     );
 
     let t1 = Instant::now();
@@ -222,8 +231,85 @@ fn cifar_10_multiple(
     relu_4_out: &mut Matrix,
     stride_1_size: usize,
     stride_2_size: usize,
+    implementation: Implementation,
+    n_threads: usize,
 ) {
     for i in 0..n_images {
+        match implementation {
+            Implementation::Sequential => {
+                cifar_10(
+                    &input[i],
+                    kernel_1,
+                    kernel_2,
+                    weights_1,
+                    weights_2,
+                    output,
+                    conv_1_out,
+                    relu_1_out,
+                    pool_1_out,
+                    lrn_1_out,
+                    conv_2_out,
+                    relu_2_out,
+                    lrn_2_out,
+                    pool_2_out,
+                    dense_layer_1_out,
+                    relu_3_out,
+                    dense_layer_2_out,
+                    relu_4_out,
+                    stride_1_size,
+                    stride_2_size,
+                );
+            }
+            Implementation::Rayon => {
+                cifar_10_rayon(
+                    &input[i],
+                    kernel_1,
+                    kernel_2,
+                    weights_1,
+                    weights_2,
+                    output,
+                    conv_1_out,
+                    relu_1_out,
+                    pool_1_out,
+                    lrn_1_out,
+                    conv_2_out,
+                    relu_2_out,
+                    lrn_2_out,
+                    pool_2_out,
+                    dense_layer_1_out,
+                    relu_3_out,
+                    dense_layer_2_out,
+                    relu_4_out,
+                    stride_1_size,
+                    stride_2_size,
+                );
+            }
+            Implementation::StdParallel => {
+                cifar_10_parallel(
+                    &input[i],
+                    kernel_1,
+                    kernel_2,
+                    weights_1,
+                    weights_2,
+                    output,
+                    conv_1_out,
+                    relu_1_out,
+                    pool_1_out,
+                    lrn_1_out,
+                    conv_2_out,
+                    relu_2_out,
+                    lrn_2_out,
+                    pool_2_out,
+                    dense_layer_1_out,
+                    relu_3_out,
+                    dense_layer_2_out,
+                    relu_4_out,
+                    stride_1_size,
+                    stride_2_size,
+                    n_threads,
+                );
+            }
+        }
         cifar_10(
             &input[i],
             kernel_1,
@@ -325,6 +411,199 @@ fn cifar_10(
 
     // Softmax
     relu_4_out.softmax(output).unwrap();
+
+    // Reshape for next iteration
+    // TODO: this is very unoptimal for 2d matrices, it might be better to
+    //       straight up reallocate pool_2_out
+    pool_2_out
+        .reshape(
+            CIFAR_10_INPUT / STRIDE_1 / STRIDE_2,
+            CIFAR_10_INPUT / STRIDE_1 / STRIDE_2,
+        )
+        .unwrap();
+}
+
+fn cifar_10_rayon(
+    input: &Matrix,
+    kernel_1: &Matrix,
+    kernel_2: &Matrix,
+    weights_1: &Matrix,
+    weights_2: &Matrix,
+    output: &mut Matrix,
+    conv_1_out: &mut Matrix,
+    relu_1_out: &mut Matrix,
+    pool_1_out: &mut Matrix,
+    lrn_1_out: &mut Matrix,
+    conv_2_out: &mut Matrix,
+    relu_2_out: &mut Matrix,
+    lrn_2_out: &mut Matrix,
+    pool_2_out: &mut Matrix,
+    dense_layer_1_out: &mut Matrix,
+    relu_3_out: &mut Matrix,
+    dense_layer_2_out: &mut Matrix,
+    relu_4_out: &mut Matrix,
+    stride_1_size: usize,
+    stride_2_size: usize,
+) {
+    // 1-1 Convolution
+    input
+        .rayon_convolute(&kernel_1, Padding::Zeroes, conv_1_out)
+        .unwrap();
+
+    // 1-2 Activation (ReLU)
+    conv_1_out.rayon_relu(relu_1_out).unwrap();
+
+    // 1-3 Max pooling
+    relu_1_out
+        .rayon_max_pooling(pool_1_out, stride_1_size, stride_1_size)
+        .unwrap();
+
+    // 1-4 Normalization (LRN)
+    pool_1_out.rayon_lrn(lrn_1_out, ALPHA, BETA, K).unwrap();
+
+    // 2-1 Convolution
+    lrn_1_out
+        .rayon_convolute(kernel_2, Padding::Zeroes, conv_2_out)
+        .unwrap();
+
+    // 2-2 Activation (ReLU)
+    conv_2_out.rayon_relu(relu_2_out).unwrap();
+
+    // 2-3 Normalization (LRN)
+    relu_2_out.rayon_lrn(lrn_2_out, ALPHA, BETA, K).unwrap();
+
+    // 2-4 Max pooling
+    lrn_2_out
+        .rayon_max_pooling(pool_2_out, stride_2_size, stride_2_size)
+        .unwrap();
+
+    // Reshape
+    pool_2_out
+        .reshape(
+            (CIFAR_10_INPUT / STRIDE_1 / STRIDE_2) * (CIFAR_10_INPUT / STRIDE_1 / STRIDE_2),
+            1,
+        )
+        .unwrap();
+
+    // Dense layer 1
+    weights_1
+        .rayon_multiply(pool_2_out, dense_layer_1_out)
+        .unwrap();
+
+    // Activation (ReLU)
+    dense_layer_1_out.rayon_relu(relu_3_out).unwrap();
+
+    // Dense layer 2
+    weights_2
+        .rayon_multiply(relu_3_out, dense_layer_2_out)
+        .unwrap();
+
+    // Activation (ReLU)
+    dense_layer_2_out.rayon_relu(relu_4_out).unwrap();
+
+    // Softmax
+    relu_4_out.rayon_softmax(output).unwrap();
+
+    // Reshape for next iteration
+    // TODO: this is very unoptimal for 2d matrices, it might be better to
+    //       straight up reallocate pool_2_out
+    pool_2_out
+        .reshape(
+            CIFAR_10_INPUT / STRIDE_1 / STRIDE_2,
+            CIFAR_10_INPUT / STRIDE_1 / STRIDE_2,
+        )
+        .unwrap();
+}
+
+fn cifar_10_parallel(
+    input: &Matrix,
+    kernel_1: &Matrix,
+    kernel_2: &Matrix,
+    weights_1: &Matrix,
+    weights_2: &Matrix,
+    output: &mut Matrix,
+    conv_1_out: &mut Matrix,
+    relu_1_out: &mut Matrix,
+    pool_1_out: &mut Matrix,
+    lrn_1_out: &mut Matrix,
+    conv_2_out: &mut Matrix,
+    relu_2_out: &mut Matrix,
+    lrn_2_out: &mut Matrix,
+    pool_2_out: &mut Matrix,
+    dense_layer_1_out: &mut Matrix,
+    relu_3_out: &mut Matrix,
+    dense_layer_2_out: &mut Matrix,
+    relu_4_out: &mut Matrix,
+    stride_1_size: usize,
+    stride_2_size: usize,
+    n_threads: usize,
+) {
+    // 1-1 Convolution
+    input
+        .parallel_convolute(&kernel_1, Padding::Zeroes, conv_1_out, n_threads)
+        .unwrap();
+
+    // 1-2 Activation (ReLU)
+    conv_1_out.parallel_relu(relu_1_out, n_threads).unwrap();
+
+    // 1-3 Max pooling
+    relu_1_out
+        .parallel_max_pooling(pool_1_out, stride_1_size, stride_1_size, n_threads)
+        .unwrap();
+
+    // 1-4 Normalization (LRN)
+    pool_1_out
+        .parallel_lrn(lrn_1_out, ALPHA, BETA, K, n_threads)
+        .unwrap();
+
+    // 2-1 Convolution
+    lrn_1_out
+        .parallel_convolute(kernel_2, Padding::Zeroes, conv_2_out, n_threads)
+        .unwrap();
+
+    // 2-2 Activation (ReLU)
+    conv_2_out.parallel_relu(relu_2_out, n_threads).unwrap();
+
+    // 2-3 Normalization (LRN)
+    relu_2_out
+        .parallel_lrn(lrn_2_out, ALPHA, BETA, K, n_threads)
+        .unwrap();
+
+    // 2-4 Max pooling
+    lrn_2_out
+        .parallel_max_pooling(pool_2_out, stride_2_size, stride_2_size, n_threads)
+        .unwrap();
+
+    // Reshape
+    pool_2_out
+        .reshape(
+            (CIFAR_10_INPUT / STRIDE_1 / STRIDE_2) * (CIFAR_10_INPUT / STRIDE_1 / STRIDE_2),
+            1,
+        )
+        .unwrap();
+
+    // Dense layer 1
+    weights_1
+        .parallel_multiply(pool_2_out, dense_layer_1_out, n_threads)
+        .unwrap();
+
+    // Activation (ReLU)
+    dense_layer_1_out
+        .parallel_relu(relu_3_out, n_threads)
+        .unwrap();
+
+    // Dense layer 2
+    weights_2
+        .parallel_multiply(relu_3_out, dense_layer_2_out, n_threads)
+        .unwrap();
+
+    // Activation (ReLU)
+    dense_layer_2_out
+        .parallel_relu(relu_4_out, n_threads)
+        .unwrap();
+
+    // Softmax
+    relu_4_out.parallel_softmax(output, n_threads).unwrap();
 
     // Reshape for next iteration
     // TODO: this is very unoptimal for 2d matrices, it might be better to
