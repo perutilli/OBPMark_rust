@@ -1,5 +1,4 @@
 use crate::matrix::{Matrix, MatrixSection};
-use crate::N_HARTS;
 use core::cell::UnsafeCell;
 use core::fmt::Display;
 use core::sync::atomic::{AtomicBool, AtomicUsize};
@@ -144,6 +143,14 @@ where
         compute_fn(&mut section);
         self.notify_completed(section, section_idx);
     }
+
+    pub fn wait_completed(&'a self) {
+        while self
+            .computation_completed
+            .load(core::sync::atomic::Ordering::SeqCst)
+            != N_SECTIONS
+        {}
+    }
     /*
     pub fn convolute(
         &'a self,
@@ -185,7 +192,7 @@ impl<
         while self
             .computation_completed
             .load(core::sync::atomic::Ordering::SeqCst)
-            != N_HARTS
+            != N_SECTIONS
         {}
         unsafe { write!(f, "{:?}", (*self.matrix.get())) }
     }

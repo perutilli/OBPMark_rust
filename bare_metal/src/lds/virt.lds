@@ -240,6 +240,4 @@ SECTIONS
 
 	 We don't align here because we let the kernel determine how it wants to do this.
   */
-  PROVIDE(_heap_start = _stack_end);
-  PROVIDE(_heap_size = _memory_end - _heap_start);
 }

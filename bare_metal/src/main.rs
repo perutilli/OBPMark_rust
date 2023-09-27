@@ -15,7 +15,7 @@ fn panic(info: &PanicInfo) -> ! {
 extern "C" fn abort() -> ! {
     loop {
         unsafe {
-            core::arch::asm!("wfi");
+            core::arch::asm!("ebreak");
         }
     }
 }

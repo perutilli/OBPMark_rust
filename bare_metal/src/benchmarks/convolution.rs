@@ -75,6 +75,7 @@ mod benchmark {
         );
 
         if hart_id == 0 {
+            C.wait_completed();
             println!("Time: {:?}", crate::time() - t);
             println!("Result: {}", C);
         }

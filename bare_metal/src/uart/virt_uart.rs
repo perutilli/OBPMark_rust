@@ -1,7 +1,6 @@
 use core::convert::TryInto;
 use core::fmt::Error;
 use core::fmt::Write;
-use core::ops::Add;
 
 pub struct Uart {
     base_address: usize,
