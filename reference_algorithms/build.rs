@@ -6,11 +6,7 @@ const C_TYPE: &str = "FLOAT";
 const C_TYPE: &str = "DOUBLE";
 #[cfg(feature = "int")]
 const C_TYPE: &str = "INT";
-#[cfg(not(any(
-    feature = "float",
-    feature = "double",
-    feature = "int",
-)))]
+#[cfg(not(any(feature = "float", feature = "double", feature = "int",)))]
 const C_TYPE: &str = "FLOAT";
 
 // #[cfg(all(feature = "std", feature = "riscv_hard_float"))]
