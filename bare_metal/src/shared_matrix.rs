@@ -65,6 +65,7 @@ where
         {
             // some other thread has gotten here first
             // they will be in charge of the initialization
+            while self.initialized.load(core::sync::atomic::Ordering::SeqCst) == false {}
             return;
         }
         unsafe {
