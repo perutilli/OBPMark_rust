@@ -1,10 +1,15 @@
 #![allow(non_snake_case)]
 use clap::Parser;
 use core::panic;
-use obpmark_library::{BaseMatrix, Correlation};
+use obpmark_library::{
+    //parallel_traits::ParallelCorrelation,
+    rayon_traits::RayonCorrelation,
+    BaseMatrix,
+    Correlation,
+};
 use std::{path::Path, time::Instant};
 
-use benchmarks::benchmark_utils::{CommonArgs, Matrix, Number};
+use benchmarks::benchmark_utils::{CommonArgs, Implementation, Matrix, Number};
 
 use reference_algorithms::correlation;
 
@@ -66,8 +71,32 @@ fn main() {
     }
 
     let t0 = Instant::now();
+    let res;
 
-    let res = A.correlation(&B).unwrap();
+    match (args.common.nthreads, args.common.implementation) {
+        (None, Implementation::Sequential) => res = A.correlation(&B).unwrap(),
+        (Some(_), Implementation::Sequential) => {
+            panic!("Cannot specify number of threads for sequential implementation")
+        }
+        (None, Implementation::Rayon) => res = A.rayon_correlate(&B).unwrap(),
+        (Some(_), Implementation::Rayon) => {
+            /*
+            rayon::ThreadPoolBuilder::new()
+                .num_threads(nthreads)
+                .build_global()
+                .unwrap();
+            res = A.rayon_correlate(&B).unwrap();
+            */
+            panic!("Specifying number of threads for rayon is not supported");
+        }
+        (Some(_n_threads), Implementation::StdParallel) => {
+            // res = A.parallel_correlate(&B, n_threads).unwrap()
+            panic!("CHANGE THIS")
+        }
+        (None, Implementation::StdParallel) => {
+            panic!("Must specify number of threads for std parallel");
+        }
+    }
 
     let t1 = Instant::now();
 
@@ -129,6 +158,6 @@ fn get_ref_result(A: Matrix, B: Matrix, size: usize) -> Output {
         );
     }
     let t1 = Instant::now();
-    println!("Elapsed: {:.2?}", t1 - t0);
+    println!("C code: {:.2?}", t1 - t0);
     res_ref
 }

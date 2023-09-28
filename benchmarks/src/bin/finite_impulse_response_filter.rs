@@ -135,6 +135,7 @@ fn get_ref_result(A: Matrix, size: usize, kernel: Matrix, kernel_size: usize) ->
 
     let mut B_ref = vec![number!("0"); 1 * (size + kernel_size - 1)];
 
+    let t = Instant::now();
     unsafe {
         vector_convolution(
             A_ref.as_ptr(),
@@ -144,6 +145,7 @@ fn get_ref_result(A: Matrix, size: usize, kernel: Matrix, kernel_size: usize) ->
             kernel_size,
         );
     }
+    println!("C code: {:.2?}", Instant::now() - t);
 
     RefMatrix::new(vec![B_ref], 1, size)
 }
